@@ -31,3 +31,20 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Maven build directory
+/target/
+
+# IntelliJ IDEA
+/.idea/
+
+# Maven Wrapper
+/.mvn/wrapper/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+

@@ -1,2 +1,24 @@
 databaseChangeLog:
-  - 
+  - changeSet:
+      id: 1
+      author: david
+      changes:
+        - sqlFile:
+            path: classpath:/db/changelog/create_table_plants.sql
+            relativeToChangelogFile: false
+
+  - changeSet:
+      id: 2
+      author: david
+      changes:
+        - sqlFile:
+            path: classpath:/db/changelog/create_table_user.sql
+            relativeToChangelogFile: false
+
+  - changeSet:
+      id: 3
+      author: david
+      changes:
+        - sqlFile:
+            path: classpath:/db/changelog/create_table_cart.sql
+            relativeToChangelogFile: false
