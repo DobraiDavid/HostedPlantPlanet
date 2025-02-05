@@ -2,23 +2,35 @@ databaseChangeLog:
   - changeSet:
       id: 1
       author: david
+      preConditions:
+        - onFail: MARK_RAN
+          tableExists:
+            tableName: plants
       changes:
         - sqlFile:
-            path: classpath:/db/changelog/create_table_plants.sql
+            path: /db/changelog/create_table_plants.sql
             relativeToChangelogFile: false
 
   - changeSet:
       id: 2
       author: david
+      preConditions:
+        - onFail: MARK_RAN
+          tableExists:
+            tableName: users
       changes:
         - sqlFile:
-            path: classpath:/db/changelog/create_table_user.sql
+            path: /db/changelog/create_table_users.sql
             relativeToChangelogFile: false
 
   - changeSet:
       id: 3
       author: david
+      preConditions:
+        - onFail: MARK_RAN
+          tableExists:
+            tableName: cart
       changes:
         - sqlFile:
-            path: classpath:/db/changelog/create_table_cart.sql
+            path: /db/changelog/create_table_cart.sql
             relativeToChangelogFile: false
