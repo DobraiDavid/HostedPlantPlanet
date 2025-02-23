@@ -121,11 +121,11 @@
 				<artifactId>liquibase-maven-plugin</artifactId>
 				<version>4.29.2</version>
 				<configuration>
-					<url>jdbc:mysql://localhost:3306/plantplanetdb</url> <!-- Replace with your database URL -->
-					<driver>com.mysql.cj.jdbc.Driver</driver> <!-- Replace with your database driver -->
-					<username>root</username> <!-- Replace with your database username -->
-					<password>root</password> <!-- Replace with your database password -->
-					<changeLogFile>src/main/resources/db/changelog/db.changelog-master.yaml</changeLogFile> <!-- Path to your changelog file -->
+					<url>jdbc:mysql://localhost:3306/plantplanetdb</url>
+					<driver>com.mysql.cj.jdbc.Driver</driver>
+					<username>root</username>
+					<password>root</password>
+					<changeLogFile>src/main/resources/db/changelog/master.xml</changeLogFile>
 				</configuration>
 			</plugin>
 		</plugins>

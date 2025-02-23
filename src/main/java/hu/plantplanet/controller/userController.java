@@ -4,6 +4,7 @@ import hu.plantplanet.auth.PermissionCollector;
 import hu.plantplanet.converter.UserConverter;
 import hu.plantplanet.dto.user.LoginRequest;
 import hu.plantplanet.dto.user.ReadUser;
+import hu.plantplanet.dto.user.RegisterRequest;
 import hu.plantplanet.model.Users;
 import hu.plantplanet.service.UsersService;
 import hu.plantplanet.token.JWTTokenProvider;
@@ -37,7 +38,7 @@ public class userController {
     }
 
     @PostMapping("/login")
-    @Operation(summary = "User log in")
+    @Operation(summary = "Log in User")
     public ResponseEntity<ReadUser> login(@RequestBody LoginRequest loginRequest) {
         authenticate(loginRequest.getUsername(), loginRequest.getPassword());
         Users user = userService.findUserByUsername(loginRequest.getUsername());
@@ -47,9 +48,17 @@ public class userController {
         return new ResponseEntity<>(readUser, jwtHeader, HttpStatus.OK);
     }
 
+    @PostMapping("/register")
+    @Operation(summary = "Register User")
+    public ResponseEntity<ReadUser> register(@RequestBody RegisterRequest registerRequest) {
+        Users user = userService.registerUser(registerRequest);
+        ReadUser readUser = UserConverter.convertModelToRead(user);
+        return new ResponseEntity<>(readUser, HttpStatus.CREATED);
+    }
+
     private HttpHeaders getJWTHeader(PermissionCollector collector) {
         HttpHeaders jwtHeader = new HttpHeaders();
-        jwtHeader.add("JWT_Token", jwtTokenProvider.generateJwtToken(collector));
+        jwtHeader.add(HttpHeaders.AUTHORIZATION, "Bearer " + jwtTokenProvider.generateJwtToken(collector));
         return jwtHeader;
     }
 

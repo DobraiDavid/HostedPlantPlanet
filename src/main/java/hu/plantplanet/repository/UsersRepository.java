@@ -6,10 +6,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 
 public interface UsersRepository extends JpaRepository<Users, Integer> {
 
+    Optional<Users> findByEmail(String email);
     Users findUserByName(String name);
 
     @Query(nativeQuery = true,
