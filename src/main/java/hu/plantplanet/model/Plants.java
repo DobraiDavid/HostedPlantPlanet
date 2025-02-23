@@ -14,7 +14,7 @@ public class Plants {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer plant_id;
+    private Integer plantId;
 
     @Column(nullable = false, length = 100)
     private String name;
