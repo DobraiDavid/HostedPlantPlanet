@@ -1,0 +1,412 @@
+= Plant Planet - Funkcionális Modell
+
+== Leírás
+
+A Plant Planet egy webshop, amely növényeket árul havi előfizetéses rendszerben. A felhasználók megvásárolhatják a növényeket, majd előfizethetnek, hogy havonta további kiegészítőket, például tápanyagokat, cserepeket és egyéb kiegészítőket kapjanak. A backend kezeli a felhasználói hitelesítést, a fizetéseket és a termékmenedzsmentet.
+
+== Használati esetek
+
+=== Használati esetek rövid leírása
+
+==== Termékek listázása
+[cols="1h,3"]
+|===
+| Azonosító
+| UC_PP_List
+
+| Kiváltó esemény
+| A felhasználó meg akarja tekinteni az elérhető termékeket.
+
+| Szereplők
+| Felhasználó, Admin
+
+| Előfeltételek
+| Nincsenek
+
+| Normál folyamat
+| 1. A rendszer lekéri a termékek listáját.
+2. A rendszer megjeleníti a termékeket a felhasználónak.
+
+| Utófeltételek
+| A felhasználó látja az elérhető termékeket.
+|===
+
+==== Termék részleteinek megtekintése
+[cols="1h,3"]
+|===
+| Azonosító
+| UC_PP_View
+
+| Kiváltó esemény
+| A felhasználó kiválaszt egy terméket.
+
+| Szereplők
+| Felhasználó, Admin
+
+| Előfeltételek
+| A termék létezik a rendszerben.
+
+| Normál folyamat
+| 1. A rendszer lekéri a termék részleteit.
+2. A rendszer megjeleníti a részleteket a felhasználónak.
+
+| Utófeltételek
+| A felhasználó részletes információkat lát a termékről.
+|===
+
+==== Termék hozzáadása a kosárhoz
+[cols="1h,3"]
+|===
+| Azonosító
+| UC_PP_AddToCart
+
+| Kiváltó esemény
+| A felhasználó egy terméket hozzáad a kosarához.
+
+| Szereplők
+| Felhasználó, Admin
+
+| Előfeltételek
+| A termék létezik a rendszerben.
+
+| Normál folyamat
+| 1. A rendszer hozzáadja a kiválasztott terméket a felhasználó kosarához.
+2. A rendszer frissíti a kosár tartalmát.
+
+| Utófeltételek
+| A termék bekerül a felhasználó kosarába.
+|===
+
+==== Termék eltávolítása a kosárból
+[cols="1h,3"]
+|===
+| Azonosító
+| UC_PP_RemoveFromCart
+
+| Kiváltó esemény
+| A felhasználó eltávolít egy terméket a kosarából.
+
+| Szereplők
+| Felhasználó, Admin
+
+| Előfeltételek
+| A termék létezik a felhasználó kosarában.
+
+| Normál folyamat
+| 1. A rendszer eltávolítja a kiválasztott terméket a felhasználó kosarából.
+2. A rendszer frissíti a kosár tartalmát.
+
+| Utófeltételek
+| A termék eltávolításra kerül a felhasználó kosarából.
+|===
+
+==== Termék mennyiségének módosítása a kosárban
+[cols="1h,3"]
+|===
+| Azonosító
+| UC_PP_UpdateCart
+
+| Kiváltó esemény
+| A felhasználó módosítja egy termék mennyiségét a kosarában.
+
+| Szereplők
+| Felhasználó, Admin
+
+| Előfeltételek
+| A termék létezik a felhasználó kosarában.
+
+| Normál folyamat
+| 1. A rendszer frissíti a termék mennyiségét a felhasználó kosarában.
+2. A rendszer tükrözi a változásokat a kosárban.
+
+| Utófeltételek
+| A kosár tartalmazza a frissített mennyiségű terméket.
+|===
+
+==== Előfizetés
+[cols="1h,3"]
+|===
+| Azonosító
+| UC_PP_Subscribe
+
+| Kiváltó esemény
+| A felhasználó előfizet a havi szolgáltatásra.
+
+| Szereplők
+| Felhasználó, Admin
+
+| Előfeltételek
+| A felhasználó regisztrálva van a rendszerben.
+
+| Normál folyamat
+| 1. A rendszer feldolgozza a felhasználó előfizetési díját.
+2. A rendszer aktiválja az előfizetést.
+
+| Utófeltételek
+| A felhasználó előfizetett a szolgáltatásra.
+|===
+
+==== Admin termékeket ad hozzá vagy módosít
+[cols="1h,3"]
+|===
+| Azonosító
+| UC_PP_AdminModify
+
+| Kiváltó esemény
+| Az admin új terméket ad hozzá vagy módosít egy meglévőt.
+
+| Szereplők
+| Admin
+
+| Előfeltételek
+| Az admin be van jelentkezve.
+
+| Normál folyamat
+| 1. A rendszer lehetővé teszi az admin számára a termék részleteinek szerkesztését vagy új termék hozzáadását.
+2. A rendszer frissíti a termékinformációkat.
+
+| Utófeltételek
+| A termék hozzáadásra vagy módosításra kerül a rendszerben.
+|===
+
+==== Rendelés kifizetése
+[cols="1h,3"]
+|===
+| Azonosító
+| UC_PP_PayOrder
+
+| Kiváltó esemény
+| A felhasználó kifizeti a kosarában lévő termékeket.
+
+| Szereplők
+| Felhasználó, Admin
+
+| Előfeltételek
+| A kosár tartalmaz legalább egy terméket.
+
+| Normál folyamat
+| 1. A rendszer feldolgozza a fizetést.
+2. A rendszer megerősíti a rendelést.
+
+| Utófeltételek
+| A felhasználó fizetése sikeresen lezárult, és a rendelése megerősítésre került.
+|===
+
+== Jogosultságok
+
+[cols="1,1,1"]
+|===
+| Használati eset | Jogosultság | Szerepkörök
+
+| Termékek listázása
+| PRODUCT_LIST
+| Általános felhasználó, Adminisztrátor
+
+| Termék rögzítése
+| PRODUCT_CREATE
+| Adminisztrátor
+
+| Termék megtekintése
+| PRODUCT_READ
+| Általános felhasználó, Adminisztrátor
+
+| Termék módosítása
+| PRODUCT_UPDATE
+| Adminisztrátor
+
+| Termék törlése
+| PRODUCT_DELETE
+| Adminisztrátor
+
+| Termék árváltoztatása
+| PRODUCT_PATCH
+| Adminisztrátor
+
+| Kosár módosítása
+| CART_UPDATE
+| Általános felhasználó
+
+| Előfizetés vásárlása
+| SUBSCRIPTION_PURCHASE
+| Általános felhasználó
+
+|===
+
+== Felületi terv
+
+=== Termékek listázása felület
+
+
+==== A felületen lévő mezők
+
+[cols="1,1,1,1,1"]
+|===
+| Név | Típus | Kötelező? | Szerkeszthető? | Megjelenés
+
+| Termék neve
+| Szöveges input mező
+| N
+| I
+| Szűrő ablakrész
+
+| Termék ára
+| Szám típusú input mező
+| N
+| I
+| Szűrő ablakrész
+
+| Termék neve
+| Címke
+| -
+| -
+| Találati lista ablakrész
+
+| Termék ára
+| Címke
+| -
+| -
+| Találati lista ablakrész
+
+| Termék kategóriája
+| Címke
+| -
+| -
+| Találati lista ablakrész
+
+|===
+
+==== A felületről elérhető műveletek
+
+[cols="1,1,1"]
+|===
+| Esemény | Leírás | Jogosultság
+
+| A Keresés gombra kattintás
+| Végrehajtásra kerül a Termékek listázása használati eset. A találati listában megjelennek a kiválogatott termékek.
+| PRODUCT_LIST
+
+| A Megtekintés gombra kattintás
+| Végrehajtásra kerül a Termék megtekintése használati eset.  A felhasználó a termék megtekintő felületére jut.
+| PRODUCT_READ
+|===
+
+=== Termék rögzítése vagy szerkesztése felület
+
+
+
+==== A felületen lévő mezők
+
+[cols="1,1,1,1,1"]
+|===
+| Megnevezés | Típus | Kötelező | Szerkeszthető | Validáció
+
+| Kategória
+| Szöveges input mező
+| I
+| I
+|
+
+| Termék neve
+| Szöveges input mező
+| I
+| I
+|
+
+| Termék ára
+| Szám típusú input mező
+| I
+| I
+| Pozitív szám, maximum 2 tizedesjegy
+
+| Termék leírása
+| Szöveges input mező
+| N
+| I
+|
+
+| Termék súlya
+| Szám típusú input mező
+| N
+| I
+| Pozitív szám
+
+|===
+
+==== A felületről elérhető műveletek
+
+[cols="1,1,1,1"]
+|===
+| Esemény | Leírás | Felület | Jogosultság
+
+| A Mentés gombra kattintás
+| Végrehajtásra kerül a Termék rögzítése használati eset. A felhasználó a termék megtekintése felületére jut.
+
+A gomb mindaddig DISABLED, amíg az űrlap nem valid
+| Termék létrehozása felület
+| PRODUCT_CREATE
+
+| A Mentés gombra kattintás
+| Végrehajtásra kerül a Termék módosítása használati eset. A felhasználó a termék megtekintése felületére jut.
+
+A gomb mindaddig DISABLED, amíg az űrlap nem valid
+| Termék módosítása felület
+| PRODUCT_UPDATE
+
+vagy
+PRODUCT_PATCH
+
+ha a Árváltoztatás gombra kattintva érkezett erre a felületre
+
+|===
+
+
+=== Termék megtekintése felület
+
+
+==== A felületen lévő mezők
+
+[cols="1,1"]
+|===
+| Megnevezés | Típus
+
+| Termék kategóriája
+| Szöveges címke
+
+| Termék neve
+| Szöveges címke
+
+| Termék ára
+| Szám típusú címke 1 tizedesjegy pontossággal. Mértékegység forint.
+
+| Termék leírása
+| Szöveges címke
+
+| Termék súlya
+| Szám típusú címke 1 tizedesjegy pontossággal. Mértékegység gramm.
+
+|===
+
+==== A felületről elérhető műveletek
+
+[cols="1,1,1"]
+|===
+| Esemény | Leírás | Jogosultság
+
+| A Szerkesztés gombra kattintás
+| A felhasználó a termék szerkesztése felületére jut.
+| -
+
+| A Törlés gombra kattintás
+| Megjelenik egy párbeszédablak.
+
+Cím: Törlés
+
+Üzenet: Biztosan törli a kiválasztott terméket?
+
+A Nem gombra kattintásra eltűnik a párbeszédablak
+
+Az Igen gombra kattintásra végrehajtásra kerül a Termék törlése használati eset.
+A felhasználó a termékek listázása felületére jut.
+
+| PRODUCT_DELETE
+|===

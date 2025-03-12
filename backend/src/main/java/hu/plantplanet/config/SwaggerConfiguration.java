@@ -21,8 +21,8 @@ public class SwaggerConfiguration {
                         addList("Bearer Authentication"))
                 .components(new Components().addSecuritySchemes
                         ("Bearer Authentication", createAPIKeyScheme()))
-                .info(new Info().title("Submarine API")
-                        .description("Webservice for managing submarines")
+                .info(new Info().title("PlantPlanet API")
+                        .description("Webservice for managing plants")
                 );
     }
 }
