@@ -6,27 +6,44 @@ const CartContext = createContext();
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
 
-  // Load cart items when the app starts
   useEffect(() => {
     const fetchCart = async () => {
-      const items = await getCartItems();
-      setCart(items);
+      try {
+        const items = await getCartItems();
+        setCart(items);
+      } catch (error) {
+        console.error("Hiba történt a kosár adatainak betöltésekor", error);
+      }
     };
     fetchCart();
   }, []);
 
-  // Add item to cart
   const addItem = async (product, quantity = 1) => {
-    const response = await addToCart(product.id, quantity);
-    if (response) {
-      setCart([...cart, { ...product, quantity }]);
+    try {
+      setCart((prevCart) => [
+        ...prevCart,
+        { ...product, quantity }
+      ]);
+
+      const response = await addToCart(product.id, quantity);
+      if (!response) {
+        throw new Error("Hiba történt a termék hozzáadása során");
+      }
+    } catch (error) {
+      console.error(error);
+      setCart((prevCart) => prevCart.filter((item) => item.id !== product.id));
+      alert("Hiba történt a termék hozzáadása során.");
     }
   };
 
-  // Remove item from cart
   const removeItem = async (itemId) => {
-    await removeFromCart(itemId);
-    setCart(cart.filter((item) => item.id !== itemId));
+    try {
+      await removeFromCart(itemId);
+      setCart((prevCart) => prevCart.filter((item) => item.id !== itemId));
+    } catch (error) {
+      console.error("Hiba történt a termék eltávolításakor", error);
+      alert("Hiba történt a termék eltávolítása során.");
+    }
   };
 
   return (
@@ -36,5 +53,4 @@ export const CartProvider = ({ children }) => {
   );
 };
 
-// Custom hook for using the cart context
 export const useCart = () => useContext(CartContext);

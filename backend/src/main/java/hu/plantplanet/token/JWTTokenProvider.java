@@ -28,7 +28,7 @@ import static java.util.Arrays.stream;
 @Component
 public class JWTTokenProvider {
 
-    @Value("${jwt.secret}")
+    @Value("${d115ee8593ada12505e08aa2b388be1edc83a624208d363b3d385110bdbdf6f9}")
     private String secret;
 
     public static final String TOKEN_CANNOT_BE_VERIFIED = "Token cannot be verified";
