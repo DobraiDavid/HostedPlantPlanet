@@ -31,7 +31,7 @@ const Login = () => {
 
   return (
     <div className="p-6 max-w-md mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Login</h1>
+      <h1 className="text-2xl font-bold mb-4">Bejelentkezés</h1>
       <form onSubmit={handleLogin} className="space-y-4">
         <input
           type="email"
