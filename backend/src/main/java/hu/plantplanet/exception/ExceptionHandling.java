@@ -44,4 +44,8 @@ public class ExceptionHandling implements ErrorController {
         return createHttpResponse(UNAUTHORIZED, exception.getMessage());
     }
 
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity<String> handleUserAlreadyExists(UserAlreadyExistsException ex) {
+        return new ResponseEntity<>("Email is already registered. Please try another one.", HttpStatus.BAD_REQUEST);
+    }
 }

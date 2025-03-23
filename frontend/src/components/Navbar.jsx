@@ -1,39 +1,86 @@
+import React, { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { useCart } from "../context/CartContext";
-import React from "react";
+import { AppBar, Toolbar, Typography, Button, IconButton, Badge, Drawer, List, ListItem, ListItemText, Box } from "@mui/material";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import MenuIcon from "@mui/icons-material/Menu";
+import logo from "../assets/logo.jpg";
 
 const Navbar = () => {
   const { cart } = useCart();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
+
+  const navLinks = [
+    { title: "Register", path: "/register" },
+    { title: "Login", path: "/login" },
+  ];
+
+  const drawer = (
+    <Box sx={{ width: 250 }} onClick={handleDrawerToggle}>
+      <List>
+        {navLinks.map((item) => (
+          <ListItem button component={Link} to={item.path} key={item.title}>
+            <ListItemText primary={item.title} />
+          </ListItem>
+        ))}
+      </List>
+    </Box>
+  );
 
   return (
-    <nav className="bg-green-600 text-white p-4 flex justify-between items-center">
-      <div className="lg:flex hidden space-x-4">
-        <NavLink
-          to="/"
-          className={({ isActive }) => isActive ? "text-green-200" : "hover:text-green-300 transition duration-200"}
+    <AppBar position="static" sx={{ backgroundColor: "#2e7d32" }}>
+      <Toolbar>
+        <IconButton
+          color="inherit"
+          edge="start"
+          sx={{ display: { sm: "none" } }}
+          onClick={handleDrawerToggle}
         >
-          Home
-        </NavLink>
-        <NavLink
-          to="/cart"
-          className={({ isActive }) => isActive ? "text-green-200" : "hover:text-green-300 transition duration-200"}
-        >
-          Cart ({cart.length})
-        </NavLink>
-        <NavLink
-          to="/register"
-          className={({ isActive }) => isActive ? "text-green-200" : "hover:text-green-300 transition duration-200"}
-        >
-          Register
-        </NavLink>
-        <NavLink
-          to="/login"
-          className={({ isActive }) => isActive ? "text-green-200" : "hover:text-green-300 transition duration-200"}
-        >
-          Login
-        </NavLink>
-      </div>
-    </nav>
+          <MenuIcon />
+        </IconButton>
+        
+        <Box sx={{ display: "flex", alignItems: "center", flexGrow: 1 }}>
+          <img src={logo} alt="PlantPlanet Logo" style={{ height: 40, marginRight: 10 }} />
+          <Typography
+            variant="h6"
+            sx={{ fontWeight: "bold", cursor: "pointer", textDecoration: "none"}}
+            component={Link}
+            to="/"
+            color="inherit"
+            underline="none"
+          >
+            PlantPlanet
+          </Typography>
+        </Box>
+        
+        <Box sx={{ display: { xs: "none", sm: "block" } }}>
+          {navLinks.map((item) => (
+            <Button
+              key={item.title}
+              component={NavLink}
+              to={item.path}
+              sx={{ color: "white", mx: 1, "&.active": { textDecoration: "underline" } }}
+            >
+              {item.title}
+            </Button>
+          ))}
+        </Box>
+        
+        <IconButton component={Link} to="/cart" color="inherit">
+          <Badge badgeContent={cart.length} color="error">
+            <ShoppingCartIcon />
+          </Badge>
+        </IconButton>
+      </Toolbar>
+    
+      <Drawer anchor="left" open={mobileOpen} onClose={handleDrawerToggle}>
+        {drawer}
+      </Drawer>
+    </AppBar>
   );
 };
 

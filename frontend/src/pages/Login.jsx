@@ -1,65 +1,84 @@
-import React,{ useState } from "react";
+import React, { useState } from "react";
 import { login } from "../api/api";
 import { useNavigate } from "react-router-dom";
+import { TextField, Button, Typography, Box, Alert } from "@mui/material";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false); 
-  const [error, setError] = useState(null); 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setLoading(true);  
-    setError(null); 
+    setLoading(true);
+    setError(null);
 
     try {
       const user = await login(email, password);
       if (user) {
-        alert("Login successful!");
-        navigate("/");  
+        alert("Sikeres bejelentkezés!");
+        navigate("/");
       } else {
-        setError("Login failed. Check your credentials.");
+        setError("Hibás felhasználónév vagy jelszó.");
       }
     } catch (err) {
-      setError("An error occurred. Please try again later.");
+      setError("Hiba történt. Kérjük próbálja meg később.");
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
   };
 
   return (
-    <div className="p-6 max-w-md mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Bejelentkezés</h1>
-      <form onSubmit={handleLogin} className="space-y-4">
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full px-4 py-2 border rounded"
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full px-4 py-2 border rounded"
-          required
-        />
-        <button
-          type="submit"
-          className="w-full bg-green-600 text-white px-4 py-2 rounded disabled:opacity-50"
-          disabled={loading} 
-        >
-          {loading ? "Logging in..." : "Login"}
-        </button>
-      </form>
+    <Box className="min-h-screen flex items-center justify-center bg-gray-100">
+      <Box className="bg-white shadow-lg rounded-lg p-8 w-full max-w-sm">
+        <Typography variant="h4" align="center" color="green" mb={4}>
+          Bejelentkezés
+        </Typography>
 
-      {error && <p className="text-red-500 mt-4">{error}</p>} 
-    </div>
+        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+
+        <form onSubmit={handleLogin} className="space-y-4">
+          <TextField
+            fullWidth
+            label="Email"
+            variant="outlined"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            sx={{ mb: 2 }}
+          />
+          
+          <TextField
+            fullWidth
+            label="Jelszó"
+            variant="outlined"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            sx={{ mb: 2 }}
+          />
+          
+          <Button
+            fullWidth
+            type="submit"
+            variant="contained"
+            color="success"
+            disabled={loading}
+            sx={{ padding: "12px", fontSize: "16px" }}
+          >
+            {loading ? "Bejelentkezés..." : "Bejelentkezés"}
+          </Button>
+        </form>
+
+        <Typography variant="body2" align="center" mt={2}>
+          Még nincs fiókod? <a href="/register" className="text-green-600 font-semibold">Regisztrálj itt!</a>
+        </Typography>
+      </Box>
+    </Box>
   );
 };
 

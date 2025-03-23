@@ -3,10 +3,9 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import SubscriptionPage from "./pages/SubscriptionPage";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
-import ProtectedRoute from "./components/ProtectedRoute"; 
+import PlantDetail from './pages/PlantDetail';
 import "./App.css";
 
 function App() {
@@ -18,14 +17,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route
-            path="/subscription"
-            element={
-              <ProtectedRoute>
-                <SubscriptionPage />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/plant/:id" element={<PlantDetail />} />
         </Routes>
         <Footer />
       </div>

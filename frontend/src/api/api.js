@@ -72,7 +72,23 @@ export const register = async (name, email, password) => {
     const response = await axios.post(`${API_BASE_URL}/user/register`, { name, email, password });
     return response.data;
   } catch (error) {
-    console.error("Registration error:", error);
-    throw error;  // Rethrow error to be caught in the Register component
+    if (error.response) {
+      throw error; 
+    } else {
+      throw new Error("Network error or server unreachable");
+    }
+  }
+};
+
+// Get plant details
+export const getPlantDetails = async (id) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/plant/${id}`);  
+    if (!response.ok) {
+      throw new Error('Failed to fetch plant details');
+    }
+    return await response.json();
+  } catch (error) {
+    throw error;
   }
 };

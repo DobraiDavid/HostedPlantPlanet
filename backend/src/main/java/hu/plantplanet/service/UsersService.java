@@ -2,17 +2,21 @@ package hu.plantplanet.service;
 
 import hu.plantplanet.auth.PermissionCollector;
 import hu.plantplanet.dto.user.RegisterRequest;
+import hu.plantplanet.exception.UserAlreadyExistsException;
 import hu.plantplanet.exception.UserNotFoundException;
 import hu.plantplanet.model.Users;
 import hu.plantplanet.repository.UsersRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.util.List;
 import java.util.Optional;
@@ -52,11 +56,10 @@ public class UsersService implements UserDetailsService {
     }
 
     public Users registerUser(RegisterRequest registerRequest) {
-        Optional<Users> existingUser = Optional.ofNullable(userRepository.findByEmail(registerRequest.getEmail()));
-        if (existingUser.isPresent()) {
-            throw new RuntimeException("Email is already registered");
+        Users existingUser = userRepository.findByEmail(registerRequest.getEmail());
+        if (existingUser != null) {
+            throw new UserAlreadyExistsException("Email is already registered");
         }
-
         String hashedPassword = passwordEncoder.encode(registerRequest.getPassword());
         Users newUser = new Users(registerRequest.getName(), registerRequest.getEmail(), hashedPassword);
         return userRepository.save(newUser);
