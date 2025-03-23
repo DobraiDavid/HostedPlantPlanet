@@ -1,5 +1,6 @@
 package hu.plantplanet.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -10,11 +11,12 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Plants {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer plantId;
+    private Integer id;
 
     @Column(nullable = false, length = 100)
     private String name;
@@ -28,10 +30,4 @@ public class Plants {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
-    public Plants(String name, String imageUrl, String description, BigDecimal price) {
-        this.name = name;
-        this.imageUrl = imageUrl;
-        this.description = description;
-        this.price = price;
-    }
 }
