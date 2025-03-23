@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import { getCartItems, addToCart, removeFromCart } from "../api/api";
 
 const CartContext = createContext();

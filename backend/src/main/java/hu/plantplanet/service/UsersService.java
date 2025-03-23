@@ -28,21 +28,23 @@ public class UsersService implements UserDetailsService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public static final String NO_USER_FOUND_BY_USERNAME = "No user found by username: ";
+    public static final String NO_USER_FOUND_BY_EMAIL = "No user found by email: ";
 
+    // Modify the method to load user by email
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Users user = userRepository.findUserByName(username);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        Users user = userRepository.findByEmail(email);  // Changed to find by email
         if (user == null) {
-            throw new UserNotFoundException(NO_USER_FOUND_BY_USERNAME + username);
+            throw new UserNotFoundException(NO_USER_FOUND_BY_EMAIL + email);
         } else {
             PermissionCollector permissionCollector = new PermissionCollector(user);
             return permissionCollector;
         }
     }
 
-    public Users findUserByUsername(String username) {
-        return userRepository.findUserByName(username);
+    // Modify the method for finding user by email
+    public Users findUserByEmail(String email) {
+        return userRepository.findByEmail(email);  // Adjusted to search by email
     }
 
     public List<String> findPermissionsByUser(Integer userId) {
@@ -50,7 +52,7 @@ public class UsersService implements UserDetailsService {
     }
 
     public Users registerUser(RegisterRequest registerRequest) {
-        Optional<Users> existingUser = userRepository.findByEmail(registerRequest.getEmail());
+        Optional<Users> existingUser = Optional.ofNullable(userRepository.findByEmail(registerRequest.getEmail()));
         if (existingUser.isPresent()) {
             throw new RuntimeException("Email is already registered");
         }
@@ -59,5 +61,4 @@ public class UsersService implements UserDetailsService {
         Users newUser = new Users(registerRequest.getName(), registerRequest.getEmail(), hashedPassword);
         return userRepository.save(newUser);
     }
-
 }

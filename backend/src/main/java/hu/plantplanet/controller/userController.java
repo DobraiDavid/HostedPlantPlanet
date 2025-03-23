@@ -16,10 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/user")
@@ -40,8 +37,8 @@ public class userController {
     @PostMapping("/login")
     @Operation(summary = "Log in User")
     public ResponseEntity<ReadUser> login(@RequestBody LoginRequest loginRequest) {
-        authenticate(loginRequest.getUsername(), loginRequest.getPassword());
-        Users user = userService.findUserByUsername(loginRequest.getUsername());
+        authenticate(loginRequest.getEmail(), loginRequest.getPassword());
+        Users user = userService.findUserByEmail(loginRequest.getEmail());
         PermissionCollector collector = new PermissionCollector(user);
         HttpHeaders jwtHeader = getJWTHeader(collector);
         ReadUser readUser = UserConverter.convertModelToRead(user);
@@ -62,7 +59,7 @@ public class userController {
         return jwtHeader;
     }
 
-    private void authenticate(String username, String password) {
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+    private void authenticate(String email, String password) {
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
     }
 }

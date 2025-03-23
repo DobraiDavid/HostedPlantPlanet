@@ -28,7 +28,7 @@ public class plantController {
     }
 
     // Endpoint to get a specific plant by ID
-    @GetMapping("/plants/{id}")
+    @GetMapping("/plant/{id}")
     @Operation(summary = "List the details of the selected plant")
     public ResponseEntity<Plants> getPlantById(@PathVariable int id) {
         Optional<Plants> plant = plantsService.getPlantById(id);
