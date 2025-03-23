@@ -9,18 +9,6 @@ body {
     min-height: 100vh;
   }
   
-  .app-container {
-    width: 100%;
-    max-width: 1200px;
-    padding: 20px;
-    background: white;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-  }
-  
   .navbar {
     background-color: #4CAF50;
     padding: 15px;
