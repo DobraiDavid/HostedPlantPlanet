@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { register } from '../api/api.js';  
+import { register, login } from '../api/api.js';  
 import { useNavigate } from "react-router-dom";
 import { TextField, Button, Typography, Box, Alert } from "@mui/material";
+import { useUser } from '../context/UserContext'; 
 
 const Register = () => {
   const [name, setName] = useState("");  
@@ -9,7 +10,8 @@ const Register = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(""); 
   const [loading, setLoading] = useState(false); 
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
+  const { login: loginUser } = useUser();  
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -17,10 +19,19 @@ const Register = () => {
     setError("");  
 
     try {
-      const response = await register(name, email, password); 
+      const response = await register(name, email, password);
+      
       if (response.id) {
-        alert("Sikeres regisztráció!");
-        navigate("/");  
+        const loginResponse = await login(email, password); 
+        
+        if (loginResponse && loginResponse.user) {
+          loginUser(loginResponse.user);  
+
+          alert("Sikeres regisztráció és bejelentkezés!");
+          navigate("/");  
+        } else {
+          setError("Hiba történt a bejelentkezés során.");
+        }
       } else {
         setError("Hiba történt a regisztráció során.");
       }

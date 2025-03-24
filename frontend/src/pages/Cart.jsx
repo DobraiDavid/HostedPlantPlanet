@@ -11,33 +11,39 @@ import {
 } from "../api/api";
 
 const Cart = () => {
-  const { userId } = useUser(); // Get userId from UserContext
+  const { user } = useUser();
   const [cartItems, setCartItems] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  // Watch for user change, which includes login and logout events
   useEffect(() => {
-    if (!userId) return; // If there's no userId, don't fetch cart data
+    if (!user) {
+      // If user is logged out, reset cart and total price
+      setCartItems([]);
+      setTotalPrice(0);
+      setLoading(false);
+      return;
+    }
 
     const fetchCartData = async () => {
       try {
-        const items = await getCartItems(userId);
+        setLoading(true);
+        const items = await getCartItems(user.id);
 
-        // If no items are found, set an empty array to prevent errors
         if (!items) {
           setCartItems([]);
         } else {
           setCartItems(items);
         }
 
-        // Only fetch total price if there are items in the cart
         if (items && items.length > 0) {
-          const price = await getTotalPrice(userId);
+          const price = await getTotalPrice(user.id);
           setTotalPrice(price);
         } else {
-          setTotalPrice(0); // Set total price to 0 if the cart is empty
+          setTotalPrice(0);
         }
       } catch (err) {
         setError("Hiba történt a kosár betöltése során.");
@@ -47,13 +53,26 @@ const Cart = () => {
     };
 
     fetchCartData();
-  }, [userId]);
+  }, [user]); 
 
   // Remove an item from the cart
   const handleRemoveItem = async (itemId) => {
     try {
       await removeFromCart(itemId);
-      setCartItems(cartItems.filter((item) => item.id !== itemId));
+      
+      // Find the item to subtract its price before removing
+      const removedItem = cartItems.find(item => item.id === itemId);
+      
+      // Remove the item from cart
+      const updatedCartItems = cartItems.filter((item) => item.id !== itemId);
+      setCartItems(updatedCartItems);
+  
+      // Recalculate total price immediately
+      const newTotalPrice = updatedCartItems.length > 0 
+        ? await getTotalPrice(user.id) 
+        : 0;
+      
+      setTotalPrice(newTotalPrice);
     } catch (err) {
       setError("Hiba történt az elem eltávolítása során.");
     }
@@ -61,27 +80,24 @@ const Cart = () => {
 
   // Update the quantity of an item
   const handleUpdateQuantity = async (itemId, quantity) => {
-    if (quantity < 1) return; // Don't allow quantity to go below 1
-  
+    if (quantity < 1) return;
+
     try {
-      // Call the updateCartItem API to update the quantity
-      await updateCartItem(userId, itemId, quantity);  // Update cart item with userId, itemId, and new quantity
-  
+      await updateCartItem(user.id, itemId, quantity);
+
       setCartItems((prevItems) =>
         prevItems.map((item) =>
           item.id === itemId ? { ...item, amount: quantity } : item
         )
       );
-  
-      // Recalculate total price after updating the quantity
-      const updatedPrice = await getTotalPrice(userId);
+
+      const updatedPrice = await getTotalPrice(user.id);
       setTotalPrice(updatedPrice);
     } catch (err) {
       setError("Hiba történt az elem mennyiségének frissítése során.");
     }
   };
 
-  // Proceed to checkout
   const handleCheckout = () => {
     navigate("/checkout");
   };

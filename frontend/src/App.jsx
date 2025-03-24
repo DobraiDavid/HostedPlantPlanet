@@ -9,14 +9,17 @@ import PlantDetail from './pages/PlantDetail';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import { UserProvider } from "./context/UserContext";
+import { CartProvider } from "./context/CartContext";
 import "./App.css";
 
 function App() {
   return (
-    <UserProvider> {/* Wrap the whole app with UserProvider */}
+    <UserProvider> 
+    <CartProvider>
       <Router>
         <div className="app-container">
-          <Navbar />
+        <Navbar />
+        <main className="app-main">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
@@ -25,9 +28,11 @@ function App() {
             <Route path="/cart/view" element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
           </Routes>
-          <Footer />
+        </main>
+        <Footer />
         </div>
       </Router>
+    </CartProvider>
     </UserProvider>
   );
 }

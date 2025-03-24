@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { addToCart, getPlantDetails, getRandomPlants } from '../api/api'; // Import getRandomPlants function
+import { addToCart, getPlantDetails, getRandomPlants } from '../api/api'; 
 import { Button, TextField, Snackbar } from '@mui/material'; 
 import { useUser } from "../context/UserContext";  
-import { Link } from 'react-router-dom'; // Import Link
+import { Link, useNavigate } from 'react-router-dom'; 
 
 const PlantDetail = () => {
   const { id } = useParams(); 
@@ -13,8 +13,8 @@ const PlantDetail = () => {
   const [error, setError] = useState(null);
   const [amount, setAmount] = useState(1);
   const [openSnackbar, setOpenSnackbar] = useState(false);
-
-  const { userId } = useUser(); 
+  const navigate = useNavigate();
+  const { user } = useUser(); 
 
   useEffect(() => {
     const fetchPlant = async () => {
@@ -23,7 +23,7 @@ const PlantDetail = () => {
         setPlant(data);
 
         // Fetch random plants (excluding the current one)
-        const relatedData = await getRandomPlants(2, id); // Get 2 random plants excluding current
+        const relatedData = await getRandomPlants(3, id); 
         setRelatedPlants(relatedData);
       } catch (error) {
         console.error('Error fetching plant details:', error);
@@ -37,7 +37,8 @@ const PlantDetail = () => {
   }, [id]);
 
   const handleAddToCart = async () => {
-    if (!userId) {
+    if (!user) {
+      navigate('/login')
       console.error("User not logged in");
       setError("You need to be logged in to add to cart");
       return;
@@ -45,7 +46,7 @@ const PlantDetail = () => {
     const cartItemId = null; 
 
     try {
-      await addToCart(userId, plant.id, amount, cartItemId);
+      await addToCart(user.id, plant.id, amount, cartItemId);
       setOpenSnackbar(true); 
     } catch (error) {
       console.error('Error adding item to cart:', error);

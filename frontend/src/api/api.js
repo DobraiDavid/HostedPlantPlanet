@@ -4,8 +4,7 @@ const API_BASE_URL = "http://localhost:8080"; // Change if needed
 
 // Helper function to get the token from localStorage
 const getAuthToken = () => {
-  console.log(localStorage.getItem('authToken'))
-  return localStorage.getItem('authToken');  // Make sure the token is stored in localStorage after login
+  return localStorage.getItem('authToken');  
 };
 
 // Set the token in the headers globally for axios
@@ -44,17 +43,24 @@ export const getRandomPlants = async (count = 3, excludeId) => {
     }
 
     // Ensure excludeId is properly compared (convert to number if needed)
-    plants = plants.filter((plant) => plant.id !== parseInt(excludeId));
+    const filteredPlants = plants.filter((plant) => 
+      plant.id !== parseInt(excludeId)
+    );
 
     // Handle case where there aren't enough plants
-    if (plants.length < count) {
-      return plants; // Return all available if less than requested
+    if (filteredPlants.length <= count) {
+      return filteredPlants; 
     }
 
-    // Shuffle array randomly
-    const shuffled = plants.sort(() => Math.random() - 0.5);
+    // Use Fisher-Yates (Knuth) shuffle for randomization
+    const shuffled = [...filteredPlants];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
 
-    return shuffled.slice(0, count); // Return exactly 3 plants
+    // Return exactly 'count' number of plants
+    return shuffled.slice(0, count);
   } catch (error) {
     console.error("Error fetching random plants:", error);
     return [];
@@ -80,7 +86,7 @@ export const updateCartItem = async (userId, itemId, quantity) => {
     await axios.put(`${API_BASE_URL}/cart/update`, null, {
       params: {
         userId,
-        plantId: itemId, // Assuming the plantId is same as itemId
+        plantId: itemId, 
         amount: quantity,
       },
     });
@@ -101,7 +107,7 @@ export const addToCart = async (userId, plantId, amount, cartItemId) => {
         cartItemId,
       },
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('authToken')}`,  // Add the token in the Authorization header
+          Authorization: `Bearer ${localStorage.getItem('authToken')}`,  
         },
     });
     return response.data;
@@ -125,7 +131,6 @@ export const removeFromCart = async (cartItemId) => {
 // Get the total price of the user's cart
 export const getTotalPrice = async (userId) => {
   try {
-    // This is how you pass query parameters with axios
     const response = await axios.get(`${API_BASE_URL}/cart/total`, {
       params: { userId }
     });
@@ -142,15 +147,11 @@ export const login = async (email, password) => {
   try {
     const response = await axios.post(`${API_BASE_URL}/user/login`, { email, password });
 
-    console.log("Login response:", response.data); // Debugging output
-    console.log("User id:", response.data.user); // Debugging output
-
     if (response.data.token && response.data.user) {
       localStorage.setItem('authToken', response.data.token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
 
-      // Instead of using useUser() here, just return the response
-      return response.data;  // Return the whole response data, including user and token
+      return response.data;  
     }
 
   } catch (error) {

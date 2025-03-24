@@ -1,24 +1,24 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect} from "react";
 
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
-  const [userId, setUserId] = useState(null);
+  // Store user object
+  const [user, setUser] = useState(null);
 
-  // Function to set userId
-  const login = (id) => {
-    console.log('Setting userId:', id);
-    setUserId(id);
+  // Function to log in the user and set the user object
+  const login = (userData) => {
+    setUser(userData); 
   };
 
   return (
-    <UserContext.Provider value={{ userId, login }}>
+    <UserContext.Provider value={{ user, login }}>
       {children}
     </UserContext.Provider>
   );
 };
 
-// Named export of the useUser hook
+// Custom hook to access user context
 export const useUser = () => {
   return useContext(UserContext);
 };

@@ -1,65 +1,91 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { getCartItems, addToCart, removeFromCart, getTotalPrice } from "../api/api";
+import { useUser } from "../context/UserContext";
 
-// Creating the context for the cart
 const CartContext = createContext();
 
-// CartProvider component that wraps the app and provides cart-related state and functions
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
-  const userId = 1; // Set this dynamically based on the logged-in user
+  const { user } = useUser() || {};
 
-  // Fetch cart items from the backend when the component mounts
-  useEffect(() => {
-    const fetchCart = async () => {
-      try {
-        const items = await getCartItems(userId);
-        setCart(items);
-        const price = await getTotalPrice(userId);
-        setTotalPrice(price);
-      } catch (error) {
-        console.error("Error occurred while loading cart data", error);
-      }
-    };
-    fetchCart();
-  }, [userId]); // Rerun when userId changes
+  // Function to refresh cart data
+  const refreshCart = async () => {
+    if (!user || !user.id) {
+      setCart([]);
+      return;
+    }
 
-  // Add or update an item in the cart
-  const addItem = async (product, quantity = 1) => {
     try {
-      // Optimistically update the cart UI
-      setCart((prevCart) => [
-        ...prevCart,
-        { ...product, quantity }
-      ]);
-
-      // Call the API to add the item to the cart
-      const response = await addToCart(userId, product.id, quantity);
-      if (!response) {
-        throw new Error("Error occurred while adding the product to the cart");
-      }
+      const items = await getCartItems(user.id);
+      setCart(items || []);
+      
+      const price = await getTotalPrice(user.id);
+      setTotalPrice(price || 0);
     } catch (error) {
-      console.error(error);
-      // Rollback cart UI update if API fails
-      setCart((prevCart) => prevCart.filter((item) => item.id !== product.id));
+      console.error("Error occurred while loading cart data", error);
+      setCart([]);
+    }
+  };
+
+  // Initial load and when user changes
+  useEffect(() => {
+    refreshCart();
+  }, [user]);
+
+  // Add item to cart
+  const addItem = async (product, quantity = 1) => {
+    if (!user || !user.id) {
+      alert("Please log in to add items to cart");
+      return;
+    }
+    
+    try {
+      await addToCart(user.id, product.id, quantity);
+      // Manually update cart immediately for better UX
+      setCart(prevCart => [...prevCart, { ...product, quantity }]);
+      // Then refresh from server
+      refreshCart();
+    } catch (error) {
+      console.error("Error adding item to cart:", error);
       alert("Error occurred while adding the product to the cart.");
     }
   };
 
-  // Remove an item from the cart
+  // Remove item from cart
   const removeItem = async (itemId) => {
+    if (!user || !user.id) return;
+    
     try {
       await removeFromCart(itemId);
-      setCart((prevCart) => prevCart.filter((item) => item.id !== itemId));
+      // Manually update cart immediately
+      setCart(prevCart => prevCart.filter(item => item.id !== itemId));
+      // Then refresh from server
+      refreshCart();
     } catch (error) {
-      console.error("Error occurred while removing the product from the cart", error);
+      console.error("Error removing item from cart:", error);
       alert("Error occurred while removing the product from the cart.");
     }
   };
 
+  // Clear cart
+  const clearCart = () => {
+    setCart([]);
+    setTotalPrice(0);
+  };
+
+  const contextValue = {
+    cart, 
+    addItem, 
+    removeItem, 
+    totalPrice, 
+    refreshCart,
+    clearCart,
+    cartCount: Array.isArray(cart) ? cart.length : 0
+  };
+
   return (
-    <CartContext.Provider value={{ cart, addItem, removeItem, totalPrice }}>
+    <CartContext.Provider value={contextValue}>
       {children}
     </CartContext.Provider>
   );

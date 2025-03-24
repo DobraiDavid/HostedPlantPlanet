@@ -10,7 +10,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-  const { login } = useUser();  // Get the login function from UserContext
+  const { login } = useUser();  
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -18,19 +18,18 @@ const Login = () => {
     setError(null);
 
     try {
-      const response = await loginApi(email, password); // Call your login API to authenticate
-      console.log("Login response:", response); // Debugging: log the entire response
+      const response = await loginApi(email, password);
 
       if (response && response.user) {
         // After successful login, call the login function from UserContext
-        login(response.user.id);  // Pass the user ID to the context
-        alert("Sikeres bejelentkezés!"); // Successful login alert
-        navigate("/"); // Redirect to homepage or wherever you want
+        login(response.user);
+        alert("Sikeres bejelentkezés!"); 
+        navigate("/"); 
       } else {
         setError("Hibás felhasználónév vagy jelszó.");
       }
     } catch (err) {
-      console.error("Login error:", err); // Log the error for debugging
+      console.error("Login error:", err); 
       setError("Hiba történt. Kérjük próbálja meg később.");
     } finally {
       setLoading(false);
