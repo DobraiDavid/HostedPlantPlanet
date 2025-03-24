@@ -19,6 +19,7 @@ public class cartController {
     private CartService cartService;
 
     // Add or update an item in the cart
+    @CrossOrigin(origins = "http://localhost:5173")
     @PostMapping("/add")
     public ResponseEntity<String> addOrUpdateCartItem(@RequestParam Integer userId, @RequestParam Integer plantId, @RequestParam int amount, @RequestParam(required = false) Integer cartItemId) {
         cartService.addOrUpdateCartItem(userId, plantId, amount, cartItemId);
@@ -26,6 +27,7 @@ public class cartController {
     }
 
     // Remove an item from the cart by cart item ID
+    @CrossOrigin(origins = "http://localhost:5173")
     @DeleteMapping("/remove/{cartItemId}")
     public ResponseEntity<String> removeCartItem(@PathVariable Integer cartItemId) {
         cartService.removeCartItem(cartItemId);
@@ -41,6 +43,7 @@ public class cartController {
     }
 
     // Get the total price of the user's cart
+    @CrossOrigin(origins = "http://localhost:5173")
     @GetMapping("/total")
     public ResponseEntity<BigDecimal> getTotalPrice(@RequestParam Integer userId) {
         BigDecimal totalPrice = cartService.calculateTotalPrice(userId);

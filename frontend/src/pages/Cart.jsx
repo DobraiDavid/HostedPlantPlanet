@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Box, Typography, Button, Alert } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "../context/UserContext";
 import {
   getCartItems,
   removeFromCart,
@@ -8,21 +9,35 @@ import {
   getTotalPrice,
 } from "../api/api";
 
-const Cart = ({ userId }) => {
+const Cart = () => {
+  const { userId } = useUser(); // Get userId from UserContext
   const [cartItems, setCartItems] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Fetch cart items and total price when the component mounts
   useEffect(() => {
+    if (!userId) return; // If there's no userId, don't fetch cart data
+
     const fetchCartData = async () => {
       try {
         const items = await getCartItems(userId);
-        setCartItems(items);
-        const price = await getTotalPrice(userId);
-        setTotalPrice(price);
+
+        // If no items are found, set an empty array to prevent errors
+        if (!items) {
+          setCartItems([]);
+        } else {
+          setCartItems(items);
+        }
+
+        // Only fetch total price if there are items in the cart
+        if (items && items.length > 0) {
+          const price = await getTotalPrice(userId);
+          setTotalPrice(price);
+        } else {
+          setTotalPrice(0); // Set total price to 0 if the cart is empty
+        }
       } catch (err) {
         setError("Hiba történt a kosár betöltése során.");
       } finally {
@@ -47,11 +62,15 @@ const Cart = ({ userId }) => {
   const handleUpdateQuantity = async (itemId, quantity) => {
     try {
       await addToCart(userId, itemId, quantity);
-      setCartItems(
-        cartItems.map((item) =>
+      setCartItems((prevItems) =>
+        prevItems.map((item) =>
           item.id === itemId ? { ...item, amount: quantity } : item
         )
       );
+
+      // Recalculate total price after updating the quantity
+      const updatedPrice = await getTotalPrice(userId);
+      setTotalPrice(updatedPrice);
     } catch (err) {
       setError("Hiba történt az elem mennyiségének frissítése során.");
     }
@@ -80,8 +99,8 @@ const Cart = ({ userId }) => {
             ) : (
               cartItems.map((item) => (
                 <Box key={item.id} sx={{ borderBottom: "1px solid #ddd", paddingBottom: 2, marginBottom: 2 }}>
-                  <Typography variant="h6">{item.name}</Typography>
-                  <Typography variant="body2">Ár: {item.price} Ft</Typography>
+                  <Typography variant="h6">{item.plant.name}</Typography>
+                  <Typography variant="body2">Ár: $ {item.price} </Typography>
                   <div style={{ display: "flex", alignItems: "center", marginTop: 8 }}>
                     <Button
                       variant="outlined"
@@ -119,7 +138,7 @@ const Cart = ({ userId }) => {
             {cartItems.length > 0 && (
               <Box sx={{ marginTop: 4 }}>
                 <Typography variant="h6" align="right" sx={{ marginBottom: 2 }}>
-                  Összesen: {totalPrice} Ft
+                  Összesen: $ {totalPrice} 
                 </Typography>
                 <Button
                   fullWidth

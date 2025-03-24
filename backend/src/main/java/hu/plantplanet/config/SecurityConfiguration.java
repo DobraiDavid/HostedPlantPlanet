@@ -42,7 +42,7 @@ public class SecurityConfiguration {
             "/swagger-ui/**", "/swagger-resources/**",
             "/v2/api-docs", "/v3/api-docs", "/v3/api-docs/**",
             "/plants", "/plant/**",
-            "/cart/view/**"
+            "/cart/view/**", "cart/**", "cart/add/**"
     };
     @Autowired
     public SecurityConfiguration(JwtAuthorizationFilter jwtAuthorizationFilter,

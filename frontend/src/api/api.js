@@ -2,6 +2,14 @@ import axios from "axios";
 
 const API_BASE_URL = "http://localhost:8080"; // Change if needed
 
+// Helper function to get the token from localStorage
+const getAuthToken = () => {
+  return localStorage.getItem('authToken');  // Make sure the token is stored in localStorage after login
+};
+
+// Set the token in the headers globally for axios
+axios.defaults.headers.common['Authorization'] = `${getAuthToken()}`;
+
 // Fetch all products
 export const getPlants = async () => {
   try {
@@ -69,8 +77,9 @@ export const removeFromCart = async (cartItemId) => {
 // Get the total price of the user's cart
 export const getTotalPrice = async (userId) => {
   try {
+    // This is how you pass query parameters with axios
     const response = await axios.get(`${API_BASE_URL}/cart/total`, {
-      params: { userId },
+      params: { userId }
     });
     return response.data;
   } catch (error) {
@@ -79,10 +88,17 @@ export const getTotalPrice = async (userId) => {
   }
 };
 
+
 // User login
 export const login = async (email, password) => {
   try {
     const response = await axios.post(`${API_BASE_URL}/user/login`, { email, password });
+    // Save the token in localStorage after login
+    if (response.data.token) {
+      localStorage.setItem('authToken', response.data.token);
+      // Optionally, you can set the token in axios headers here too
+      axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+    }
     return response.data;
   } catch (error) {
     console.error("Login error:", error);
