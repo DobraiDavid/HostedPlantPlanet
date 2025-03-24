@@ -46,35 +46,35 @@ const Cart = () => {
           setTotalPrice(0);
         }
       } catch (err) {
-        setError("Hiba történt a kosár betöltése során.");
+        setError("An error occurred while loading the cart.");
       } finally {
         setLoading(false);
       }
     };
 
     fetchCartData();
-  }, [user]); 
+  }, [user]);
 
   // Remove an item from the cart
   const handleRemoveItem = async (itemId) => {
     try {
       await removeFromCart(itemId);
-      
+
       // Find the item to subtract its price before removing
       const removedItem = cartItems.find(item => item.id === itemId);
-      
+
       // Remove the item from cart
       const updatedCartItems = cartItems.filter((item) => item.id !== itemId);
       setCartItems(updatedCartItems);
-  
+
       // Recalculate total price immediately
-      const newTotalPrice = updatedCartItems.length > 0 
-        ? await getTotalPrice(user.id) 
+      const newTotalPrice = updatedCartItems.length > 0
+        ? await getTotalPrice(user.id)
         : 0;
-      
+
       setTotalPrice(newTotalPrice);
     } catch (err) {
-      setError("Hiba történt az elem eltávolítása során.");
+      setError("An error occurred while removing the item.");
     }
   };
 
@@ -94,7 +94,7 @@ const Cart = () => {
       const updatedPrice = await getTotalPrice(user.id);
       setTotalPrice(updatedPrice);
     } catch (err) {
-      setError("Hiba történt az elem mennyiségének frissítése során.");
+      setError("An error occurred while updating the item quantity.");
     }
   };
 
@@ -103,25 +103,42 @@ const Cart = () => {
   };
 
   return (
-    <Box className="min-h-screen flex items-center justify-center bg-gray-100">
-      <Box className="bg-white shadow-lg rounded-lg p-8 w-full max-w-lg">
-        <Typography variant="h4" align="center" color="green" mb={4}>
-          Kosár
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "100vh",
+        backgroundColor: "#f4f4f4",
+      }}
+    >
+      <Box
+        sx={{
+          backgroundColor: "white",
+          boxShadow: 3,
+          borderRadius: 3,
+          padding: 4,
+          width: "100%",
+          maxWidth: "600px",  // Set a max-width to ensure it looks good on larger screens
+        }}
+      >
+        <Typography variant="h4" align="center" mb={4}>
+          Cart
         </Typography>
 
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
         {loading ? (
-          <Typography variant="body1" align="center">Betöltés...</Typography>
+          <Typography variant="body1" align="center">Loading...</Typography>
         ) : (
           <div>
             {cartItems.length === 0 ? (
-              <Typography variant="h6" align="center">A kosarad üres.</Typography>
+              <Typography variant="h6" align="center">Cart is empty.</Typography>
             ) : (
               cartItems.map((item) => (
                 <Box key={item.id} sx={{ borderBottom: "1px solid #ddd", paddingBottom: 2, marginBottom: 2 }}>
                   <Typography variant="h6">{item.plant.name}</Typography>
-                  <Typography variant="body2">Ár: $ {item.price} </Typography>
+                  <Typography variant="body2">Price: $ {item.price} </Typography>
                   <div style={{ display: "flex", alignItems: "center", marginTop: 8 }}>
                     <Button
                       variant="outlined"
@@ -129,7 +146,7 @@ const Cart = () => {
                       onClick={() => handleRemoveItem(item.id)}
                       sx={{ marginRight: 2 }}
                     >
-                      Eltávolítás
+                      Remove
                     </Button>
                     <div style={{ display: "flex", alignItems: "center" }}>
                       <Button
@@ -141,7 +158,7 @@ const Cart = () => {
                         -
                       </Button>
                       <Typography variant="body1" sx={{ margin: "0 8px" }}>
-                        Mennyiség: {item.amount}
+                        Quantity: {item.amount}
                       </Typography>
                       <Button
                         variant="outlined"
@@ -159,7 +176,7 @@ const Cart = () => {
             {cartItems.length > 0 && (
               <Box sx={{ marginTop: 4 }}>
                 <Typography variant="h6" align="right" sx={{ marginBottom: 2 }}>
-                  Összesen: $ {totalPrice} 
+                  Total: $ {totalPrice}
                 </Typography>
                 <Button
                   fullWidth
@@ -168,7 +185,7 @@ const Cart = () => {
                   onClick={handleCheckout}
                   sx={{ padding: "12px", fontSize: "16px" }}
                 >
-                  Fizetés
+                  Payment
                 </Button>
               </Box>
             )}

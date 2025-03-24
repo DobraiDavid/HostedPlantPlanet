@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { login as loginApi } from "../api/api";  // Assuming you have an API function to authenticate
+import { login as loginApi } from "../api/api"; // Assuming you have an API function to authenticate
 import { useNavigate } from "react-router-dom";
 import { TextField, Button, Typography, Box, Alert } from "@mui/material";
-import { useUser } from "../context/UserContext";  // Import useUser to access context
+import { useUser } from "../context/UserContext"; // Import useUser to access context
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -10,7 +10,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-  const { login } = useUser();  
+  const { login } = useUser();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -23,29 +23,47 @@ const Login = () => {
       if (response && response.user) {
         // After successful login, call the login function from UserContext
         login(response.user);
-        alert("Sikeres bejelentkezés!"); 
+        alert("Login was successful!"); 
         navigate("/"); 
       } else {
-        setError("Hibás felhasználónév vagy jelszó.");
+        setError("Wrong email or password.");
       }
     } catch (err) {
       console.error("Login error:", err); 
-      setError("Hiba történt. Kérjük próbálja meg később.");
+      setError("An error occurred. Please try again later.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Box className="min-h-screen flex items-center justify-center bg-gray-100">
-      <Box className="bg-white shadow-lg rounded-lg p-8 w-full max-w-sm">
-        <Typography variant="h4" align="center" color="green" mb={4}>
-          Bejelentkezés
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: "100vh",
+        backgroundColor: "#f4f4f4",
+      }}
+    >
+      <Box
+        sx={{
+          backgroundColor: "white",
+          boxShadow: 3,
+          borderRadius: 3,
+          padding: 4,
+          width: "100%",
+          maxWidth: "400px",
+          textAlign: "center",
+        }}
+      >
+        <Typography variant="h4" gutterBottom>
+          Login
         </Typography>
 
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleLogin}>
           <TextField
             fullWidth
             label="Email"
@@ -59,7 +77,7 @@ const Login = () => {
           
           <TextField
             fullWidth
-            label="Jelszó"
+            label="Password"
             variant="outlined"
             type="password"
             value={password}
@@ -74,14 +92,17 @@ const Login = () => {
             variant="contained"
             color="success"
             disabled={loading}
-            sx={{ padding: "12px", fontSize: "16px" }}
+            sx={{ padding: "12px", fontSize: "16px", mt: 2 }}
           >
-            {loading ? "Bejelentkezés..." : "Bejelentkezés"}
+            {loading ? "Login..." : "Login"}
           </Button>
         </form>
 
-        <Typography variant="body2" align="center" mt={2}>
-          Még nincs fiókod? <a href="/register" className="text-green-600 font-semibold">Regisztrálj itt!</a>
+        <Typography variant="body2" sx={{ mt: 2 }}>
+          Don't have an account yet?{" "}
+          <a href="/register" style={{ color: "#2e7d32", fontWeight: "bold" }}>
+            Register here!
+          </a>
         </Typography>
       </Box>
     </Box>

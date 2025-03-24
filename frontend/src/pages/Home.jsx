@@ -14,8 +14,8 @@ const Home = () => {
         const data = await getPlants(); 
         setPlants(data);
       } catch (error) {
-        console.error('Hiba történt a növények lekérésekor.', error);
-        setError('Hiba történt a növények betöltésekor.');
+        console.error('Error loading plants.', error);
+        setError('An error occurred while loading plants.');
       } finally {
         setLoading(false);  
       }
@@ -27,7 +27,7 @@ const Home = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 4, backgroundColor: '#f5f5f5', borderRadius: 3, boxShadow: 4 }}>
       <Typography variant="h3" gutterBottom align="center" sx={{ fontWeight: 'bold', color: 'green', textShadow: '2px 2px 4px rgba(0,0,0,0.2)' }}>
-        🌿 Növények 🌿
+        🌿 Plants 🌿
       </Typography>
       
       {loading && <CircularProgress sx={{ display: 'block', mx: 'auto', my: 4 }} />}
@@ -55,7 +55,7 @@ const Home = () => {
                     variant="contained"
                     sx={{ mt: 2, borderRadius: 2, backgroundColor: '#4caf50', '&:hover': { backgroundColor: '#388e3c' } }}
                   >
-                    🌱 Részletek
+                    🌱 Details
                   </Button>
                 </CardContent>
               </Card>

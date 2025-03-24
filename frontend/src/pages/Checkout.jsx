@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Box, Typography, TextField, Button, Select, MenuItem, InputLabel, FormControl, CircularProgress } from "@mui/material";
 import { useCart } from "../context/CartContext";
-import '../index.css';
 
 const Checkout = () => {
   const { cart, totalPrice } = useCart();
@@ -31,14 +30,31 @@ const Checkout = () => {
       alert("Order placed successfully!");
     } catch (error) {
       console.error("Error placing order", error);
-      alert("There was an error placing your order.");
+      alert("An error occurred while placing your order.");
     }
   };
 
   return (
-    <Box className="checkout-container min-h-screen flex items-center justify-center bg-gray-100">
-      <Box className="bg-white shadow-lg rounded-lg p-8 w-full max-w-lg">
-        <Typography variant="h4" align="center" className="checkout-title" mb={4}>
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "100vh",
+        backgroundColor: "#f4f4f4",
+      }}
+    >
+      <Box
+        sx={{
+          backgroundColor: "white",
+          boxShadow: 3,
+          borderRadius: 3,
+          padding: 4,
+          width: "100%",
+          maxWidth: "600px",  // Set a max-width to ensure it looks good on larger screens
+        }}
+      >
+        <Typography variant="h4" align="center" color="green" mb={4}>
           Checkout
         </Typography>
 
@@ -73,7 +89,7 @@ const Checkout = () => {
             onChange={(e) => setName(e.target.value)}
             fullWidth
             variant="outlined"
-            className="checkout-input"
+            sx={{ mb: 2 }} // margin-bottom for spacing between fields
           />
 
           <TextField
@@ -82,7 +98,7 @@ const Checkout = () => {
             onChange={(e) => setAddress(e.target.value)}
             fullWidth
             variant="outlined"
-            className="checkout-input"
+            sx={{ mb: 2 }} // margin-bottom for spacing between fields
           />
 
           <TextField
@@ -91,7 +107,7 @@ const Checkout = () => {
             onChange={(e) => setCity(e.target.value)}
             fullWidth
             variant="outlined"
-            className="checkout-input"
+            sx={{ mb: 2 }} // margin-bottom for spacing between fields
           />
 
           <TextField
@@ -100,7 +116,7 @@ const Checkout = () => {
             onChange={(e) => setZipcode(e.target.value)}
             fullWidth
             variant="outlined"
-            className="checkout-input"
+            sx={{ mb: 2 }} // margin-bottom for spacing between fields
           />
 
           <TextField
@@ -109,7 +125,7 @@ const Checkout = () => {
             onChange={(e) => setPhoneNumber(e.target.value)}
             fullWidth
             variant="outlined"
-            className="checkout-input"
+            sx={{ mb: 2 }} // margin-bottom for spacing between fields
           />
 
           <FormControl fullWidth className="checkout-input mb-4">
@@ -118,6 +134,7 @@ const Checkout = () => {
               value={paymentMethod}
               onChange={(e) => setPaymentMethod(e.target.value)}
               label="Payment Method"
+              sx={{ mb: 2 }} // margin-bottom for spacing between fields
             >
               <MenuItem value="credit-card">Credit Card</MenuItem>
               <MenuItem value="paypal">PayPal</MenuItem>

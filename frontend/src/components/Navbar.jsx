@@ -1,24 +1,33 @@
 import React, { useState, useEffect } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { useCart } from "../context/CartContext"; 
+import { useCart } from "../context/CartContext";
 import { useUser } from "../context/UserContext";
-import { AppBar, Toolbar, Typography, Button, IconButton, Badge, Drawer, List, ListItem, ListItemText, Box } from "@mui/material";
+import { AppBar, Toolbar, Typography, Button, IconButton, Badge, Drawer, List, ListItem, ListItemText, Box, Menu, MenuItem } from "@mui/material";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import MenuIcon from "@mui/icons-material/Menu";
 import logo from "../assets/logo.jpg";
 
 const Navbar = () => {
-  const { user } = useUser(); 
+  const { user } = useUser();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cartItemCount, setCartItemCount] = useState(0);
   const { cart, refreshCart } = useCart();
+  const [anchorEl, setAnchorEl] = useState(null);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
   const navLinks = [
-    { title: "Register", path: "/register" },
+    { title: "Registration", path: "/register" },
     { title: "Login", path: "/login" },
   ];
 
@@ -33,29 +42,25 @@ const Navbar = () => {
       </List>
     </Box>
   );
+
   useEffect(() => {
-    // Only show cart items if user is logged in
     if (user && Array.isArray(cart)) {
       setCartItemCount(cart.length);
     } else {
-      // Reset cart count when user is logged out
       setCartItemCount(0);
     }
   }, [cart, user]);
 
   useEffect(() => {
-    // Only refresh cart when user is logged in
     if (user) {
       refreshCart();
-      
       const handleFocus = () => refreshCart();
-      window.addEventListener('focus', handleFocus);
-    
+      window.addEventListener("focus", handleFocus);
       return () => {
-        window.removeEventListener('focus', handleFocus);
+        window.removeEventListener("focus", handleFocus);
       };
     }
-  }, [refreshCart, user]); 
+  }, [refreshCart, user]);
 
   return (
     <AppBar position="static" sx={{ backgroundColor: "#2e7d32" }}>
@@ -69,26 +74,24 @@ const Navbar = () => {
           <MenuIcon />
         </IconButton>
         <Box sx={{ display: "flex", alignItems: "center", flexGrow: 1 }}>
-          <img src={logo} alt="PlantPlanet Logo" style={{ height: 40, marginRight: 10 }} />
+          <img src={logo} alt="PlantPlanet Logo" style={{ height: 40, marginRight: 10, borderRadius: 10 }} />
           <Typography
             variant="h6"
-            sx={{ fontWeight: "bold", cursor: "pointer", textDecoration: "none"}}
+            sx={{ fontWeight: "bold", cursor: "pointer", textDecoration: "none" }}
             component={Link}
             to="/"
             color="inherit"
             underline="none"
           >
-            PlantPlanet
+            Plant Planet
           </Typography>
         </Box>
         <Box sx={{ display: { xs: "none", sm: "block" } }}>
           {user ? (
-            // Display user's name when logged in
             <Typography variant="h6" sx={{ color: "white", mx: 1 }}>
               Hello, {user.name}
             </Typography>
           ) : (
-            // Display login and register buttons when not logged in
             navLinks.map((item) => (
               <Button
                 key={item.title}
@@ -100,6 +103,20 @@ const Navbar = () => {
               </Button>
             ))
           )}
+        </Box>
+
+        <Box sx={{ display: { xs: "none", sm: "block" } }}>
+          <Button color="inherit" onClick={handleMenuOpen}>
+            More
+          </Button>
+          <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+            <MenuItem component={Link} to="/about" onClick={handleMenuClose}>
+              About Us
+            </MenuItem>
+            <MenuItem component={Link} to="/contact" onClick={handleMenuClose}>
+              Contact
+            </MenuItem>
+          </Menu>
         </Box>
 
         <IconButton component={Link} to="/cart/view" color="inherit">

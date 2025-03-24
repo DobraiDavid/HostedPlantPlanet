@@ -11,6 +11,8 @@ import Checkout from './pages/Checkout';
 import { UserProvider } from "./context/UserContext";
 import { CartProvider } from "./context/CartContext";
 import "./App.css";
+import AboutUs from "./pages/AboutUs";
+import Contact from "./pages/Contact";
 
 function App() {
   return (
@@ -27,6 +29,8 @@ function App() {
             <Route path="/plant/:id" element={<PlantDetail />} />
             <Route path="/cart/view" element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
+            <Route path="/about" element={<AboutUs />} />
+            <Route path="/contact" element={<Contact />} />
           </Routes>
         </main>
         <Footer />

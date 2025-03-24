@@ -13,10 +13,23 @@ const Register = () => {
   const navigate = useNavigate();
   const { login: loginUser } = useUser();  
 
+  // Email validáció regex
+  const isValidEmail = (email) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  };
+
   const handleRegister = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");  
+
+    // Email ellenőrzése
+    if (!isValidEmail(email)) {
+      setLoading(false);
+      setError("Please enter a valid email address.");
+      return;
+    }
 
     try {
       const response = await register(name, email, password);
@@ -27,19 +40,19 @@ const Register = () => {
         if (loginResponse && loginResponse.user) {
           loginUser(loginResponse.user);  
 
-          alert("Sikeres regisztráció és bejelentkezés!");
+          alert("Successful registration and login!");
           navigate("/");  
         } else {
-          setError("Hiba történt a bejelentkezés során.");
+          setError("An error occurred during login.");
         }
       } else {
-        setError("Hiba történt a regisztráció során.");
+        setError("An error occurred during registration.");
       }
     } catch (error) {
       if (error.response && error.response.status === 400) {
-        setError("Ez az email már regisztrálva van. Kérjük próbálj meg egy másikat.");
+        setError("This email is already registered. Please try another one.");
       } else {
-        setError("Hiba történt a regisztráció során.");
+        setError("An error occurred during registration.");
       }
     } finally {
       setLoading(false); 
@@ -47,18 +60,36 @@ const Register = () => {
   };
 
   return (
-    <Box className="min-h-screen flex items-center justify-center bg-gray-100">
-      <Box className="bg-white shadow-lg rounded-lg p-8 w-full max-w-sm">
-        <Typography variant="h4" align="center" color="green" mb={4}>
-          Regisztráció
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: "100vh",
+        backgroundColor: "#f4f4f4",
+      }}
+    >
+      <Box
+        sx={{
+          backgroundColor: "white",
+          boxShadow: 3,
+          borderRadius: 3,
+          padding: 4,
+          width: "100%",
+          maxWidth: "400px",
+          textAlign: "center",
+        }}
+      >
+        <Typography variant="h4" gutterBottom>
+          Registration
         </Typography>
 
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>} 
 
-        <form onSubmit={handleRegister} className="space-y-4">
+        <form onSubmit={handleRegister}>
           <TextField
             fullWidth
-            label="Név"
+            label="Name"
             variant="outlined"
             value={name}
             onChange={(e) => setName(e.target.value)}  
@@ -78,7 +109,7 @@ const Register = () => {
           
           <TextField
             fullWidth
-            label="Jelszó"
+            label="Password"
             type="password"
             variant="outlined"
             value={password}
@@ -93,14 +124,17 @@ const Register = () => {
             variant="contained"
             color="success"
             disabled={loading}
-            sx={{ padding: "12px", fontSize: "16px" }}
+            sx={{ padding: "12px", fontSize: "16px", mt: 2 }}
           >
-            {loading ? "Regisztráció..." : "Regisztráció"}
+            {loading ? "Registration..." : "Registration"}
           </Button>
         </form>
 
-        <Typography variant="body2" align="center" mt={2}>
-          Már van fiókod? <a href="/login" className="text-green-600 font-semibold">Jelentkezz be!</a>
+        <Typography variant="body2" sx={{ mt: 2 }}>
+          Already have an account?{" "}
+          <a href="/login" style={{ color: "#2e7d32", fontWeight: "bold" }}>
+            Log in!
+          </a>
         </Typography>
       </Box>
     </Box>
