@@ -6,6 +6,7 @@ import {
   getCartItems,
   removeFromCart,
   addToCart,
+  updateCartItem,
   getTotalPrice,
 } from "../api/api";
 
@@ -60,14 +61,18 @@ const Cart = () => {
 
   // Update the quantity of an item
   const handleUpdateQuantity = async (itemId, quantity) => {
+    if (quantity < 1) return; // Don't allow quantity to go below 1
+  
     try {
-      await addToCart(userId, itemId, quantity);
+      // Call the updateCartItem API to update the quantity
+      await updateCartItem(userId, itemId, quantity);  // Update cart item with userId, itemId, and new quantity
+  
       setCartItems((prevItems) =>
         prevItems.map((item) =>
           item.id === itemId ? { ...item, amount: quantity } : item
         )
       );
-
+  
       // Recalculate total price after updating the quantity
       const updatedPrice = await getTotalPrice(userId);
       setTotalPrice(updatedPrice);

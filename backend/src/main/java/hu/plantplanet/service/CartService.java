@@ -85,5 +85,15 @@ public class CartService {
         }
         return totalPrice;
     }
+
+    public void updateCartItem(Integer userId, Integer plantId, int amount) {
+        Cart existingCartItem = cartRepository.findByIdAndUserId(plantId, userId)
+                .orElseThrow(() -> new RuntimeException("Cart item not found"));
+
+        existingCartItem.setAmount(amount);
+        cartRepository.save(existingCartItem);  // Save updated cart item
+    }
+
+
 }
 

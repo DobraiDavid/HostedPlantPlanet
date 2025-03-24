@@ -3,6 +3,7 @@ package hu.plantplanet.controller;
 import hu.plantplanet.auth.PermissionCollector;
 import hu.plantplanet.converter.UserConverter;
 import hu.plantplanet.dto.user.LoginRequest;
+import hu.plantplanet.dto.user.LoginResponse;
 import hu.plantplanet.dto.user.ReadUser;
 import hu.plantplanet.dto.user.RegisterRequest;
 import hu.plantplanet.model.Users;
@@ -34,15 +35,16 @@ public class userController {
         this.userService = userService;
     }
 
-    @PostMapping("/login")
+    @PostMapping(value = "/login", produces = "application/json")
     @Operation(summary = "Log in User")
-    public ResponseEntity<ReadUser> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
         authenticate(loginRequest.getEmail(), loginRequest.getPassword());
         Users user = userService.findUserByEmail(loginRequest.getEmail());
         PermissionCollector collector = new PermissionCollector(user);
         HttpHeaders jwtHeader = getJWTHeader(collector);
+        String token = jwtTokenProvider.generateJwtToken(collector);
         ReadUser readUser = UserConverter.convertModelToRead(user);
-        return new ResponseEntity<>(readUser, jwtHeader, HttpStatus.OK);
+        return ResponseEntity.ok().body(new LoginResponse(readUser, token));
     }
 
     @PostMapping("/register")

@@ -49,5 +49,17 @@ public class cartController {
         BigDecimal totalPrice = cartService.calculateTotalPrice(userId);
         return ResponseEntity.ok(totalPrice);
     }
-}
 
+    // Update an item in the cart (new endpoint using Cart model)
+    @CrossOrigin(origins = "http://localhost:5173")
+    @PutMapping("/update")
+    public ResponseEntity<String> updateCartItem(@RequestParam Integer userId, @RequestParam Integer plantId, @RequestParam int amount) {
+        try {
+            cartService.updateCartItem(userId, plantId, amount);
+            return ResponseEntity.ok("Cart item updated successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(404).body("Error updating cart item: " + e.getMessage());
+        }
+    }
+
+}

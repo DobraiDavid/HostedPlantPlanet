@@ -18,16 +18,19 @@ const Login = () => {
     setError(null);
 
     try {
-      const user = await loginApi(email, password); // Assume you have this function to get user data
-      if (user) {
+      const response = await loginApi(email, password); // Call your login API to authenticate
+      console.log("Login response:", response); // Debugging: log the entire response
+
+      if (response && response.user) {
         // After successful login, call the login function from UserContext
-        login(user.id);  // Pass the user ID (or any user-related data) to the context
+        login(response.user.id);  // Pass the user ID to the context
         alert("Sikeres bejelentkezés!"); // Successful login alert
         navigate("/"); // Redirect to homepage or wherever you want
       } else {
         setError("Hibás felhasználónév vagy jelszó.");
       }
     } catch (err) {
+      console.error("Login error:", err); // Log the error for debugging
       setError("Hiba történt. Kérjük próbálja meg később.");
     } finally {
       setLoading(false);

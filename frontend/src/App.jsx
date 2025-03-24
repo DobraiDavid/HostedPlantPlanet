@@ -7,12 +7,13 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import PlantDetail from './pages/PlantDetail';
 import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';
 import { UserProvider } from "./context/UserContext";
 import "./App.css";
 
 function App() {
   return (
-    <UserProvider>
+    <UserProvider> {/* Wrap the whole app with UserProvider */}
       <Router>
         <div className="app-container">
           <Navbar />
@@ -22,6 +23,7 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/plant/:id" element={<PlantDetail />} />
             <Route path="/cart/view" element={<Cart />} />
+            <Route path="/checkout" element={<Checkout />} />
           </Routes>
           <Footer />
         </div>

@@ -5,10 +5,10 @@ const UserContext = createContext();
 export const UserProvider = ({ children }) => {
   const [userId, setUserId] = useState(null);
 
-  // Example function to set userId, replace with real authentication logic
+  // Function to set userId
   const login = (id) => {
-    console.log('Setting userId:', id); // Log the userId being set
-    setUserId(id); // Save the logged-in user's ID
+    console.log('Setting userId:', id);
+    setUserId(id);
   };
 
   return (
@@ -18,6 +18,7 @@ export const UserProvider = ({ children }) => {
   );
 };
 
+// Named export of the useUser hook
 export const useUser = () => {
   return useContext(UserContext);
 };

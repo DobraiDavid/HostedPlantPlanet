@@ -295,3 +295,67 @@ footer p {
   font-weight: bold;
   color: #28a745;
 }
+
+/* Additional styles for Checkout page */
+.checkout-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.checkout-section {
+  margin-bottom: 2rem;
+}
+
+.checkout-input {
+  margin-bottom: 1.5rem; /* Increased spacing between input fields */
+}
+
+.checkout-order-summary {
+  margin-top: 2rem;
+}
+
+.checkout-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.checkout-order-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.checkout-order-item-name {
+  font-size: 1rem;
+  color: #333;
+}
+
+.checkout-order-item-price {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #28a745;
+}
+
+.checkout-total {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #333;
+  text-align: right;
+}
+
+.checkout-button {
+  background-color: #4CAF50;
+  color: white;
+  font-size: 16px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  width: 100%;
+  font-weight: bold;
+}
+
+.checkout-button:hover {
+  background-color: #45a049;
+}

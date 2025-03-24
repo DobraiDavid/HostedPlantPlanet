@@ -4,6 +4,7 @@ const API_BASE_URL = "http://localhost:8080"; // Change if needed
 
 // Helper function to get the token from localStorage
 const getAuthToken = () => {
+  console.log(localStorage.getItem('authToken'))
   return localStorage.getItem('authToken');  // Make sure the token is stored in localStorage after login
 };
 
@@ -32,6 +33,34 @@ export const getProductById = async (id) => {
   }
 };
 
+// Fetch a random plant
+export const getRandomPlants = async (count = 3, excludeId) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/plants`);
+    let plants = response.data;
+
+    if (!Array.isArray(plants) || plants.length === 0) {
+      throw new Error("No plants available");
+    }
+
+    // Ensure excludeId is properly compared (convert to number if needed)
+    plants = plants.filter((plant) => plant.id !== parseInt(excludeId));
+
+    // Handle case where there aren't enough plants
+    if (plants.length < count) {
+      return plants; // Return all available if less than requested
+    }
+
+    // Shuffle array randomly
+    const shuffled = plants.sort(() => Math.random() - 0.5);
+
+    return shuffled.slice(0, count); // Return exactly 3 plants
+  } catch (error) {
+    console.error("Error fetching random plants:", error);
+    return [];
+  }
+};
+
 // Fetch cart items for a user
 export const getCartItems = async (userId) => {
   try {
@@ -41,6 +70,22 @@ export const getCartItems = async (userId) => {
     return response.data;
   } catch (error) {
     console.error("Error fetching cart items:", error);
+    throw error;
+  }
+};
+
+// Update a cart item (quantity)
+export const updateCartItem = async (userId, itemId, quantity) => {
+  try {
+    await axios.put(`${API_BASE_URL}/cart/update`, null, {
+      params: {
+        userId,
+        plantId: itemId, // Assuming the plantId is same as itemId
+        amount: quantity,
+      },
+    });
+  } catch (error) {
+    console.error("Error updating cart item:", error);
     throw error;
   }
 };
@@ -55,6 +100,9 @@ export const addToCart = async (userId, plantId, amount, cartItemId) => {
         amount,
         cartItemId,
       },
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('authToken')}`,  // Add the token in the Authorization header
+        },
     });
     return response.data;
   } catch (error) {
@@ -93,18 +141,26 @@ export const getTotalPrice = async (userId) => {
 export const login = async (email, password) => {
   try {
     const response = await axios.post(`${API_BASE_URL}/user/login`, { email, password });
-    // Save the token in localStorage after login
-    if (response.data.token) {
+
+    console.log("Login response:", response.data); // Debugging output
+    console.log("User id:", response.data.user); // Debugging output
+
+    if (response.data.token && response.data.user) {
       localStorage.setItem('authToken', response.data.token);
-      // Optionally, you can set the token in axios headers here too
       axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+
+      // Instead of using useUser() here, just return the response
+      return response.data;  // Return the whole response data, including user and token
     }
-    return response.data;
+
   } catch (error) {
     console.error("Login error:", error);
     return null;
   }
 };
+
+
+
 
 // User registration
 export const register = async (name, email, password) => {
