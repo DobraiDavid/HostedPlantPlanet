@@ -6,6 +6,7 @@ import Register from "./pages/Register";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import PlantDetail from './pages/PlantDetail';
+import Cart from './pages/Cart';
 import "./App.css";
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/plant/:id" element={<PlantDetail />} />
+          <Route path="/cart/view" element={<Cart />} />
         </Routes>
         <Footer />
       </div>

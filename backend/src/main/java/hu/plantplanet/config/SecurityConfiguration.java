@@ -41,7 +41,8 @@ public class SecurityConfiguration {
             "/user/login","/user/register","/user/**",
             "/swagger-ui/**", "/swagger-resources/**",
             "/v2/api-docs", "/v3/api-docs", "/v3/api-docs/**",
-            "/plants", "/plant/**"
+            "/plants", "/plant/**",
+            "/cart/view/**"
     };
     @Autowired
     public SecurityConfiguration(JwtAuthorizationFilter jwtAuthorizationFilter,

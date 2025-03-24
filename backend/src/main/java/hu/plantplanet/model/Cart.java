@@ -1,43 +1,66 @@
 package hu.plantplanet.model;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
-@Getter
 @Setter
-@AllArgsConstructor
-@NoArgsConstructor
+@Getter
 @Entity
 public class Cart {
-
+    // Getters and Setters
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private Users users;
+    private Users user; // Reference to the User entity
 
     @ManyToOne
-    @JoinColumn(name = "plant_id", nullable = false)
-    private Plants plants;
+    private Plants plant; // Reference to the Plant entity
 
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal price;
+    private BigDecimal price; // Price of the plant
+    private int amount; // Quantity of the plant in the cart
 
-    @Column(nullable = false)
-    private int amount;
+    public Integer getId() {
+        return id;
+    }
 
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal totalPrice;
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
-    public Cart(Users users, Plants plants, BigDecimal price, int amount, BigDecimal totalPrice) {
-        this.users = users;
-        this.plants = plants;
+    public Users getUser() {
+        return user;
+    }
+
+    public void setUser(Users user) {
+        this.user = user;
+    }
+
+    public Plants getPlant() {
+        return plant;
+    }
+
+    public void setPlant(Plants plant) {
+        this.plant = plant;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public void setPrice(BigDecimal price) {
         this.price = price;
+    }
+
+    public int getAmount() {
+        return amount;
+    }
+
+    public void setAmount(int amount) {
         this.amount = amount;
-        this.totalPrice = totalPrice;
     }
 }

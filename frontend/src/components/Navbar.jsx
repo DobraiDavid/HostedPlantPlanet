@@ -70,7 +70,7 @@ const Navbar = () => {
           ))}
         </Box>
         
-        <IconButton component={Link} to="/cart" color="inherit">
+        <IconButton component={Link} to="/cart/view" color="inherit">
           <Badge badgeContent={cart.length} color="error">
             <ShoppingCartIcon />
           </Badge>

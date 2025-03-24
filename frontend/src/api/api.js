@@ -24,38 +24,62 @@ export const getProductById = async (id) => {
   }
 };
 
-// Add item to cart
-export const addToCart = async (productId, quantity) => {
+// Fetch cart items for a user
+export const getCartItems = async (userId) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/cart`, { productId, quantity });
-    return response.data;
-  } catch (error) {
-    console.error("Error adding to cart:", error);
-    return null;
-  }
-};
-
-// Get cart items
-export const getCartItems = async () => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/cart`);
+    const response = await axios.get(`${API_BASE_URL}/cart/view`, {
+      params: { userId },
+    });
     return response.data;
   } catch (error) {
     console.error("Error fetching cart items:", error);
-    return [];
+    throw error;
   }
 };
 
-// Remove item from cart
-export const removeFromCart = async (itemId) => {
+// Add or update an item in the cart
+export const addToCart = async (userId, plantId, amount, cartItemId) => {
   try {
-    await axios.delete(`${API_BASE_URL}/cart/${itemId}`);
+    const response = await axios.post(`${API_BASE_URL}/cart/add`, null, {
+      params: {
+        userId,
+        plantId,
+        amount,
+        cartItemId,
+      },
+    });
+    return response.data;
   } catch (error) {
-    console.error("Error removing from cart:", error);
+    console.error("Error adding/updating cart item:", error);
+    throw error;
   }
 };
 
-// User authentication (Example: Login)
+// Remove an item from the cart
+export const removeFromCart = async (cartItemId) => {
+  try {
+    const response = await axios.delete(`${API_BASE_URL}/cart/remove/${cartItemId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error removing cart item:", error);
+    throw error;
+  }
+};
+
+// Get the total price of the user's cart
+export const getTotalPrice = async (userId) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/cart/total`, {
+      params: { userId },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching total price:", error);
+    throw error;
+  }
+};
+
+// User login
 export const login = async (email, password) => {
   try {
     const response = await axios.post(`${API_BASE_URL}/user/login`, { email, password });
