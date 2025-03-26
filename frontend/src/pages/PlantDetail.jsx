@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { addToCart, getPlantDetails, getRandomPlants } from '../api/api'; 
-import { Button, TextField, Snackbar } from '@mui/material'; 
+import { Button, TextField, Snackbar, CircularProgress, Alert, Grid, Card, CardMedia, CardContent, Typography } from '@mui/material'; 
 import { useUser } from "../context/UserContext";  
-import { Link, useNavigate } from 'react-router-dom'; 
+import { Link, useNavigate } from 'react-router-dom';
+import { Carousel } from 'react-responsive-carousel';  // Importing a carousel library
+
+import 'react-responsive-carousel/lib/styles/carousel.min.css'; // Import carousel styles
 
 const PlantDetail = () => {
   const { id } = useParams(); 
@@ -38,30 +41,45 @@ const PlantDetail = () => {
 
   const handleAddToCart = async () => {
     if (!user) {
-      navigate('/login')
-      console.error("User not logged in");
+      navigate('/login');
       setError("You need to be logged in to add to cart");
       return;
     }
-    const cartItemId = null; 
 
     try {
-      await addToCart(user.id, plant.id, amount, cartItemId);
+      await addToCart(user.id, plant.id, amount);
       setOpenSnackbar(true); 
     } catch (error) {
-      console.error('Error adding item to cart:', error);
       setError('Failed to add item to cart');
     }
   };
 
-  if (loading) return <div className="loading">Loading...</div>;
-  if (error) return <div className="error">{error}</div>;
+  if (loading) return <div className="loading"><CircularProgress /></div>;
+  if (error) return <div className="error"><Alert severity="error">{error}</Alert></div>;
 
   return (
     <div className="container">
       <div className="product-container">
         <div className="product-image">
-          <img src={plant.imageUrl} alt={plant.name} className="image" />
+          {/* Carousel */}
+          <Carousel 
+            showThumbs={false}
+            showStatus={false}
+            infiniteLoop
+            autoPlay
+            interval={5000}
+          >
+            {JSON.parse(plant.images).map((image, index) => (
+              <div key={index}>
+                <img 
+                  src={image} 
+                  alt={`${plant.name} image ${index + 1}`} 
+                  className="carousel-image" 
+                  style={{ width: '730px', height: 'auto' }}
+                />
+              </div>
+            ))}
+          </Carousel>
         </div>
 
         <div className="product-details">
@@ -78,54 +96,117 @@ const PlantDetail = () => {
               label="Amount"
               type="number"
               value={amount}
-              onChange={(e) => setAmount(Number(e.target.value))}
-              inputProps={{ min: 1 }}
+              onChange={(e) => setAmount(Math.min(20, Math.max(1, Number(e.target.value))))}  // Limit the amount to 20
+              inputProps={{ min: 1, max: 20 }} // Max value set to 20
             />
           </div>
 
-          <Button
-            variant="contained"
-            color="success"
-            size="large"
-            className="add-to-cart-button"
-            onClick={handleAddToCart}
-          >
-            Add to Cart
-          </Button>
+          {/* Space between the amount and button */}
+          <div style={{ marginTop: '10px' }}>
+            <Button
+              variant="contained"
+              color="success"
+              size="large"
+              onClick={handleAddToCart}
+            >
+              Add to Cart
+            </Button>
+          </div>
         </div>
       </div>
 
       <div className="plant-care-tips">
-        <h2 className="section-title">Plant Care Tips</h2>
-        <p className="care-description">
-          To keep your {plant.name} thriving, make sure to water it every 2 weeks. It loves indirect sunlight and enjoys a humid environment. 
-          Avoid placing it in direct sunlight to prevent leaf burn.
-        </p>
+        <h2 className="section-title">{plant.name} Care Guide</h2>
+        <p>Light: {plant.light}</p>
+        <p>Water: {plant.water}</p>
+        <p>Humidity: {plant.humidity}</p>
+        <p>Temperature: {plant.temperature}</p>
+        <p>Fertilizing: {plant.fertilizing}</p>
+        <p>Re-potting: {plant.rePotting}</p>
+        <p>Cleaning: {plant.cleaning}</p>
+        <p>Propagation: {plant.propagation}</p>
       </div>
 
       {/* Related Products Section */}
       <div className="related-products">
         <h2 className="section-title">You May Also Like</h2>
-        <div className="product-list">
-          {relatedPlants.map((relatedPlant) => (
-            <Link to={`/plant/${relatedPlant.id}`} key={relatedPlant.id} className="related-product-link">
-              <div className="related-product">
-                <img 
-                  src={relatedPlant.imageUrl} 
-                  alt={relatedPlant.name}
-                  className="related-image"
-                />
-                <div className="related-product-details">
-                  <h3 className="related-product-name">{relatedPlant.name}</h3>
-                  <p className="related-product-description">{relatedPlant.description}</p>
-                  <p className="related-product-price">${relatedPlant.price}</p>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
+        <Grid container spacing={4} justifyContent="center">
+          {relatedPlants.map((relatedPlant) => {
+            const images = JSON.parse(relatedPlant.images);
+            const firstImage = images[0];
 
+            return (
+              <Grid item xs={12} sm={6} md={4} key={relatedPlant.id}>
+                <Card
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    borderRadius: 3,
+                    boxShadow: 5,
+                    transition: '0.3s',
+                    '&:hover': { boxShadow: 8, transform: 'scale(1.02)' },
+                    backgroundColor: '#ffffff',
+                    height: '100%'  // Ensure the Card takes up full height within the grid cell
+                  }}
+                >
+                  <CardMedia
+                    component="img"
+                    height="200"
+                    image={firstImage}
+                    alt={relatedPlant.name}
+                    sx={{ objectFit: 'cover' }}
+                  />
+                  <CardContent
+                    sx={{
+                      flexGrow: 1, // Ensures that the content area takes up available space
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                    }}
+                  >
+                    <Typography variant="h5" fontWeight="bold" sx={{ color: '#2e7d32' }}>
+                      {relatedPlant.name}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="textSecondary"
+                      sx={{
+                        mt: 1,
+                        flexGrow: 1,
+                        display: '-webkit-box',
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                        WebkitLineClamp: 5,
+                        textOverflow: 'ellipsis',
+                        lineHeight: '1.5',
+                        maxHeight: '7.5em',
+                      }}
+                    >
+                      {relatedPlant.description}
+                    </Typography>
+                    <Typography variant="h6" color="green" sx={{ mt: 2, fontWeight: 'bold' }}>
+                      ${relatedPlant.price.toFixed(2)}
+                    </Typography>
+                    <Button
+                      component={Link}
+                      to={`/plant/${relatedPlant.id}`}
+                      variant="contained"
+                      sx={{
+                        mt: 2,
+                        borderRadius: 2,
+                        backgroundColor: '#4caf50',
+                        '&:hover': { backgroundColor: '#388e3c' },
+                      }}
+                    >
+                      🌱 Details
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Grid>
+            );
+          })}
+        </Grid>
+      </div>
 
       <Snackbar
         open={openSnackbar}

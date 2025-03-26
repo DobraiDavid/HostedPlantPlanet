@@ -2,7 +2,22 @@ import React, { useState, useEffect } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useUser } from "../context/UserContext";
-import { AppBar, Toolbar, Typography, Button, IconButton, Badge, Drawer, List, ListItem, ListItemText, Box, Menu, MenuItem } from "@mui/material";
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  IconButton,
+  Badge,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
+  Box,
+  Menu,
+  MenuItem,
+  Divider,
+} from "@mui/material";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import MenuIcon from "@mui/icons-material/Menu";
 import logo from "../assets/logo.jpg";
@@ -30,18 +45,6 @@ const Navbar = () => {
     { title: "Registration", path: "/register" },
     { title: "Login", path: "/login" },
   ];
-
-  const drawer = (
-    <Box sx={{ width: 250 }} onClick={handleDrawerToggle}>
-      <List>
-        {navLinks.map((item) => (
-          <ListItem button component={Link} to={item.path} key={item.title}>
-            <ListItemText primary={item.title} />
-          </ListItem>
-        ))}
-      </List>
-    </Box>
-  );
 
   useEffect(() => {
     if (user && Array.isArray(cart)) {
@@ -74,7 +77,11 @@ const Navbar = () => {
           <MenuIcon />
         </IconButton>
         <Box sx={{ display: "flex", alignItems: "center", flexGrow: 1 }}>
-          <img src={logo} alt="PlantPlanet Logo" style={{ height: 40, marginRight: 10, borderRadius: 10 }} />
+          <img
+            src={logo}
+            alt="PlantPlanet Logo"
+            style={{ height: 40, marginRight: 10, borderRadius: 10 }}
+          />
           <Typography
             variant="h6"
             sx={{ fontWeight: "bold", cursor: "pointer", textDecoration: "none" }}
@@ -127,7 +134,24 @@ const Navbar = () => {
       </Toolbar>
 
       <Drawer anchor="left" open={mobileOpen} onClose={handleDrawerToggle}>
-        {drawer}
+        <Box sx={{ width: 250 }} onClick={handleDrawerToggle}>
+          <List>
+            {navLinks.map((item) => (
+              <ListItem component={Link} to={item.path} key={item.title}>
+                <ListItemText primary={item.title} />
+              </ListItem>
+            ))}
+          </List>
+          <Divider />
+          <List>
+            <ListItem component={Link} to="/about">
+              <ListItemText primary="About Us" />
+            </ListItem>
+            <ListItem component={Link} to="/contact">
+              <ListItemText primary="Contact" />
+            </ListItem>
+          </List>
+        </Box>
       </Drawer>
     </AppBar>
   );

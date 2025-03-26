@@ -1,6 +1,0 @@
-INSERT INTO plants (name, image_url, description, price) VALUES
-    ('Snake Plant', 'https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQwPr-hP70XPT2aLh0WsBvTsQW1f5tQAx-gLJZ3BtVX-xJhOfFdJcuvrWs4-dUamepX6dUzxSST1TlGGyHMxsm8_Q', 'A low-maintenance plant that thrives in low light.', 15.49),
-    ('Peace Lily', 'https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcT8lJa94Lp7JRBZicMlc_uj81CztL2SUaWgSZCY6PybNAmXN0vrBDaBtlGfD4NKWIIyVix9aQdXluXrJ6aosLSrKg', 'An elegant plant with white blooms and air-purifying properties.', 18.99),
-    ('Monstera', 'https://florastore.com/cdn/shop/files/3512101_Atmosphere_04_SQ_MJ.jpg?v=1734605559&width=1080', 'A tropical plant known for its split leaves.', 24.50),
-    ('Pothos', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSO1kw4g7Bo3e60dTT95cnpV932EuvVCLlUQ&s', 'A fast-growing vine that is perfect for beginners.', 9.99),
-    ('Aloe Vera', 'https://www.ikea.com/hu/hu/images/products/aloe-vera-noeveny-aloe__1368841_pe957973_s5.jpg?f=s', 'A hardy succulent known for its soothing gel.', 12.99);
