@@ -160,9 +160,6 @@ export const login = async (email, password) => {
   }
 };
 
-
-
-
 // User registration
 export const register = async (name, email, password) => {
   try {
@@ -186,6 +183,33 @@ export const getPlantDetails = async (id) => {
     }
     return await response.json();
   } catch (error) {
+    throw error;
+  }
+};
+
+// Get comments for a specific plant
+export const getComments = async (plantId) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/comments/${plantId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching comments:", error);
+    return [];
+  }
+};
+
+// Post a new comment
+export const postComment = async (userId, plantId, commentText, rating) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/comments/post`, {
+      userId,
+      plantId,
+      commentText,
+      rating
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error posting comment:", error);
     throw error;
   }
 };
