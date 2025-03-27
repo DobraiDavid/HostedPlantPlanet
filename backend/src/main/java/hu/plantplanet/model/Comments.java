@@ -2,6 +2,7 @@ package hu.plantplanet.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -24,6 +25,9 @@ public class Comments {
     @JoinColumn(name = "plant_id", nullable = false)
     private Plants plant;  // Plant being commented on
 
+    @Column(nullable = false, length = 255)
+    private String title; // New field
+
     @Column(nullable = false, columnDefinition = "TEXT")
     private String commentText;
 
@@ -31,7 +35,7 @@ public class Comments {
     private int rating;  // 1 to 5
 
     @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @CreationTimestamp
+    private LocalDateTime createdAt;  // Let the database handle the timestamp generation
 
 }
-

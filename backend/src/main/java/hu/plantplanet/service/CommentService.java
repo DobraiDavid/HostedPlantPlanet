@@ -32,6 +32,7 @@ public class CommentService {
                         comment.getId(),
                         comment.getUser().getName(), // Only return the username, not the full user object
                         comment.getPlant().getId(), // Only return plant ID, not full plant object
+                        comment.getTitle(),
                         comment.getCommentText(),
                         comment.getRating(),
                         comment.getCreatedAt()
@@ -39,13 +40,14 @@ public class CommentService {
                 .collect(Collectors.toList());
     }
 
-    public Comments addComment(Integer userId, Integer plantId, String commentText, int rating) {
+    public Comments addComment(Integer userId, Integer plantId, String title, String commentText, int rating) {
         Users user = usersRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         Plants plant = plantsRepository.findById(plantId).orElseThrow(() -> new RuntimeException("Plant not found"));
 
         Comments comment = new Comments();
         comment.setUser(user);
         comment.setPlant(plant);
+        comment.setTitle(title);
         comment.setCommentText(commentText);
         comment.setRating(rating);
 

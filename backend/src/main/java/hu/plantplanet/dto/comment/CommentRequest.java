@@ -7,6 +7,7 @@ import lombok.Setter;
 public class CommentRequest {
     private Integer userId;
     private Integer plantId;
+    private String title;
     private String commentText;
     private int rating;
 }

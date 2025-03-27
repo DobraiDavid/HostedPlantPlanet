@@ -20,7 +20,8 @@ import {
   Typography,
   Rating,
   Box,
-  Paper
+  Paper,
+  Avatar
 } from '@mui/material'; 
 import WaterDropOutlinedIcon from '@mui/icons-material/WaterDropOutlined';
 import WbSunnyOutlinedIcon from '@mui/icons-material/WbSunnyOutlined';
@@ -45,6 +46,7 @@ const PlantDetail = () => {
   const [amount, setAmount] = useState(1);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [newComment, setNewComment] = useState('');
+  const [commentTitle, setCommentTitle] = useState('');
   const [comments, setComments] = useState([]);
   const [rating, setRating] = useState(0);
   const [showCommentForm, setShowCommentForm] = useState(false);
@@ -54,17 +56,34 @@ const PlantDetail = () => {
   useEffect(() => {
     const fetchPlantData = async () => {
       try {
+        setLoading(true);
+        setError(null);
+    
         // Fetch plant details
         const data = await getPlantDetails(id);  
         setPlant(data);
-
+    
         // Fetch random related plants
         const relatedData = await getRandomPlants(3, id); 
         setRelatedPlants(relatedData);
-
+    
         // Fetch comments specifically
         const fetchedComments = await getComments(id);
-        setComments(fetchedComments);
+        
+        // Transform comments to ensure all required fields are present
+        const processedComments = fetchedComments.map(comment => ({
+          ...comment,
+          profileImage: comment.profileImage || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAF0WlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNy4yLWMwMDAgNzkuMWI2NWE7OWRzLCAwMC8wMC8wMC8wMDowMDowMCwgICAgICAgICI+IDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+IDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiIHhtbG5zOnhtcD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLyIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0RXZ0PSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VFdmVudCMiIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIgeG1sbnM6cGhvdG9zaG9wPSJodHRwOi8vbnMuYWRvYmUuY29tL3Bob3Rvc2hvcC8xLjAvIiB4bXA6Q3JlYXRvclRvb2w9IkFkb2JlIFBob3Rvc2hvcCAyNS4wICgyMDIzMDgxNi5tLjIyNDggMjAyMy8wOC8xNjoyMjo0OCkgIChNYWNpbnRvc2gpIiB4bXA6Q3JlYXRlRGF0ZT0iMjAyNC0wMy0yN1QwMDowNzo0NloiIHhtcDpNZXRhZGF0YURhdGU9IjIwMjQtMDMtMjdUMDA6MDc6NDZaIiB4bXA6TW9kaWZ5RGF0ZT0iMjAyNC0wMy0yN1QwMDowNzo0NloiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6YTAzNTdkODEtMGVkOS00NmU1LTg5ZGYtNmQxM2I5NTBlMTUxIiB4bXBNTTpEb2N1bWVudElEPSJhZG9iZTpkb2NpZDpwaG90b3Nob3A6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', // Fallback to a default avatar
+          createdAt: comment.createdAt || new Date().toISOString(),
+          rating: comment.rating || 0
+        }));
+        
+        // Sort comments by most recent first
+        const sortedComments = processedComments.sort((a, b) => 
+          new Date(b.createdAt) - new Date(a.createdAt)
+        );
+        
+        setComments(sortedComments);
       } catch (error) {
         console.error('Error fetching plant details:', error);
         setError('Failed to load plant details');
@@ -91,40 +110,93 @@ const PlantDetail = () => {
     }
   };
 
+  // Add a utility function to format relative time
+  const formatRelativeTime = (createdAt) => {
+    const now = new Date();
+    const commentDate = new Date(createdAt);
+    const diffMs = now - commentDate;
+    const diffSeconds = Math.floor(diffMs / 1000);
+    const diffMinutes = Math.floor(diffSeconds / 60);
+    const diffHours = Math.floor(diffMinutes / 60);
+    const diffDays = Math.floor(diffHours / 24);
+    const diffMonths = Math.floor(diffDays / 30);
+    const diffYears = Math.floor(diffDays / 365);
+
+    if (diffSeconds < 60) return `${diffSeconds} seconds ago`;
+    if (diffMinutes < 60) return `${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''} ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+    if (diffDays < 30) return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+    if (diffMonths < 12) return `${diffMonths} month${diffMonths !== 1 ? 's' : ''} ago`;
+    return `${diffYears} year${diffYears !== 1 ? 's' : ''} ago`;
+  };
+
   const handleCommentSubmit = async () => {
-    // Validate comment
+    // Validate comment and title
     if (!newComment.trim()) {
       setError('Comment cannot be empty');
       return;
     }
-
+    if (!commentTitle.trim()) {
+      setError('Comment title cannot be empty');
+      return;
+    }
+  
     // Check if user is logged in
     if (!user) {
       navigate('/login');
       return;
     }
-
+  
     try {
-      // Post comment with user ID, plant ID, comment text, and rating
-      const newCommentData = await postComment(user.id, id, newComment, rating);
-      
-      // Add the new comment to the comments list
-      setComments(prevComments => [
-        ...prevComments, 
-        {
-          username: user.name, // Use username from user context
-          commentText: newComment,
-          rating: rating
-        }
-      ]);
-
+      // Prepare comment data
+      const commentData = {
+        userId: user.id,
+        plantId: id,
+        title: commentTitle,
+        commentText: newComment,
+        rating: rating
+      };
+  
+      // Post comment to backend
+      const newCommentResponse = await postComment(
+        user.id, 
+        id, 
+        commentTitle, 
+        newComment, 
+        rating
+      );
+  
+      // Construct full comment object
+      const fullCommentData = {
+        ...newCommentResponse,
+        username: user.name,
+        profileImage: user.profileImage || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAF0WlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNy4yLWMwMDAgNzkuMWI2NWE7OWRzLCAwMC8wMC8wMC8wMDowMDowMCwgICAgICAgICI+IDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+IDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiIHhtbG5zOnhtcD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLyIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0RXZ0PSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VFdmVudCMiIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIgeG1sbnM6cGhvdG9zaG9wPSJodHRwOi8vbnMuYWRvYmUuY29tL3Bob3Rvc2hvcC8xLjAvIiB4bXA6Q3JlYXRvclRvb2w9IkFkb2JlIFBob3Rvc2hvcCAyNS4wICgyMDIzMDgxNi5tLjIyNDggMjAyMy8wOC8xNjoyMjo0OCkgIChNYWNpbnRvc2gpIiB4bXA6Q3JlYXRlRGF0ZT0iMjAyNC0wMy0yN1QwMDowNzo0NloiIHhtcDpNZXRhZGF0YURhdGU9IjIwMjQtMDMtMjdUMDA6MDc6NDZaIiB4bXA6TW9kaWZ5RGF0ZT0iMjAyNC0wMy0yN1QwMDowNzo0NloiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6YTAzNTdkODEtMGVkOS00NmU1LTg5ZGYtNmQxM2I5NTBlMTUxIiB4bXBNTTpEb2N1bWVudElEPSJhZG9iZTpkb2NpZDpwaG90b3Nob3A6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',
+        createdAt: new Date().toISOString(),
+        title: commentTitle,
+        commentText: newComment,
+        rating: rating || 0
+      };
+  
+      // Prepend the new comment to the existing comments
+      setComments(prevComments => [fullCommentData, ...prevComments]);
+  
       // Reset form
       setNewComment('');
+      setCommentTitle('');
       setRating(0);
       setShowCommentForm(false);
+  
+      // Optional: Show success notification
+      setOpenSnackbar(true);
+  
     } catch (error) {
-      setError('Failed to post comment');
-      console.error(error);
+      console.error('Failed to post comment:', error);
+      
+      // Set error message
+      setError(
+        error.response?.data?.message || 
+        'Failed to post comment. Please try again.'
+      );
     }
   };
 
@@ -386,20 +458,20 @@ const PlantDetail = () => {
           <h2 className="section-title">Comments</h2>
           <Button 
             variant="contained" 
-            size="large"  // Made larger
+            size="large"
             sx={{
-              backgroundColor: '#2e7d32',  // Deeper green
+              backgroundColor: '#2e7d32',
               color: 'white',
               '&:hover': { 
-                backgroundColor: '#1b5e20',  // Darker green on hover 
-                boxShadow: '0 4px 8px rgba(0,0,0,0.2)'  // Added shadow for more emphasis
+                backgroundColor: '#1b5e20',
+                boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
               },
               textTransform: 'none',
               borderRadius: 3,
-              padding: '10px 20px',  // Increased padding
-              fontSize: '1rem',  // Slightly larger font
+              padding: '10px 20px',
+              fontSize: '1rem',
               fontWeight: 'bold',
-              boxShadow: '0 2px 5px rgba(0,0,0,0.2)'  // Subtle shadow
+              boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
             }}
             onClick={() => {
               if (!user) {
@@ -417,6 +489,16 @@ const PlantDetail = () => {
       {showCommentForm && (
         <div className="add-comment">
           <TextField
+            label="Comment Title"
+            variant="outlined"
+            fullWidth
+            value={commentTitle}
+            onChange={(e) => setCommentTitle(e.target.value)}
+            sx={{ marginBottom: '10px' }}
+            placeholder="Summarize your comment in a few words"
+          />
+          
+          <TextField
             label="Add a Comment"
             multiline
             rows={4}
@@ -425,6 +507,7 @@ const PlantDetail = () => {
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             sx={{ marginTop: '10px' }}
+            placeholder="Share your thoughts about this plant..."
           />
           
           <div style={{ 
@@ -449,7 +532,7 @@ const PlantDetail = () => {
             <Button
               variant="contained"
               sx={{
-                backgroundColor: '#2e7d32',  // Match page style
+                backgroundColor: '#2e7d32',
                 color: 'white',
                 '&:hover': { 
                   backgroundColor: '#1b5e20'
@@ -468,6 +551,7 @@ const PlantDetail = () => {
               onClick={() => {
                 setShowCommentForm(false);
                 setNewComment('');
+                setCommentTitle('');
                 setRating(0);
               }}
             >
@@ -479,25 +563,80 @@ const PlantDetail = () => {
 
       {/* Comments display */}
       {comments.length > 0 ? (
-        comments.map((comment, index) => (
-          <div key={index} className="comment" style={{ marginBottom: '10px' }}>
-            <Typography variant="body1">
-              <strong>{comment.username}:</strong> {comment.commentText}
-            </Typography>
+    comments.map((comment, index) => (
+      <Paper 
+        key={index} 
+        elevation={2} 
+        sx={{ 
+          padding: '15px', 
+          marginBottom: '15px', 
+          display: 'flex', 
+          alignItems: 'flex-start',
+          backgroundColor: '#f5f5f5'
+        }}
+      >
+        {/* Profile Picture */}
+        <Avatar 
+          src={comment.profileImage} 
+          alt={`${comment.username}'s profile`}
+          sx={{ 
+            width: 56, 
+            height: 56, 
+            marginRight: '15px',
+            border: '2px solid #2e7d32'
+          }}
+        />
+        
+        <Box sx={{ flexGrow: 1 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            marginBottom: '10px'
+          }}>
+            <Box>
+              <Typography variant="subtitle1" fontWeight="bold">
+                {comment.username}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {formatRelativeTime(comment.createdAt)}
+              </Typography>
+            </Box>
+            
             <Rating 
               value={comment.rating} 
               readOnly 
               precision={1}
+              size="small"
             />
-          </div>
-        ))
-      ) : (
-        !showCommentForm && (
-          <Typography variant="body2" color="textSecondary">
-            No comments yet.
+          </Box>
+          
+          <Typography variant="h6" fontWeight="bold" sx={{ marginBottom: '5px' }}>
+            {comment.title}
           </Typography>
-        )
-      )}
+          
+          <Typography variant="body1" color="text.primary">
+            {comment.commentText}
+          </Typography>
+        </Box>
+      </Paper>
+    ))
+  ) : (
+    !showCommentForm && (
+      <Typography 
+        variant="body2" 
+        color="text.secondary" 
+        sx={{ 
+          textAlign: 'center', 
+          padding: '20px',
+          backgroundColor: '#f5f5f5',
+          borderRadius: '8px'
+        }}
+      >
+        No comments yet. Be the first to share your thoughts!
+      </Typography>
+    )
+  )}
     </div>
 
       <Snackbar

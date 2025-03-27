@@ -10,6 +10,8 @@ import lombok.Setter;
 public class ReadUser {
     private Integer id;
     private String name;
+    private String email;
+    private String profileImage;
 
     public void setId(Integer id) {
         this.id = id;

@@ -161,9 +161,9 @@ export const login = async (email, password) => {
 };
 
 // User registration
-export const register = async (name, email, password) => {
+export const register = async (name, email, password, profileImage) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/user/register`, { name, email, password });
+    const response = await axios.post(`${API_BASE_URL}/user/register`, { name, email, password, profileImage });
     return response.data;
   } catch (error) {
     if (error.response) {
@@ -199,11 +199,12 @@ export const getComments = async (plantId) => {
 };
 
 // Post a new comment
-export const postComment = async (userId, plantId, commentText, rating) => {
+export const postComment = async (userId, plantId, title, commentText, rating) => {
   try {
     const response = await axios.post(`${API_BASE_URL}/comments/post`, {
       userId,
       plantId,
+      title,
       commentText,
       rating
     });

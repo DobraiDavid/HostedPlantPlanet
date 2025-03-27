@@ -13,26 +13,55 @@ const Register = () => {
   const navigate = useNavigate();
   const { login: loginUser } = useUser();  
 
-  // Email validáció regex
+  // Email validation regex
   const isValidEmail = (email) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return regex.test(email);
   };
+  
+  //Generate profile picture
+  const generateProfilePicture = (username) => {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+  
+    canvas.width = 100;
+    canvas.height = 100;
+  
+    // Random background color
+    const colors = ["#FF5733", "#33FF57", "#3357FF", "#FF33A8", "#F4A261"];
+    const bgColor = colors[Math.floor(Math.random() * colors.length)];
+  
+    // Draw background
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+    // Draw text (first letter of username)
+    ctx.fillStyle = "#FFF";
+    ctx.font = "50px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(username.charAt(0).toUpperCase(), canvas.width / 2, canvas.height / 2);
+  
+    return canvas.toDataURL(); // Returns the image as a Base64 string
+  };
+  
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");  
 
-    // Email ellenőrzése
+    // Email validation
     if (!isValidEmail(email)) {
       setLoading(false);
       setError("Please enter a valid email address.");
       return;
     }
 
+    const profileImage = generateProfilePicture(name);
+
     try {
-      const response = await register(name, email, password);
+      const response = await register(name, email, password, profileImage);
       
       if (response.id) {
         const loginResponse = await login(email, password); 
@@ -126,7 +155,7 @@ const Register = () => {
             disabled={loading}
             sx={{ padding: "12px", fontSize: "16px", mt: 2 }}
           >
-            {loading ? "Registration..." : "Registration"}
+            {loading ? "Registration..." : "Register"}
           </Button>
         </form>
 
