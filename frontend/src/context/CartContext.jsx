@@ -68,11 +68,28 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  // Clear cart
-  const clearCart = () => {
+// Clear cart
+const clearCart = async () => {
+  if (!user || !user.id) {
     setCart([]);
     setTotalPrice(0);
-  };
+    return;
+  }
+
+  try {
+    // Remove each item in the cart
+    for (const item of cart) {
+      await removeFromCart(item.id);
+    }
+    
+    // Reset local state
+    setCart([]);
+    setTotalPrice(0);
+  } catch (error) {
+    console.error("Error clearing cart:", error);
+    alert("Failed to clear cart. Please try again.");
+  }
+};
 
   const contextValue = {
     cart, 

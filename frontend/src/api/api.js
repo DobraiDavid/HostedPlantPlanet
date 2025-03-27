@@ -8,7 +8,7 @@ const getAuthToken = () => {
 };
 
 // Set the token in the headers globally for axios
-axios.defaults.headers.common['Authorization'] = `${getAuthToken()}`;
+//axios.defaults.headers.common['Authorization'] = `${getAuthToken()}`;
 
 // Fetch all products
 export const getPlants = async () => {
@@ -211,6 +211,22 @@ export const postComment = async (userId, plantId, title, commentText, rating) =
     return response.data;
   } catch (error) {
     console.error("Error posting comment:", error);
+    throw error;
+  }
+};
+
+// Place an order
+export const placeOrder = async (orderData) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/orders`, orderData, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+        "Content-Type": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error placing order:", error);
     throw error;
   }
 };
