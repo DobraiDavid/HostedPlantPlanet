@@ -66,12 +66,12 @@ const Navbar = () => {
   }, [refreshCart, user]);
 
   return (
-    <AppBar position="static" sx={{ backgroundColor: "#2e7d32" }}>
-      <Toolbar>
+    <AppBar position="static" sx={{ backgroundColor: "#2e7d32", boxShadow: 6 }}>
+      <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
         <IconButton
           color="inherit"
           edge="start"
-          sx={{ display: { sm: "none" } }}
+          sx={{ display: { sm: "none" }, animation: "slideIn 0.5s ease-out" }}
           onClick={handleDrawerToggle}
         >
           <MenuIcon />
@@ -80,20 +80,24 @@ const Navbar = () => {
           <img
             src={logo}
             alt="PlantPlanet Logo"
-            style={{ height: 40, marginRight: 10, borderRadius: 10 }}
+            style={{ height: 50, marginRight: 10, borderRadius: 10, boxShadow: "0 2px 5px rgba(0, 0, 0, 0.3)" }}
           />
           <Typography
             variant="h6"
-            sx={{ fontWeight: "bold", cursor: "pointer", textDecoration: "none" }}
+            sx={{
+              fontWeight: "bold",
+              cursor: "pointer",
+              textDecoration: "none",
+              color: "white",
+              "&:hover": { color: "#81c784", transition: "color 0.3s ease-in-out" },
+            }}
             component={Link}
             to="/"
-            color="inherit"
-            underline="none"
           >
             Plant Planet
           </Typography>
         </Box>
-        <Box sx={{ display: { xs: "none", sm: "block" } }}>
+        <Box sx={{ display: { xs: "none", sm: "block" }, ml: 2 }}>
           {user ? (
             <Typography variant="h6" sx={{ color: "white", mx: 1 }}>
               Hello, {user.name}
@@ -104,7 +108,12 @@ const Navbar = () => {
                 key={item.title}
                 component={NavLink}
                 to={item.path}
-                sx={{ color: "white", mx: 1, "&.active": { textDecoration: "underline" } }}
+                sx={{
+                  color: "white",
+                  mx: 1,
+                  "&.active": { textDecoration: "underline", fontWeight: "bold" },
+                  "&:hover": { color: "#81c784", transform: "scale(1.05)", transition: "transform 0.2s ease-in-out" },
+                }}
               >
                 {item.title}
               </Button>
@@ -112,8 +121,15 @@ const Navbar = () => {
           )}
         </Box>
 
-        <Box sx={{ display: { xs: "none", sm: "block" } }}>
-          <Button color="inherit" onClick={handleMenuOpen}>
+        <Box sx={{ display: { xs: "none", sm: "block" }, ml: 2 }}>
+          <Button
+            color="inherit"
+            onClick={handleMenuOpen}
+            sx={{
+              "&:hover": { color: "#81c784", transition: "color 0.3s ease-in-out" },
+              transition: "transform 0.2s ease-in-out",
+            }}
+          >
             More
           </Button>
           <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
@@ -133,11 +149,23 @@ const Navbar = () => {
         </IconButton>
       </Toolbar>
 
-      <Drawer anchor="left" open={mobileOpen} onClose={handleDrawerToggle}>
+      <Drawer
+        anchor="left"
+        open={mobileOpen}
+        onClose={handleDrawerToggle}
+        sx={{
+          "& .MuiDrawer-paper": {
+            width: 250,
+            backgroundColor: "#2e7d32",
+            color: "white",
+            boxShadow: "5px 0 10px rgba(0, 0, 0, 0.2)",
+          },
+        }}
+      >
         <Box sx={{ width: 250 }} onClick={handleDrawerToggle}>
           <List>
             {navLinks.map((item) => (
-              <ListItem component={Link} to={item.path} key={item.title}>
+              <ListItem component={Link} to={item.path} key={item.title} sx={{ "&:hover": { backgroundColor: "#81c784", transform: "scale(1.05)" } }}>
                 <ListItemText primary={item.title} />
               </ListItem>
             ))}

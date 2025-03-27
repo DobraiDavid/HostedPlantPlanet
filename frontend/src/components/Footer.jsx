@@ -1,21 +1,10 @@
-import { FaFacebook, FaTwitter, FaInstagram } from 'react-icons/fa'; 
+import { FaFacebook, FaTwitter, FaInstagram, FaEnvelope, FaPhone } from "react-icons/fa"; 
 import React from "react";
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-200 text-white text-center p-6 mt-auto border-t-2 border-gray-600">
-      <div className="flex justify-center space-x-6 mb-4">
-        <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
-          <FaFacebook className="text-3xl text-black hover:text-blue-600 transition duration-300" />
-        </a>
-        <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">
-          <FaTwitter className="text-3xl text-black hover:text-blue-400 transition duration-300" />
-        </a>
-        <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
-          <FaInstagram className="text-3xl text-black hover:text-pink-600 transition duration-300" />
-        </a>
-      </div>
-      <p className="text-lg text-black">&copy; {new Date().getFullYear()} Plant Planet. All rights reserved.</p>
+    <footer className="bg-gray-900 text-white text-center p-8 mt-auto border-t-2 border-gray-700">
+      <p className="text-gray-400 text-sm">&copy; {new Date().getFullYear()} Plant Planet. All rights reserved.</p>
     </footer>
   );
 };

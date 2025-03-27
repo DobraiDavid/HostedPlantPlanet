@@ -16,6 +16,7 @@ import {
   FormControlLabel, 
   Checkbox,
   Slider,
+  TextField
 } from '@mui/material';
 
 const Home = () => {
@@ -23,6 +24,8 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sortBy, setSortBy] = useState('featured');
+  const [searchQuery, setSearchQuery] = useState("");
+
 
   // Filter states
   const [lightLevels, setLightLevels] = useState({
@@ -56,9 +59,11 @@ const Home = () => {
     fetchPlants();
   }, []);
 
-  const handleSortChange = (event) => {
+  const handleSortChange = (event) => 
     setSortBy(event.target.value);
-  };
+
+  const handleSearchChange = (event) => 
+    setSearchQuery(event.target.value.toLowerCase());
 
   const handleLightLevelChange = (event) => {
     setLightLevels({
@@ -114,6 +119,12 @@ const Home = () => {
   const sortedPlants = useMemo(() => {
     let filtered = [...plants];
 
+    if (searchQuery) {
+      filtered = filtered.filter(plant => 
+        plant.name.toLowerCase().includes(searchQuery)
+      );
+    }
+
     // Sorting logic
     switch (sortBy) {
       case 'priceLowToHigh':
@@ -161,7 +172,7 @@ const Home = () => {
     });
 
     return filtered;
-  }, [plants, sortBy, lightLevels, waterNeeds, temperatureRange]);
+  }, [plants, searchQuery, sortBy, lightLevels, waterNeeds, temperatureRange]);
 
   // Rest of the component remains the same as previous version
   return (
@@ -171,8 +182,16 @@ const Home = () => {
       </Typography>
 
       <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-        {/* Left Filter Panel */}
         <Box sx={{ width: '250px', mr: 4 }}>
+        <TextField
+            fullWidth
+            label="Search Plants"
+            variant="outlined"
+            value={searchQuery}
+            onChange={handleSearchChange}
+            sx={{ mb: 2 }}
+          />
+
           <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>Filter By</Typography>
 
           {/* Light Levels Filter */}

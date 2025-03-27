@@ -127,7 +127,7 @@ const Checkout = () => {
           maxWidth: "600px",
         }}
       >
-        <Typography variant="h4" align="center" color="green" mb={4}>
+        <Typography variant="h4" align="center" mb={4}>
           Checkout
         </Typography>
 
