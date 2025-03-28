@@ -174,6 +174,72 @@ export const register = async (name, email, password, profileImage) => {
   }
 };
 
+// Logout user
+export const logout = async () => {
+  try {
+    const token = localStorage.getItem('authToken');
+    
+    // If no token, just return
+    if (!token) {
+      return null;
+    }
+
+    // Send logout request
+    const response = await axios.post(`${API_BASE_URL}/user/logout`, {}, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    // Remove token and clear authorization header
+    localStorage.removeItem('authToken');
+    delete axios.defaults.headers.common['Authorization'];
+
+    return response.data;
+  } catch (error) {
+    console.error("Logout error:", error);
+    
+    // Even if logout fails, clear local storage and auth header
+    localStorage.removeItem('authToken');
+    delete axios.defaults.headers.common['Authorization'];
+
+    return null;
+  }
+};
+
+// Change user details
+export const changeUserDetails = async (userDetails) => {
+  try {
+    const token = localStorage.getItem('authToken');
+    
+    if (!token) {
+      throw new Error("No authentication token found");
+    }
+
+    const response = await axios.put(`${API_BASE_URL}/user/change`, userDetails, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Change user details error:", error);
+    
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      throw error.response.data;
+    } else if (error.request) {
+      // The request was made but no response was received
+      throw new Error("No response received from server");
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      throw new Error("Error setting up the request");
+    }
+  }
+};
+
 // Get plant details
 export const getPlantDetails = async (id) => {
   try {

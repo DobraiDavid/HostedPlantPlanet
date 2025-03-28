@@ -139,6 +139,9 @@ const Navbar = () => {
             <MenuItem component={Link} to="/contact" onClick={handleMenuClose}>
               Contact
             </MenuItem>
+            <MenuItem component={Link} to="/profile" onClick={handleMenuClose}>
+              Profile
+            </MenuItem>
           </Menu>
         </Box>
 
