@@ -18,6 +18,7 @@ import { useNavigate } from 'react-router-dom';
 const ProfilePage = () => {
   const { user, login } = useUser();
   const navigate = useNavigate();
+  const { logout: logoutUser } = useUser();
   const [isEditing, setIsEditing] = useState({
     name: false,
     email: false,
@@ -48,11 +49,20 @@ const ProfilePage = () => {
 
   const handleLogout = async () => {
     try {
-      await logout();
-      toast.success('Logged out successfully');
-      navigate('/login');
+      await logout(); 
+      logoutUser(); 
+              navigate("/", { 
+                state: { 
+                  toast: { 
+                    message: "Logged out successfully!", 
+                    type: 'success' 
+                  } 
+                },
+                replace: false
+              });
     } catch (error) {
       toast.error('Logout failed');
+      navigate('/');
     }
   };
 

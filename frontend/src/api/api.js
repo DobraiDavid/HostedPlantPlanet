@@ -2,13 +2,15 @@ import axios from "axios";
 
 const API_BASE_URL = "http://localhost:8080"; // Change if needed
 
-// Helper function to get the token from localStorage
-const getAuthToken = () => {
-  return localStorage.getItem('authToken');  
-};
-
-// Set the token in the headers globally for axios
-//axios.defaults.headers.common['Authorization'] = `${getAuthToken()}`;
+axios.interceptors.request.use(config => {
+  const token = localStorage.getItem('authToken');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+}, error => {
+  return Promise.reject(error);
+});
 
 // Fetch all products
 export const getPlants = async () => {
@@ -106,9 +108,6 @@ export const addToCart = async (userId, plantId, amount, cartItemId) => {
         amount,
         cartItemId,
       },
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('authToken')}`,  
-        },
     });
     return response.data;
   } catch (error) {
@@ -185,14 +184,11 @@ export const logout = async () => {
     }
 
     // Send logout request
-    const response = await axios.post(`${API_BASE_URL}/user/logout`, {}, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
+    const response = await axios.post(`${API_BASE_URL}/user/logout`);
 
     // Remove token and clear authorization header
     localStorage.removeItem('authToken');
+    localStorage.removeItem('user'); // Clear user from localStorage
     delete axios.defaults.headers.common['Authorization'];
 
     return response.data;
@@ -201,6 +197,7 @@ export const logout = async () => {
     
     // Even if logout fails, clear local storage and auth header
     localStorage.removeItem('authToken');
+    localStorage.removeItem('user'); // Clear user from localStorage
     delete axios.defaults.headers.common['Authorization'];
 
     return null;
@@ -216,11 +213,7 @@ export const changeUserDetails = async (userDetails) => {
       throw new Error("No authentication token found");
     }
 
-    const response = await axios.put(`${API_BASE_URL}/user/change`, userDetails, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
+    const response = await axios.put(`${API_BASE_URL}/user/change`, userDetails);
 
     return response.data;
   } catch (error) {
@@ -286,7 +279,6 @@ export const placeOrder = async (orderData) => {
   try {
     const response = await axios.post(`${API_BASE_URL}/orders`, orderData, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
         "Content-Type": "application/json",
       },
     });

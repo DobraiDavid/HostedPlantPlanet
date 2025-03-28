@@ -1,17 +1,20 @@
 import React, { useState } from "react";
 import { register, login } from '../api/api.js';  
 import { useNavigate } from "react-router-dom";
-import { TextField, Button, Typography, Box, Alert } from "@mui/material";
+import { TextField, Button, Typography, Box } from "@mui/material";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { useUser } from '../context/UserContext'; 
+import { useToast } from '../context/ToastContext';
 
 const Register = () => {
   const [name, setName] = useState("");  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(""); 
   const [loading, setLoading] = useState(false); 
   const navigate = useNavigate();
   const { login: loginUser } = useUser();  
+  const showToast = useToast();
 
   // Email validation regex
   const isValidEmail = (email) => {
@@ -49,12 +52,18 @@ const Register = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError("");  
+
+    // Validate inputs
+    if (!name || !email || !password) {
+      showToast("Please fill in all fields", 'error');
+      setLoading(false);
+      return;
+    }
 
     // Email validation
     if (!isValidEmail(email)) {
+      showToast("Please enter a valid email address", 'error');
       setLoading(false);
-      setError("Please enter a valid email address.");
       return;
     }
 
@@ -69,19 +78,27 @@ const Register = () => {
         if (loginResponse && loginResponse.user) {
           loginUser(loginResponse.user);  
 
-          alert("Successful registration and login!");
-          navigate("/");  
+          // Navigate immediately
+          navigate("/", { 
+            state: { 
+              toast: { 
+                message: "Successful registration and login!", 
+                type: 'success' 
+              } 
+            },
+            replace: false
+          });
         } else {
-          setError("An error occurred during login.");
+          showToast("An error occurred during login", 'error');
         }
       } else {
-        setError("An error occurred during registration.");
+        showToast("An error occurred during registration", 'error');
       }
     } catch (error) {
       if (error.response && error.response.status === 400) {
-        setError("This email is already registered. Please try another one.");
+        showToast("This email is already registered. Please try another one", 'error');
       } else {
-        setError("An error occurred during registration.");
+        showToast("An error occurred during registration", 'error');
       }
     } finally {
       setLoading(false); 
@@ -98,6 +115,9 @@ const Register = () => {
         backgroundColor: "#f4f4f4",
       }}
     >
+      {/* Toast Notification Container */}
+      <ToastContainer />
+
       <Box
         sx={{
           backgroundColor: "white",
@@ -112,8 +132,6 @@ const Register = () => {
         <Typography variant="h4" gutterBottom>
           Registration
         </Typography>
-
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>} 
 
         <form onSubmit={handleRegister}>
           <TextField

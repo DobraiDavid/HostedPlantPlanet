@@ -1,6 +1,9 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { getPlants } from '../api/api.js';
+import { useToast } from '../context/ToastContext';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
 import { 
   Card, 
   CardMedia, 
@@ -25,6 +28,9 @@ const Home = () => {
   const [error, setError] = useState(null);
   const [sortBy, setSortBy] = useState('featured');
   const [searchQuery, setSearchQuery] = useState("");
+  const location = useLocation();
+  const navigate = useNavigate();
+  const showToast = useToast();
 
 
   // Filter states
@@ -58,6 +64,23 @@ const Home = () => {
 
     fetchPlants();
   }, []);
+
+  useEffect(() => {
+    if (location.state?.toast) {
+      const { message, type } = location.state.toast;      
+      // Use the destructured showToast from useToast
+      showToast(message, type);
+  
+      const timeoutId = setTimeout(() => {
+        navigate(location.pathname, {
+          replace: true,
+          state: null
+        });
+      }, 1000);
+  
+      return () => clearTimeout(timeoutId);
+    }
+  }, [location, showToast, navigate]);
 
   const handleSortChange = (event) => 
     setSortBy(event.target.value);
@@ -177,6 +200,7 @@ const Home = () => {
   // Rest of the component remains the same as previous version
   return (
     <Container maxWidth="lg" sx={{ py: 4, backgroundColor: '#f5f5f5', borderRadius: 3, boxShadow: 4 }}>
+      <ToastContainer />
       <Typography variant="h3" gutterBottom align="center" sx={{ fontWeight: 'bold', color: 'green', textShadow: '2px 2px 4px rgba(0,0,0,0.2)' }}>
         🌿 Plants 🌿
       </Typography>
@@ -371,6 +395,7 @@ const Home = () => {
         </Box>
       </Box>
     </Container>
+    
   );
 };
 

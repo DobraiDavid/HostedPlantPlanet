@@ -10,15 +10,19 @@ import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import { UserProvider } from "./context/UserContext";
 import { CartProvider } from "./context/CartContext";
+import { ToastProvider } from "./context/ToastContext";
 import "./App.css";
+import 'react-toastify/dist/ReactToastify.css';
 import AboutUs from "./pages/AboutUs";
 import Contact from "./pages/Contact";
 import Profile from "./pages/Profile";
+import { ToastContainer } from 'react-toastify';
 
 function App() {
   return (
     <UserProvider> 
     <CartProvider>
+    <ToastProvider>
       <Router>
         <div className="app-container">
         <Navbar />
@@ -37,7 +41,9 @@ function App() {
         </main>
         <Footer />
         </div>
+        <ToastContainer />
       </Router>
+    </ToastProvider>
     </CartProvider>
     </UserProvider>
   );

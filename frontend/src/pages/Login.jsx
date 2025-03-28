@@ -1,21 +1,57 @@
-import React, { useState } from "react";
-import { login as loginApi } from "../api/api"; // Assuming you have an API function to authenticate
-import { useNavigate } from "react-router-dom";
-import { TextField, Button, Typography, Box, Alert } from "@mui/material";
-import { useUser } from "../context/UserContext"; // Import useUser to access context
+import React, { useState, useEffect } from "react";
+import { login as loginApi } from "../api/api"; 
+import { useNavigate, useLocation } from "react-router-dom";
+import { TextField, Button, Typography, Box } from "@mui/material";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { useUser } from "../context/UserContext"; 
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useUser();
+
+  // Handle toast from navigation state
+  useEffect(() => {
+    if (location.state?.toast) {
+      const { message, type } = location.state.toast;
+      
+      // Use the appropriate toast method based on type
+      if (type === 'success') {
+        toast.success(message);
+      } else if (type === 'error') {
+        toast.error(message);
+      } else if (type === 'info') {
+        toast.info(message);
+      } else {
+        toast(message);
+      }
+
+      // Clear the state to prevent toast from showing again
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location, navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
+
+    // Validate email and password
+    if (!email || !password) {
+      toast.error("Please enter both email and password", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      setLoading(false);
+      return;
+    }
 
     try {
       const response = await loginApi(email, password);
@@ -23,14 +59,37 @@ const Login = () => {
       if (response && response.user) {
         // After successful login, call the login function from UserContext
         login(response.user);
-        alert("Login was successful!"); 
-        navigate("/"); 
+
+        // Navigate with toast state
+        navigate("/", { 
+          state: { 
+            toast: { 
+              message: "Successful login!", 
+              type: 'success' 
+            } 
+          },
+          replace: false
+        });
       } else {
-        setError("Wrong email or password.");
+        toast.error("Wrong email or password.", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
       }
     } catch (err) {
       console.error("Login error:", err); 
-      setError("An error occurred. Please try again later.");
+      toast.error("An error occurred. Please try again later.", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     } finally {
       setLoading(false);
     }
@@ -46,6 +105,9 @@ const Login = () => {
         backgroundColor: "#f4f4f4",
       }}
     >
+      {/* Toast Notification Container */}
+      <ToastContainer />
+
       <Box
         sx={{
           backgroundColor: "white",
@@ -60,8 +122,6 @@ const Login = () => {
         <Typography variant="h4" gutterBottom>
           Login
         </Typography>
-
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
         <form onSubmit={handleLogin}>
           <TextField

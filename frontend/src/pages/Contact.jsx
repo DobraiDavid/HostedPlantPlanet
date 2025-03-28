@@ -1,6 +1,9 @@
 import React, { useState } from "react";
-import { Container, Typography, Box, TextField, Button, Alert } from "@mui/material";
+import { Container, Typography, Box, TextField, Button } from "@mui/material";
 import { FaEnvelope, FaPhone, FaFacebook, FaTwitter, FaInstagram } from "react-icons/fa";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import emailjs from 'emailjs-com';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -9,8 +12,10 @@ const Contact = () => {
     message: "",
   });
 
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState("");
+  const emailjsAPIKey = import.meta.env.VITE_EMAILJS_API_KEY;
+  const emailjsTemplateID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+  const emailjsServiceID = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+  
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -18,31 +23,61 @@ const Contact = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    
+    // Validate form fields
     if (!formData.name || !formData.email || !formData.message) {
-      setError("All fields are required!");
+      toast.error("All fields are required!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
       return;
     }
 
     try {
-      const response = await fetch("http://localhost:8080", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      // Send email using EmailJS
+      const response = await emailjs.send(
+        emailjsServiceID,  
+        emailjsTemplateID, 
+        formData,           
+        emailjsAPIKey  
+      );
+      
 
-      if (!response.ok) throw new Error("Failed to send message");
-
+      // Reset form and show success message
       setFormData({ name: "", email: "", message: "" });
-      setSuccess(true);
-      setError("");
+      
+      // Show success toast
+      toast.success("Message sent successfully!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     } catch (err) {
-      setError("Something went wrong, please try again later.");
+      // Handle email sending error
+      console.error('Email send error:', err);
+      toast.error("Something went wrong, please try again later.", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     }
   };
 
   return (
     <Container maxWidth="sm">
+      {/* Toast Notification Container */}
+      <ToastContainer />
+
       <Box my={4} textAlign="center" sx={{ p: 4, boxShadow: 3, borderRadius: 3, backgroundColor: "#f1f8e9" }}>
         <Typography variant="h4" sx={{ fontWeight: "bold", color: "#2e7d32" }}>
           Contact Us 📩
@@ -50,19 +85,51 @@ const Contact = () => {
         <Typography variant="body1" sx={{ mt: 1, color: "textSecondary" }}>
           Have any questions? Fill out the form below or reach us via email.
         </Typography>
-
-        {success && <Alert severity="success" sx={{ mt: 2 }}>Message sent successfully!</Alert>}
-        {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
-
+        
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
-          <TextField fullWidth label="Your Name" name="name" value={formData.name} onChange={handleChange} margin="normal" required />
-          <TextField fullWidth label="Your Email" name="email" type="email" value={formData.email} onChange={handleChange} margin="normal" required />
-          <TextField fullWidth label="Message" name="message" multiline rows={4} value={formData.message} onChange={handleChange} margin="normal" required />
-          <Button type="submit" variant="contained" sx={{ mt: 2, backgroundColor: "#4caf50", "&:hover": { backgroundColor: "#388e3c" } }}>
+          <TextField 
+            fullWidth 
+            label="Your Name" 
+            name="name" 
+            value={formData.name} 
+            onChange={handleChange} 
+            margin="normal" 
+            required 
+          />
+          <TextField 
+            fullWidth 
+            label="Your Email" 
+            name="email" 
+            type="email" 
+            value={formData.email} 
+            onChange={handleChange} 
+            margin="normal" 
+            required 
+          />
+          <TextField 
+            fullWidth 
+            label="Message" 
+            name="message" 
+            multiline 
+            rows={4} 
+            value={formData.message} 
+            onChange={handleChange} 
+            margin="normal" 
+            required 
+          />
+          <Button 
+            type="submit" 
+            variant="contained" 
+            sx={{ 
+              mt: 2, 
+              backgroundColor: "#4caf50", 
+              "&:hover": { backgroundColor: "#388e3c" } 
+            }}
+          >
             Send Message
           </Button>
         </Box>
-
+        
         {/* Contact Info */}
         <Box mt={4}>
           <Typography variant="h6" sx={{ fontWeight: "bold", color: "#2e7d32" }}>
@@ -73,7 +140,7 @@ const Contact = () => {
             <FaEnvelope /> plantplanetofficial@gmail.com
           </Box>
         </Box>
-
+        
         {/* Social Media Links */}
         <Box mt={3} display="flex" justifyContent="center" gap={3}>
           <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
