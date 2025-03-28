@@ -1,6 +1,7 @@
 package hu.plantplanet.service;
 
 import hu.plantplanet.auth.PermissionCollector;
+import hu.plantplanet.dto.user.ChangeUserRequest;
 import hu.plantplanet.dto.user.RegisterRequest;
 import hu.plantplanet.exception.UserAlreadyExistsException;
 import hu.plantplanet.exception.UserNotFoundException;
@@ -66,4 +67,25 @@ public class UsersService implements UserDetailsService {
         // Save and return the new user
         return userRepository.save(newUser);
     }
+
+    public Users updateUser(String email, ChangeUserRequest changeRequest) {
+        Users user = userRepository.findByEmail(email);
+        if (user == null) {
+            throw new UserNotFoundException(NO_USER_FOUND_BY_EMAIL + email);
+        }
+        if (changeRequest.getName() != null) {
+            user.setName(changeRequest.getName());
+        }
+        if (changeRequest.getEmail() != null) {
+            user.setEmail(changeRequest.getEmail());
+        }
+        if (changeRequest.getPassword() != null) {
+            user.setPassword(passwordEncoder.encode(changeRequest.getPassword()));
+        }
+        if (changeRequest.getProfileImage() != null) {
+            user.setProfileImage(changeRequest.getProfileImage());
+        }
+        return userRepository.save(user);
+    }
+
 }

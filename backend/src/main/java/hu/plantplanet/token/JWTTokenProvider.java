@@ -1,6 +1,5 @@
 package hu.plantplanet.token;
 
-
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -12,9 +11,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -23,7 +22,6 @@ import java.util.stream.Collectors;
 
 import static com.auth0.jwt.algorithms.Algorithm.HMAC512;
 import static java.util.Arrays.stream;
-
 
 @Component
 public class JWTTokenProvider {
@@ -35,12 +33,16 @@ public class JWTTokenProvider {
     private static final String ISSUER = "Issuer";
     private static final String AUDIENCE = "Plant subscription service";
     public static final String AUTHORITIES = "authorities";
-    public static final long EXPIRATION_TIME = 1000*60*60*24*5; // 5 days expressed in milliseconds 432 000 000
+    public static final long EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 5; // 5 days expressed in milliseconds 432 000 000
+
     public String generateJwtToken(PermissionCollector permissionCollector) {
         String[] claims = getClaimsFromUser(permissionCollector);
-        return JWT.create().withIssuer(ISSUER)
+        return JWT.create()
+                .withIssuer(ISSUER)
                 .withAudience(AUDIENCE)
-                .withIssuedAt(new Date()).withSubject(permissionCollector.getUsername())
+                .withIssuedAt(new Date())
+                .withSubject(permissionCollector.getUsername())
+                .withClaim("email", permissionCollector.getEmail()) // Add email as a custom claim
                 .withArrayClaim(AUTHORITIES, claims)
                 .withExpiresAt(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .sign(HMAC512(secret.getBytes()));
@@ -48,15 +50,13 @@ public class JWTTokenProvider {
 
     public List<GrantedAuthority> getAuthorities(String token) {
         String[] claims = getClaimsFromToken(token);
-        Object SimpleGrantedAuthority;
         return stream(claims).map(SimpleGrantedAuthority::new).collect(Collectors.toList());
     }
 
-    public Authentication getAuthentication(String username, List<GrantedAuthority> authorities, HttpServletRequest request) {
-        UsernamePasswordAuthenticationToken userPasswordAuthToken = new
-                UsernamePasswordAuthenticationToken(username, null, authorities);
-        userPasswordAuthToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-        return userPasswordAuthToken;
+    public Authentication getAuthentication(String email, List<GrantedAuthority> authorities, HttpServletRequest request) {
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(email, null, authorities);
+        authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        return authenticationToken;
     }
 
     public boolean isTokenValid(String username, String token) {
@@ -67,6 +67,11 @@ public class JWTTokenProvider {
     public String getSubject(String token) {
         JWTVerifier verifier = getJWTVerifier();
         return verifier.verify(token).getSubject();
+    }
+
+    public String getEmailFromToken(String token) {
+        JWTVerifier verifier = getJWTVerifier();
+        return verifier.verify(token).getClaim("email").asString(); // Extract the email from the token's claims
     }
 
     private boolean isTokenExpired(JWTVerifier verifier, String token) {
@@ -84,7 +89,7 @@ public class JWTTokenProvider {
         try {
             Algorithm algorithm = HMAC512(secret);
             verifier = JWT.require(algorithm).withIssuer(ISSUER).build();
-        }catch (JWTVerificationException exception) {
+        } catch (JWTVerificationException exception) {
             throw new JWTVerificationException(TOKEN_CANNOT_BE_VERIFIED);
         }
         return verifier;
@@ -92,7 +97,7 @@ public class JWTTokenProvider {
 
     private String[] getClaimsFromUser(PermissionCollector permissionCollector) {
         List<String> authorities = new ArrayList<>();
-        for (GrantedAuthority grantedAuthority : permissionCollector.getAuthorities()){
+        for (GrantedAuthority grantedAuthority : permissionCollector.getAuthorities()) {
             authorities.add(grantedAuthority.getAuthority());
         }
         return authorities.toArray(new String[0]);

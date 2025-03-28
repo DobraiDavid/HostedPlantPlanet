@@ -22,7 +22,7 @@
     <include file="create_table_orders.sql" relativeToChangelogFile="true"/>
     <include file="create_table_order_items.sql" relativeToChangelogFile="true"/>
 
-    <changeSet id="assign-role-user" author="your_name">
+    <changeSet id="assign-role-user" author="Dobrai David">
         <sql>
             CREATE TRIGGER assign_role_user
                 AFTER INSERT ON users

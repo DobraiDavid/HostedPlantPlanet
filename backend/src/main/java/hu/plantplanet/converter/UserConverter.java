@@ -8,6 +8,8 @@ public class UserConverter {
         ReadUser readUser = new ReadUser();
         readUser.setId( user.getId() );
         readUser.setName( user.getName() );
+        readUser.setEmail(user.getEmail());
+        readUser.setProfileImage(user.getProfileImage());
         return readUser;
     }
 }
