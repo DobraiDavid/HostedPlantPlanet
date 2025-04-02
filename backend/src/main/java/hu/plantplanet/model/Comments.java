@@ -34,8 +34,10 @@ public class Comments {
     @Column(nullable = false)
     private int rating;  // 1 to 5
 
+    @Column(columnDefinition = "TEXT")  // Profile picture URL or file path
+    private String profilePicture;  // New field for the profile picture
+
     @Column(nullable = false, updatable = false)
     @CreationTimestamp
     private LocalDateTime createdAt;  // Let the database handle the timestamp generation
-
 }

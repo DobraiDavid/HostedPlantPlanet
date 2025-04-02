@@ -44,7 +44,9 @@ const PlantDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [amount, setAmount] = useState(1);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
   const [newComment, setNewComment] = useState('');
   const [commentTitle, setCommentTitle] = useState('');
   const [comments, setComments] = useState([]);
@@ -52,6 +54,15 @@ const PlantDetail = () => {
   const [showCommentForm, setShowCommentForm] = useState(false);
   const navigate = useNavigate();
   const { user } = useUser(); 
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     const fetchPlantData = async () => {
@@ -73,7 +84,7 @@ const PlantDetail = () => {
         // Transform comments to ensure all required fields are present
         const processedComments = fetchedComments.map(comment => ({
           ...comment,
-          profileImage: comment.profileImage || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAF0WlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNy4yLWMwMDAgNzkuMWI2NWE7OWRzLCAwMC8wMC8wMC8wMDowMDowMCwgICAgICAgICI+IDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+IDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiIHhtbG5zOnhtcD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLyIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0RXZ0PSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VFdmVudCMiIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIgeG1sbnM6cGhvdG9zaG9wPSJodHRwOi8vbnMuYWRvYmUuY29tL3Bob3Rvc2hvcC8xLjAvIiB4bXA6Q3JlYXRvclRvb2w9IkFkb2JlIFBob3Rvc2hvcCAyNS4wICgyMDIzMDgxNi5tLjIyNDggMjAyMy8wOC8xNjoyMjo0OCkgIChNYWNpbnRvc2gpIiB4bXA6Q3JlYXRlRGF0ZT0iMjAyNC0wMy0yN1QwMDowNzo0NloiIHhtcDpNZXRhZGF0YURhdGU9IjIwMjQtMDMtMjdUMDA6MDc6NDZaIiB4bXA6TW9kaWZ5RGF0ZT0iMjAyNC0wMy0yN1QwMDowNzo0NloiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6YTAzNTdkODEtMGVkOS00NmU1LTg5ZGYtNmQxM2I5NTBlMTUxIiB4bXBNTTpEb2N1bWVudElEPSJhZG9iZTpkb2NpZDpwaG90b3Nob3A6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', // Fallback to a default avatar
+          profilePicture: comment.profilePicture,
           createdAt: comment.createdAt || new Date().toISOString(),
           rating: comment.rating || 0
         }));
@@ -104,6 +115,7 @@ const PlantDetail = () => {
 
     try {
       await addToCart(user.id, plant.id, amount);
+      setSnackbarMessage("Item added to cart!");
       setOpenSnackbar(true); 
     } catch (error) {
       setError('Failed to add item to cart');
@@ -148,13 +160,15 @@ const PlantDetail = () => {
     }
   
     try {
+      const profilePicture = user.profileImage
       // Prepare comment data
       const commentData = {
         userId: user.id,
         plantId: id,
         title: commentTitle,
         commentText: newComment,
-        rating: rating
+        rating: rating,
+        profilePicture: user.profileImage
       };
   
       // Post comment to backend
@@ -163,14 +177,15 @@ const PlantDetail = () => {
         id, 
         commentTitle, 
         newComment, 
-        rating
+        rating,
+        profilePicture
       );
   
       // Construct full comment object
       const fullCommentData = {
         ...newCommentResponse,
         username: user.name,
-        profileImage: user.profileImage || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAF0WlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNy4yLWMwMDAgNzkuMWI2NWE7OWRzLCAwMC8wMC8wMC8wMDowMDowMCwgICAgICAgICI+IDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+IDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiIHhtbG5zOnhtcD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLyIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0RXZ0PSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VFdmVudCMiIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIgeG1sbnM6cGhvdG9zaG9wPSJodHRwOi8vbnMuYWRvYmUuY29tL3Bob3Rvc2hvcC8xLjAvIiB4bXA6Q3JlYXRvclRvb2w9IkFkb2JlIFBob3Rvc2hvcCAyNS4wICgyMDIzMDgxNi5tLjIyNDggMjAyMy8wOC8xNjoyMjo0OCkgIChNYWNpbnRvc2gpIiB4bXA6Q3JlYXRlRGF0ZT0iMjAyNC0wMy0yN1QwMDowNzo0NloiIHhtcDpNZXRhZGF0YURhdGU9IjIwMjQtMDMtMjdUMDA6MDc6NDZaIiB4bXA6TW9kaWZ5RGF0ZT0iMjAyNC0wMy0yN1QwMDowNzo0NloiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6YTAzNTdkODEtMGVkOS00NmU1LTg5ZGYtNmQxM2I5NTBlMTUxIiB4bXBNTTpEb2N1bWVudElEPSJhZG9iZTpkb2NpZDpwaG90b3Nob3A6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',
+        profilePicture: user.profileImage, 
         createdAt: new Date().toISOString(),
         title: commentTitle,
         commentText: newComment,
@@ -187,6 +202,7 @@ const PlantDetail = () => {
       setShowCommentForm(false);
   
       // Optional: Show success notification
+      setSnackbarMessage("Comment posted!");
       setOpenSnackbar(true);
   
     } catch (error) {
@@ -204,40 +220,40 @@ const PlantDetail = () => {
   if (error) return <div className="error"><Alert severity="error">{error}</Alert></div>;
 
   return (
-    <div className="container">
-      <div className="product-container">
-        <div className="product-image">
-          {/* Carousel */}
-          <Carousel 
-            showThumbs={false}
-            showStatus={false}
-            infiniteLoop
-            autoPlay
-            interval={5000}
-          >
-            {JSON.parse(plant.images).map((image, index) => (
-              <div key={index}>
-                <img 
-                  src={image} 
-                  alt={`${plant.name} image ${index + 1}`} 
-                  className="carousel-image" 
-                  style={{ width: '730px', height: 'auto' }}
-                />
-              </div>
-            ))}
-          </Carousel>
-        </div>
-
-        <div className="product-details">
-          <h1 className="product-name">{plant.name}</h1>
-          <p className="product-description">{plant.description}</p>
-
-          <div className="price-stock">
-            <p className="price">${plant.price}</p>
-            <p className="stock-status">In stock</p>
+      <div className="container">
+        {isMobile ? (
+        // MOBILE VIEW (Stacked layout)
+        <>
+          <div className="product-image">
+            <Carousel 
+              showThumbs={false}
+              showStatus={false}
+              infiniteLoop
+              autoPlay
+              interval={5000}
+            >
+              {JSON.parse(plant.images).map((image, index) => (
+                <div key={index}>
+                  <img 
+                    src={image} 
+                    alt={`${plant.name} image ${index + 1}`} 
+                    className="carousel-image"
+                    style={{ width: '100%', height: 'auto' }} 
+                  />
+                </div>
+              ))}
+            </Carousel>
           </div>
 
-          <div className="amount-selector">
+          <div className="product-details">
+            <h1 className="product-name">{plant.name}</h1>
+            <p className="product-description">{plant.description}</p>
+
+            <div className="price-stock">
+              <p className="price">${plant.price}</p>
+              <p className="stock-status">In stock</p>
+            </div>
+
             <TextField
               label="Amount"
               type="number"
@@ -245,20 +261,60 @@ const PlantDetail = () => {
               onChange={(e) => setAmount(Math.min(20, Math.max(1, Number(e.target.value))))}
               inputProps={{ min: 1, max: 20 }}
             />
+
+            <Button variant="contained" color="success" size="large" sx={{ mt: 2 }} onClick={handleAddToCart}>
+              Add to Cart
+            </Button>
+          </div>
+        </>
+      ) : (
+        // PC VIEW (Side-by-side layout)
+        <div className="product-container" style={{ display: "flex", gap: "20px" }}>
+          <div className="product-image" style={{ flex: 1 }}>
+            <Carousel 
+              showThumbs={false}
+              showStatus={false}
+              infiniteLoop
+              autoPlay
+              interval={5000}
+            >
+              {JSON.parse(plant.images).map((image, index) => (
+                <div key={index}>
+                  <img 
+                    src={image} 
+                    alt={`${plant.name} image ${index + 1}`} 
+                    className="carousel-image"
+                    style={{ width: '100%', height: 'auto' }} 
+                  />
+                </div>
+              ))}
+            </Carousel>
           </div>
 
-          <div style={{ marginTop: '10px' }}>
-            <Button
-              variant="contained"
-              color="success"
-              size="large"
-              onClick={handleAddToCart}
-            >
+          <div className="product-details" style={{ flex: 1 }}>
+            <h1 className="product-name">{plant.name}</h1>
+            <p className="product-description">{plant.description}</p>
+
+            <div className="price-stock">
+              <p className="price">${plant.price}</p>
+              <p className="stock-status">In stock</p>
+            </div>
+
+            <TextField
+              label="Amount"
+              type="number"
+              value={amount}
+              onChange={(e) => setAmount(Math.min(20, Math.max(1, Number(e.target.value))))}
+              inputProps={{ min: 1, max: 20 }}
+            />
+
+            <Button variant="contained" color="success" size="large" sx={{ mt: 2 }} onClick={handleAddToCart}>
               Add to Cart
             </Button>
           </div>
         </div>
-      </div>
+      )}
+     
 
       <Box sx={{ 
         backgroundColor: '#f0f4f0', 
@@ -577,7 +633,7 @@ const PlantDetail = () => {
       >
         {/* Profile Picture */}
         <Avatar 
-          src={comment.profileImage} 
+          src={comment.profilePicture} 
           alt={`${comment.username}'s profile`}
           sx={{ 
             width: 56, 
@@ -643,7 +699,7 @@ const PlantDetail = () => {
         open={openSnackbar}
         autoHideDuration={3000}
         onClose={() => setOpenSnackbar(false)}
-        message="Item added to cart!"
+        message={snackbarMessage}
       />
     </div>
   );

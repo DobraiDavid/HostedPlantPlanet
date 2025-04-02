@@ -35,12 +35,13 @@ public class CommentService {
                         comment.getTitle(),
                         comment.getCommentText(),
                         comment.getRating(),
+                        comment.getProfilePicture(),
                         comment.getCreatedAt()
                 ))
                 .collect(Collectors.toList());
     }
 
-    public Comments addComment(Integer userId, Integer plantId, String title, String commentText, int rating) {
+    public Comments addComment(Integer userId, Integer plantId, String title, String commentText, int rating, String profilePicture) {
         Users user = usersRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         Plants plant = plantsRepository.findById(plantId).orElseThrow(() -> new RuntimeException("Plant not found"));
 
@@ -50,9 +51,8 @@ public class CommentService {
         comment.setTitle(title);
         comment.setCommentText(commentText);
         comment.setRating(rating);
+        comment.setProfilePicture(profilePicture);  // Set profile picture
 
         return commentRepository.save(comment);
     }
 }
-
-

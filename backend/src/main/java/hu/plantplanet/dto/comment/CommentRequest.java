@@ -10,5 +10,6 @@ public class CommentRequest {
     private String title;
     private String commentText;
     private int rating;
+    private String profilePicture;
 }
 

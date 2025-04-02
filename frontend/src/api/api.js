@@ -258,14 +258,15 @@ export const getComments = async (plantId) => {
 };
 
 // Post a new comment
-export const postComment = async (userId, plantId, title, commentText, rating) => {
+export const postComment = async (userId, plantId, title, commentText, rating, profilePicture) => {
   try {
     const response = await axios.post(`${API_BASE_URL}/comments/post`, {
       userId,
       plantId,
       title,
       commentText,
-      rating
+      rating,
+      profilePicture
     });
     return response.data;
   } catch (error) {

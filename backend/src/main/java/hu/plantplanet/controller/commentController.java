@@ -28,7 +28,7 @@ public class commentController {
     @PostMapping("/post")
     @Operation(summary = "Post a new comment")
     public Comments postComment(@RequestBody CommentRequest request) {
-        return commentService.addComment(request.getUserId(), request.getPlantId(), request.getTitle(),request.getCommentText(), request.getRating());
+        return commentService.addComment(request.getUserId(), request.getPlantId(), request.getTitle(),request.getCommentText(), request.getRating(), request.getProfilePicture());
     }
 }
 

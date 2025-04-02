@@ -4,6 +4,7 @@ import { useToast } from '../context/ToastContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
+import { useMediaQuery, useTheme } from '@mui/material';
 import { 
   Card, 
   CardMedia, 
@@ -19,8 +20,15 @@ import {
   FormControlLabel, 
   Checkbox,
   Slider,
-  TextField
+  TextField,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  IconButton
 } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import FilterListIcon from '@mui/icons-material/FilterList';
+
 
 const Home = () => {
   const [plants, setPlants] = useState([]);
@@ -31,7 +39,9 @@ const Home = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const showToast = useToast();
-
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [filtersVisible, setFiltersVisible] = useState(!isMobile);
 
   // Filter states
   const [lightLevels, setLightLevels] = useState({
@@ -64,6 +74,11 @@ const Home = () => {
 
     fetchPlants();
   }, []);
+
+  useEffect(() => {
+    // Set filters visibility based on screen size
+    setFiltersVisible(!isMobile);
+  }, [isMobile]);
 
   useEffect(() => {
     if (location.state?.toast) {
@@ -104,6 +119,10 @@ const Home = () => {
 
   const handleTemperatureChange = (event, newValue) => {
     setTemperatureRange(newValue);
+  };
+
+  const toggleFilters = () => {
+    setFiltersVisible(!filtersVisible);
   };
 
   const parseTemperature = (tempString) => {
@@ -205,9 +224,10 @@ const Home = () => {
         🌿 Plants 🌿
       </Typography>
 
-      <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-        <Box sx={{ width: '250px', mr: 4 }}>
-        <TextField
+      <Box sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 4 }}>
+        {/* Filter Section */}
+        <Box sx={{ width: isMobile ? '100%' : '250px' }}>
+          <TextField
             fullWidth
             label="Search Plants"
             variant="outlined"
@@ -216,97 +236,247 @@ const Home = () => {
             sx={{ mb: 2 }}
           />
 
-          <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>Filter By</Typography>
+          {/* Mobile filter toggle button */}
+          {isMobile && (
+            <Button 
+              fullWidth
+              variant="outlined"
+              startIcon={<FilterListIcon />}
+              onClick={toggleFilters}
+              sx={{ mb: 2 }}
+            >
+              {filtersVisible ? 'Hide Filters' : 'Show Filters'}
+            </Button>
+          )}
 
-          {/* Light Levels Filter */}
-          <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>Light Levels</Typography>
-          <FormGroup>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={lightLevels.Low}
-                  onChange={handleLightLevelChange}
-                  name="Low"
-                />
-              }
-              label="Low Light"
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={lightLevels.Medium}
-                  onChange={handleLightLevelChange}
-                  name="Medium"
-                />
-              }
-              label="Medium Light"
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={lightLevels.High}
-                  onChange={handleLightLevelChange}
-                  name="High"
-                />
-              }
-              label="High Light"
-            />
-          </FormGroup>
+          {/* Collapsible filter sections */}
+          {(filtersVisible || !isMobile) && (
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>Filter By</Typography>
 
-          {/* Water Needs Filter */}
-          <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1, mt: 3 }}>Water Needs</Typography>
-          <FormGroup>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={waterNeeds.Low}
-                  onChange={handleWaterNeedsChange}
-                  name="Low"
-                />
-              }
-              label="Low Water"
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={waterNeeds.Medium}
-                  onChange={handleWaterNeedsChange}
-                  name="Medium"
-                />
-              }
-              label="Medium Water"
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={waterNeeds.High}
-                  onChange={handleWaterNeedsChange}
-                  name="High"
-                />
-              }
-              label="High Water"
-            />
-          </FormGroup>
+              {/* Light Levels Filter - Accordion for mobile */}
+              {isMobile ? (
+                <Accordion defaultExpanded>
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls="light-levels-content"
+                    id="light-levels-header"
+                  >
+                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>Light Levels</Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <FormGroup>
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={lightLevels.Low}
+                            onChange={handleLightLevelChange}
+                            name="Low"
+                          />
+                        }
+                        label="Low Light"
+                      />
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={lightLevels.Medium}
+                            onChange={handleLightLevelChange}
+                            name="Medium"
+                          />
+                        }
+                        label="Medium Light"
+                      />
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={lightLevels.High}
+                            onChange={handleLightLevelChange}
+                            name="High"
+                          />
+                        }
+                        label="High Light"
+                      />
+                    </FormGroup>
+                  </AccordionDetails>
+                </Accordion>
+              ) : (
+                /* Light Levels Filter - Regular for desktop */
+                <>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>Light Levels</Typography>
+                  <FormGroup>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={lightLevels.Low}
+                          onChange={handleLightLevelChange}
+                          name="Low"
+                        />
+                      }
+                      label="Low Light"
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={lightLevels.Medium}
+                          onChange={handleLightLevelChange}
+                          name="Medium"
+                        />
+                      }
+                      label="Medium Light"
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={lightLevels.High}
+                          onChange={handleLightLevelChange}
+                          name="High"
+                        />
+                      }
+                      label="High Light"
+                    />
+                  </FormGroup>
+                </>
+              )}
 
-          {/* Temperature Range Filter */}
-          <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1, mt: 3 }}>Temperature Range (°C)</Typography>
-          <Box sx={{ px: 2 }}>
-            <Slider
-              value={temperatureRange}
-              onChange={handleTemperatureChange}
-              valueLabelDisplay="auto"
-              min={0}
-              max={40}
-              step={1}
-              marks={[
-                { value: 0, label: '0°C' },
-                { value: 40, label: '40°C' }
-              ]}
-            />
-            <Typography variant="body2" align="center">
-              {temperatureRange[0]}°C - {temperatureRange[1]}°C
-            </Typography>
-          </Box>
+              {/* Water Needs Filter - Accordion for mobile */}
+              {isMobile ? (
+                <Accordion defaultExpanded>
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls="water-needs-content"
+                    id="water-needs-header"
+                  >
+                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>Water Needs</Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <FormGroup>
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={waterNeeds.Low}
+                            onChange={handleWaterNeedsChange}
+                            name="Low"
+                          />
+                        }
+                        label="Low Water"
+                      />
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={waterNeeds.Medium}
+                            onChange={handleWaterNeedsChange}
+                            name="Medium"
+                          />
+                        }
+                        label="Medium Water"
+                      />
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={waterNeeds.High}
+                            onChange={handleWaterNeedsChange}
+                            name="High"
+                          />
+                        }
+                        label="High Water"
+                      />
+                    </FormGroup>
+                  </AccordionDetails>
+                </Accordion>
+              ) : (
+                /* Water Needs Filter - Regular for desktop */
+                <>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1, mt: 3 }}>Water Needs</Typography>
+                  <FormGroup>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={waterNeeds.Low}
+                          onChange={handleWaterNeedsChange}
+                          name="Low"
+                        />
+                      }
+                      label="Low Water"
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={waterNeeds.Medium}
+                          onChange={handleWaterNeedsChange}
+                          name="Medium"
+                        />
+                      }
+                      label="Medium Water"
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={waterNeeds.High}
+                          onChange={handleWaterNeedsChange}
+                          name="High"
+                        />
+                      }
+                      label="High Water"
+                    />
+                  </FormGroup>
+                </>
+              )}
+
+              {/* Temperature Range Filter - Accordion for mobile */}
+              {isMobile ? (
+                <Accordion defaultExpanded>
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls="temperature-content"
+                    id="temperature-header"
+                  >
+                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>Temperature Range (°C)</Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <Box sx={{ px: 2 }}>
+                      <Slider
+                        value={temperatureRange}
+                        onChange={handleTemperatureChange}
+                        valueLabelDisplay="auto"
+                        min={0}
+                        max={40}
+                        step={1}
+                        marks={[
+                          { value: 0, label: '0°C' },
+                          { value: 40, label: '40°C' }
+                        ]}
+                      />
+                      <Typography variant="body2" align="center">
+                        {temperatureRange[0]}°C - {temperatureRange[1]}°C
+                      </Typography>
+                    </Box>
+                  </AccordionDetails>
+                </Accordion>
+              ) : (
+                /* Temperature Range Filter - Regular for desktop */
+                <>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1, mt: 3 }}>Temperature Range (°C)</Typography>
+                  <Box sx={{ px: 2 }}>
+                    <Slider
+                      value={temperatureRange}
+                      onChange={handleTemperatureChange}
+                      valueLabelDisplay="auto"
+                      min={0}
+                      max={40}
+                      step={1}
+                      marks={[
+                        { value: 0, label: '0°C' },
+                        { value: 40, label: '40°C' }
+                      ]}
+                    />
+                    <Typography variant="body2" align="center">
+                      {temperatureRange[0]}°C - {temperatureRange[1]}°C
+                    </Typography>
+                  </Box>
+                </>
+              )}
+            </Box>
+          )}
         </Box>
 
         {/* Right Plant List */}

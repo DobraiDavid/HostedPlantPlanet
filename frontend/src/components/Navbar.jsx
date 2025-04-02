@@ -13,13 +13,18 @@ import {
   List,
   ListItem,
   ListItemText,
+  ListItemIcon,
   Box,
   Menu,
   MenuItem,
   Divider,
+  Tooltip,
 } from "@mui/material";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import MenuIcon from "@mui/icons-material/Menu";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import InfoIcon from "@mui/icons-material/Info";
+import EmailIcon from "@mui/icons-material/Email";
 import logo from "../assets/logo.jpg";
 
 const Navbar = () => {
@@ -121,35 +126,68 @@ const Navbar = () => {
           )}
         </Box>
 
-        <Box sx={{ display: { xs: "none", sm: "block" }, ml: 2 }}>
-          <Button
-            color="inherit"
-            onClick={handleMenuOpen}
-            sx={{
-              "&:hover": { color: "#81c784", transition: "color 0.3s ease-in-out" },
-              transition: "transform 0.2s ease-in-out",
-            }}
-          >
-            More
-          </Button>
-          <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-            <MenuItem component={Link} to="/about" onClick={handleMenuClose}>
-              About Us
-            </MenuItem>
-            <MenuItem component={Link} to="/contact" onClick={handleMenuClose}>
-              Contact
-            </MenuItem>
-            <MenuItem component={Link} to="/profile" onClick={handleMenuClose}>
-              Profile
-            </MenuItem>
-          </Menu>
+        {/* About & Contact as direct buttons instead of dropdown */}
+        <Box sx={{ display: { xs: "none", sm: "flex" }, alignItems: "center" }}>
+          <Tooltip title="About Us">
+            <IconButton 
+              component={Link} 
+              to="/about" 
+              color="inherit"
+              sx={{ 
+                mx: 0.5,
+                "&:hover": { color: "#81c784", transition: "color 0.3s ease-in-out" } 
+              }}
+            >
+              <InfoIcon />
+            </IconButton>
+          </Tooltip>
+          
+          <Tooltip title="Contact Us">
+            <IconButton 
+              component={Link} 
+              to="/contact" 
+              color="inherit"
+              sx={{ 
+                mx: 0.5,
+                "&:hover": { color: "#81c784", transition: "color 0.3s ease-in-out" } 
+              }}
+            >
+              <EmailIcon />
+            </IconButton>
+          </Tooltip>
         </Box>
+        
+        {/* Profile and Cart Icons */}
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          <Tooltip title="Profile">
+            <IconButton 
+              component={Link}
+              to="/profile"
+              color="inherit"
+              sx={{ 
+                mr: 1,
+                "&:hover": { color: "#81c784", transition: "color 0.3s ease-in-out" } 
+              }}
+            >
+              <AccountCircleIcon />
+            </IconButton>
+          </Tooltip>
 
-        <IconButton component={Link} to="/cart/view" color="inherit">
-          <Badge badgeContent={cartItemCount} color="error">
-            <ShoppingCartIcon />
-          </Badge>
-        </IconButton>
+          <Tooltip title="Shopping Cart">
+            <IconButton 
+              component={Link} 
+              to="/cart/view" 
+              color="inherit"
+              sx={{ 
+                "&:hover": { color: "#81c784", transition: "color 0.3s ease-in-out" } 
+              }}
+            >
+              <Badge badgeContent={cartItemCount} color="error">
+                <ShoppingCartIcon />
+              </Badge>
+            </IconButton>
+          </Tooltip>
+        </Box>
       </Toolbar>
 
       <Drawer
@@ -166,20 +204,39 @@ const Navbar = () => {
         }}
       >
         <Box sx={{ width: 250 }} onClick={handleDrawerToggle}>
-          <List>
-            {navLinks.map((item) => (
-              <ListItem component={Link} to={item.path} key={item.title} sx={{ "&:hover": { backgroundColor: "#81c784", transform: "scale(1.05)" } }}>
-                <ListItemText primary={item.title} />
-              </ListItem>
-            ))}
-          </List>
+          {user ? (
+            <Box sx={{ p: 2, display: "flex", alignItems: "center" }}>
+              <AccountCircleIcon sx={{ mr: 1 }} />
+              <Typography variant="subtitle1">Hello, {user.name}</Typography>
+            </Box>
+          ) : (
+            <List>
+              {navLinks.map((item) => (
+                <ListItem component={Link} to={item.path} key={item.title} sx={{ "&:hover": { backgroundColor: "#81c784", transform: "scale(1.05)" } }}>
+                  <ListItemText primary={item.title} sx={{ color: "white" }}/>
+                </ListItem>
+              ))}
+            </List>
+          )}
           <Divider />
           <List>
-            <ListItem component={Link} to="/about">
-              <ListItemText primary="About Us" />
+            <ListItem component={Link} to="/about" sx={{ "&:hover": { backgroundColor: "#81c784" } }}>
+              <ListItemIcon sx={{ color: "white" }}>
+                <InfoIcon />
+              </ListItemIcon>
+              <ListItemText primary="About Us" sx={{ color: "white" }}/>
             </ListItem>
-            <ListItem component={Link} to="/contact">
-              <ListItemText primary="Contact" />
+            <ListItem component={Link} to="/contact" sx={{ "&:hover": { backgroundColor: "#81c784" } }}>
+              <ListItemIcon sx={{ color: "white" }}>
+                <EmailIcon />
+              </ListItemIcon>
+              <ListItemText primary="Contact" sx={{ color: "white" }}/>
+            </ListItem>
+            <ListItem component={Link} to="/profile" sx={{ "&:hover": { backgroundColor: "#81c784" } }}>
+              <ListItemIcon sx={{ color: "white" }}>
+                <AccountCircleIcon />
+              </ListItemIcon>
+              <ListItemText primary="Profile" sx={{ color: "white" }}/>
             </ListItem>
           </List>
         </Box>
