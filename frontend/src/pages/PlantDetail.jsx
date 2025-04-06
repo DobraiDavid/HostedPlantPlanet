@@ -145,11 +145,18 @@ const PlantDetail = () => {
   const handleCommentSubmit = async () => {
     // Validate comment and title
     if (!newComment.trim()) {
-      setError('Comment cannot be empty');
+      setSnackbarMessage("Comment cannot be empty!");
+      setOpenSnackbar(true);
       return;
     }
     if (!commentTitle.trim()) {
-      setError('Comment title cannot be empty');
+      setSnackbarMessage("Comment title cannot be empty!");
+      setOpenSnackbar(true);
+      return;
+    }
+    if (!rating) {
+      setSnackbarMessage("Comment rating cannot be!");
+      setOpenSnackbar(true);
       return;
     }
   
