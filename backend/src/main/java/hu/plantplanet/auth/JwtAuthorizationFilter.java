@@ -1,11 +1,14 @@
 package hu.plantplanet.auth;
 
-
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import hu.plantplanet.token.JWTTokenProvider;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,12 +20,14 @@ import java.util.List;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 @Component
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
-    private JWTTokenProvider jwtTokenProvider;
-    public static final String OPTIONS_HTTP_METHOD = "OPTIONS";
+    private static final Logger logger = LoggerFactory.getLogger(JwtAuthorizationFilter.class);
 
+    private final JWTTokenProvider jwtTokenProvider;
+    public static final String OPTIONS_HTTP_METHOD = "OPTIONS";
     public static final String TOKEN_PREFIX = "Bearer ";
 
     public JwtAuthorizationFilter(JWTTokenProvider jwtTokenProvider) {
@@ -30,25 +35,62 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+
+        // Skip filter for OPTIONS requests
         if (request.getMethod().equalsIgnoreCase(OPTIONS_HTTP_METHOD)) {
             response.setStatus(OK.value());
-        } else {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        try {
+            // Check if Authorization header exists and has the right format
             String authorizationHeader = request.getHeader(AUTHORIZATION);
             if (authorizationHeader == null || !authorizationHeader.startsWith(TOKEN_PREFIX)) {
+                logger.debug("No valid Authorization header found");
                 filterChain.doFilter(request, response);
                 return;
             }
+
+            // Extract the token
             String token = authorizationHeader.substring(TOKEN_PREFIX.length());
-            String username = jwtTokenProvider.getSubject(token);
-            if (jwtTokenProvider.isTokenValid(username, token) && SecurityContextHolder.getContext().getAuthentication() == null) {
-                List<GrantedAuthority> authorities = jwtTokenProvider.getAuthorities(token);
-                Authentication authentication = jwtTokenProvider.getAuthentication(username, authorities, request);
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            } else {
-                SecurityContextHolder.clearContext();
+
+            // Only process if no authentication is already set
+            if (SecurityContextHolder.getContext().getAuthentication() == null) {
+                String username = jwtTokenProvider.getSubject(token);
+
+                if (jwtTokenProvider.isTokenValid(username, token)) {
+                    List<GrantedAuthority> authorities = jwtTokenProvider.getAuthorities(token);
+                    Authentication authentication = jwtTokenProvider.getAuthentication(username, authorities, request);
+
+                    // Set the authentication in the context
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    logger.debug("Authentication successful for user: {}", username);
+                } else {
+                    logger.debug("Token validation failed");
+                    SecurityContextHolder.clearContext();
+                }
             }
+
+        } catch (TokenExpiredException e) {
+            logger.debug("Token has expired: {}", e.getMessage());
+            SecurityContextHolder.clearContext();
+            response.setStatus(UNAUTHORIZED.value());
+            response.getWriter().write("Token has expired");
+            response.getWriter().flush();
+            return;
+
+        } catch (JWTVerificationException e) {
+            logger.debug("JWT verification failed: {}", e.getMessage());
+            SecurityContextHolder.clearContext();
+
+        } catch (Exception e) {
+            logger.error("Error processing JWT token: {}", e.getMessage());
+            SecurityContextHolder.clearContext();
         }
+
         filterChain.doFilter(request, response);
     }
 }
