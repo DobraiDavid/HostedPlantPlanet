@@ -38,7 +38,7 @@ public class JWTTokenProvider {
     private static final String ISSUER = "Issuer";
     private static final String AUDIENCE = "Plant subscription service";
     public static final String AUTHORITIES = "authorities";
-    public static final long EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 5; // 5 days in milliseconds
+    public static final long EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 20; // 20 days in milliseconds
 
     public String generateJwtToken(PermissionCollector permissionCollector) {
         String[] claims = getClaimsFromUser(permissionCollector);
