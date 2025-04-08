@@ -34,8 +34,9 @@ import RepeatOutlinedIcon from '@mui/icons-material/RepeatOutlined';
 import { useUser } from "../context/UserContext";  
 import { Link, useNavigate } from 'react-router-dom';
 import { Carousel } from 'react-responsive-carousel';  
-
+import SearchIcon from '@mui/icons-material/Search';
 import 'react-responsive-carousel/lib/styles/carousel.min.css';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 
 const PlantDetail = () => {
   const { id } = useParams(); 
@@ -54,6 +55,8 @@ const PlantDetail = () => {
   const [showCommentForm, setShowCommentForm] = useState(false);
   const navigate = useNavigate();
   const { user } = useUser(); 
+  
+  const [cart, setCart] = useState([]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -120,7 +123,17 @@ const PlantDetail = () => {
     } catch (error) {
       setError('Failed to add item to cart');
     }
+
+    const productInCart = cart.some(item => item.id === plant.id);
+  
+    if (!productInCart) {
+      setCart([...cart, { id: plant.id, name: plant.name, price: plant.price, quantity: amount }]);
+    } else {
+      alert('This product is already in your cart!');
+    }
   };
+
+  const isProductInCart = cart.some(item => item.id === plant.id);
 
   // Add a utility function to format relative time
   const formatRelativeTime = (createdAt) => {
@@ -269,8 +282,8 @@ const PlantDetail = () => {
               inputProps={{ min: 1, max: 20 }}
             />
 
-            <Button variant="contained" color="success" size="large" sx={{ mt: 2 }} onClick={handleAddToCart}>
-              Add to Cart
+            <Button variant="contained" color={isProductInCart ? "success" : "success"} size="large" sx={{ mt: 2 }} onClick={handleAddToCart} startIcon={<ShoppingCartIcon />}>
+            {isProductInCart ? 'Already in Cart' : 'Add to Cart'}
             </Button>
           </div>
         </>
@@ -315,8 +328,8 @@ const PlantDetail = () => {
               inputProps={{ min: 1, max: 20 }}
             />
 
-            <Button variant="contained" color="success" size="large" sx={{ mt: 2 }} onClick={handleAddToCart}>
-              Add to Cart
+            <Button variant="contained" color={isProductInCart ? "success" : "success"}  size="large" sx={{ mt: 2 }} onClick={handleAddToCart} startIcon={<ShoppingCartIcon />}>
+            {isProductInCart ? 'Already in Cart' : 'Add to Cart'}
             </Button>
           </div>
         </div>
@@ -496,8 +509,9 @@ const PlantDetail = () => {
                         backgroundColor: '#4caf50',
                         '&:hover': { backgroundColor: '#388e3c' },
                       }}
+                      startIcon={<SearchIcon />}
                     >
-                      🌱 Details
+                      Details
                     </Button>
                   </CardContent>
                 </Card>

@@ -28,6 +28,7 @@ import {
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import SearchIcon from '@mui/icons-material/Search';
 
 
 const Home = () => {
@@ -551,8 +552,9 @@ const Home = () => {
                             to={`/plant/${plant.id}`}
                             variant="contained"
                             sx={{ borderRadius: 2, backgroundColor: '#4caf50', '&:hover': { backgroundColor: '#388e3c' } }}
+                            startIcon={<SearchIcon />}
                           >
-                            🌱 Details
+                            Details
                           </Button>
                         </Box>
                       </CardContent>

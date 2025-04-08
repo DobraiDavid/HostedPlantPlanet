@@ -1,401 +1,245 @@
 import React, { useState } from 'react';
-import { 
-  Container, 
-  Box, 
-  Typography, 
-  TextField, 
-  Button, 
-  Paper, 
-  Avatar, 
-  Grid 
+import SaveIcon from '@mui/icons-material/Save';
+import CloseIcon from '@mui/icons-material/Close';
+import EditIcon from '@mui/icons-material/Edit';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
+import {
+  Box,
+  Typography,
+  Button,
+  TextField,
+  Avatar,
+  Grid,
+  Paper,
+  Container
 } from '@mui/material';
-import { useUser } from '../context/UserContext';
-import { changeUserDetails } from '../api/api.js';
-import { logout } from '../api/api.js';
-import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import { useUser } from '../context/UserContext';
+import { changeUserDetails, logout } from '../api/api';
+import { toast } from 'react-toastify';
 
 const ProfilePage = () => {
-  const { user, login } = useUser();
+  const { user, login, logout: logoutUser } = useUser();
   const navigate = useNavigate();
-  const { logout: logoutUser } = useUser();
-  const [isEditing, setIsEditing] = useState({
-    name: false,
-    email: false,
-    password: false,
-    profileImage: false
-  });
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
     password: '',
     profileImage: user?.profileImage || ''
   });
+  const [editingField, setEditingField] = useState(null);
 
-  const handleEditToggle = (field) => {
-    setIsEditing(prev => ({
-      ...Object.fromEntries(Object.keys(isEditing).map(k => [k, false])),
-      [field]: !isEditing[field]
-    }));
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+  const handleEdit = (field) => {
+    setEditingField(field);
   };
 
-  const handleLogout = async () => {
-    try {
-      await logout(); 
-      logoutUser(); 
-              navigate("/", { 
-                state: { 
-                  toast: { 
-                    message: "Logged out successfully!", 
-                    type: 'success' 
-                  } 
-                },
-                replace: false
-              });
-    } catch (error) {
-      toast.error('Logout failed');
-      navigate('/');
-    }
+  const handleCancel = () => {
+    setEditingField(null);
   };
 
   const handleSave = async (field) => {
     try {
-      const updateData = {};
-      updateData[field] = formData[field];
+      const updateData = { [field]: formData[field] };
 
       if (field === 'password') {
-        const confirmPassword = prompt('Please confirm your new password');
-        if (confirmPassword !== formData.password) {
-          toast.error('Passwords do not match');
-          return;
-        }
+        const confirm = prompt('Please confirm your new password');
+        if (confirm !== formData.password) return toast.error('Passwords do not match');
       }
 
       const updatedUser = await changeUserDetails(updateData);
-      
       login(updatedUser);
-      
-      setIsEditing(prev => ({...prev, [field]: false}));
-      toast.success(`${field.charAt(0).toUpperCase() + field.slice(1)} updated successfully`);
-    } catch (error) {
-      toast.error(error.message || `Failed to update ${field}`);
+      toast.success(`${field} updated`);
+      setEditingField(null);
+    } catch (err) {
+      toast.error(`Failed to update ${field}`);
     }
   };
 
-  const handleProfileImageChange = async (e) => {
+  const handleImageUpload = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        try {
-          const updatedUser = await changeUserDetails({
-            profileImage: reader.result
-          });
-          login(updatedUser);
-          toast.success('Profile image updated');
-        } catch (error) {
-          toast.error('Failed to update profile image');
-        }
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      console.log(reader.result);
+      try {
+        const updatedUser = await changeUserDetails({ profileImage: reader.result });
+        login(updatedUser);
+        toast.success('Profile image updated');
+      } catch (err) {
+        toast.error('Failed to update image');
+        console.error("Error during profile image update:", err);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      logoutUser();
+      navigate('/', { state: { toast: { message: 'Successful logout!', type: 'success' } } });
+    } catch (err) {
+      toast.error('Logout failed');
     }
   };
 
   if (!user) {
-    return <div>Please log in to view your profile</div>;
+    return (
+      <Box
+        sx={{
+          minHeight: '100vh',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: '#f0f0f0',
+          padding: 2,
+        }}
+      >
+        <Container maxWidth="sm">
+          <Paper sx={{ padding: 4, textAlign: 'center', borderRadius: 3, boxShadow: 3 }}>
+            <Typography variant="h5" gutterBottom>
+              You're not logged in
+            </Typography>
+            <Typography variant="body1" sx={{ mb: 3 }}>
+              Please log in to access your profile and update your information.
+            </Typography>
+            <Button
+              variant="contained"
+              color="success"
+              onClick={() => navigate('/login')}
+              sx={{ mr: 2 }}
+            >
+              Log In
+            </Button>
+            <Button
+              variant="outlined"
+              color='success'
+              sx={{ 
+                marginRight: 2, 
+                '&:hover': {
+                  backgroundColor: '#e8f5e9',  
+                  borderColor: '#4caf50',      
+                },
+                borderRadius: 2,  
+                borderWidth: 2,   
+              }}
+              onClick={() => navigate('/')}
+            >
+              Back to Home
+            </Button>
+          </Paper>
+        </Container>
+      </Box>
+    );
   }
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4 }}>
-      <Box 
-        sx={{ 
-          backgroundColor: '#f0f4f0', 
-          borderRadius: 3, 
-          padding: '20px', 
-          boxShadow: 3 
-        }}
-      >
-        <Typography 
-          variant="h4" 
-          sx={{ 
-            marginBottom: '20px', 
-            color: '#2e7d32', 
-            fontWeight: 'bold',
-            textAlign: 'center'
-          }}
-        >
-          User Profile
-        </Typography>
+    <Box sx={{ display: 'flex', justifyContent: 'center', minHeight: '100vh', backgroundColor: '#f4f4f4' }}>
+      <Box sx={{ backgroundColor: 'white', padding: 4, borderRadius: 3, boxShadow: 3, width: '100%', maxWidth: 600 }}>
+        <Typography variant="h4" align="center" mb={4}>Profile</Typography>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
-          <Avatar
-            src={user.profileImage}
-            alt="Profile"
-            sx={{ 
-              width: 120, 
-              height: 120, 
-              mb: 2,
-              border: '4px solid #4caf50'
-            }}
-          />
-          <input 
-            type="file" 
-            accept="image/*" 
-            onChange={handleProfileImageChange}
-            style={{ display: 'none' }}
-            id="profileImageUpload"
-          />
+        <Box sx={{ textAlign: 'center', mb: 3 }}>
+          <Avatar src={user.profileImage} sx={{ width: 100, height: 100, margin: '0 auto', mb: 2 }} />
+          <input type="file" id="upload" hidden accept="image/*" onChange={handleImageUpload} />
           <Button
-            variant="contained"
             component="label"
-            htmlFor="profileImageUpload"
+            htmlFor="upload"
+            variant="outlined"
+            color="success"
+            startIcon={<PhotoCameraIcon />}
             sx={{
-              backgroundColor: '#4caf50',
-              '&:hover': { backgroundColor: '#388e3c' }
+              borderRadius: 2,
+              px: 3,
+              '&:hover': {
+                backgroundColor: '#f0f0f0', // Hover effect
+                borderColor: '#4caf50',
+              },
             }}
           >
             Change Profile Picture
           </Button>
         </Box>
 
-        <Grid container spacing={3}>
-          {/* Name Field */}
-          <Grid item xs={12}>
-            <Paper 
-              elevation={2} 
-              sx={{ 
-                padding: '15px', 
-                display: 'flex', 
-                flexDirection: 'column', 
-                alignItems: 'center',
-                transition: 'transform 0.3s ease',
-                '&:hover': {
-                  transform: 'scale(1.02)',
-                  boxShadow: 3
-                }
-              }}
-            >
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  marginBottom: '10px', 
-                  fontWeight: 'bold',
-                  color: '#2e7d32'
-                }}
-              >
-                Name
-              </Typography>
-              {isEditing.name ? (
-                <Box sx={{ display: 'flex', width: '100%', gap: 2 }}>
-                  <TextField
-                    fullWidth
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    variant="outlined"
-                  />
-                  <Button 
-                    variant="contained" 
-                    color="success"
-                    onClick={() => handleSave('name')}
-                  >
-                    Save
-                  </Button>
-                  <Button 
-                    variant="outlined" 
-                    color="secondary"
-                    onClick={() => handleEditToggle('name')}
-                  >
-                    Cancel
-                  </Button>
-                </Box>
-              ) : (
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
-                  <Typography>{user.name}</Typography>
-                  <Button 
-                    variant="contained"
-                    sx={{
-                      backgroundColor: '#4caf50',
-                      '&:hover': { backgroundColor: '#388e3c' }
-                    }}
-                    onClick={() => handleEditToggle('name')}
-                  >
-                    Edit
-                  </Button>
-                </Box>
-              )}
-            </Paper>
-          </Grid>
-
-          {/* Email Field */}
-          <Grid item xs={12}>
-            <Paper 
-              elevation={2} 
-              sx={{ 
-                padding: '15px', 
-                display: 'flex', 
-                flexDirection: 'column', 
-                alignItems: 'center',
-                transition: 'transform 0.3s ease',
-                '&:hover': {
-                  transform: 'scale(1.02)',
-                  boxShadow: 3
-                }
-              }}
-            >
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  marginBottom: '10px', 
-                  fontWeight: 'bold',
-                  color: '#2e7d32'
-                }}
-              >
-                Email
-              </Typography>
-              {isEditing.email ? (
-                <Box sx={{ display: 'flex', width: '100%', gap: 2 }}>
-                  <TextField
-                    fullWidth
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    variant="outlined"
-                    type="email"
-                  />
-                  <Button 
-                    variant="contained" 
-                    color="success"
-                    onClick={() => handleSave('email')}
-                  >
-                    Save
-                  </Button>
-                  <Button 
-                    variant="outlined" 
-                    color="secondary"
-                    onClick={() => handleEditToggle('email')}
-                  >
-                    Cancel
-                  </Button>
-                </Box>
-              ) : (
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
-                  <Typography>{user.email}</Typography>
-                  <Button 
-                    variant="contained"
-                    sx={{
-                      backgroundColor: '#4caf50',
-                      '&:hover': { backgroundColor: '#388e3c' }
-                    }}
-                    onClick={() => handleEditToggle('email')}
-                  >
-                    Edit
-                  </Button>
-                </Box>
-              )}
-            </Paper>
-          </Grid>
-
-          {/* Password Field */}
-          <Grid item xs={12}>
-            <Paper 
-              elevation={2} 
-              sx={{ 
-                padding: '15px', 
-                display: 'flex', 
-                flexDirection: 'column', 
-                alignItems: 'center',
-                transition: 'transform 0.3s ease',
-                '&:hover': {
-                  transform: 'scale(1.02)',
-                  boxShadow: 3
-                }
-              }}
-            >
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  marginBottom: '10px', 
-                  fontWeight: 'bold',
-                  color: '#2e7d32'
-                }}
-              >
-                Password
-              </Typography>
-              {isEditing.password ? (
-                <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%', gap: 2 }}>
-                  <TextField
-                    fullWidth
-                    name="password"
-                    type="password"
-                    placeholder="New Password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    variant="outlined"
-                  />
-                  <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Button 
-                      variant="contained" 
+        <Grid container spacing={2}>
+          {['name', 'email', 'password'].map((field) => (
+            <Grid item xs={12} key={field}>
+              <Paper sx={{ padding: 2, borderRadius: 2 }}>
+                <Typography variant="h6" sx={{ mb: 1 }}>{field.charAt(0).toUpperCase() + field.slice(1)}</Typography>
+                {editingField === field ? (
+                  <>
+                    <TextField
+                      fullWidth
+                      name={field}
+                      type={field === 'password' ? 'password' : 'text'}
+                      value={formData[field]}
+                      onChange={handleChange}
+                      sx={{ mb: 2 }}
+                    />
+                    <Box sx={{ display: 'flex', gap: 2, mt: 1 }}>
+                      <Button
+                        variant="contained"
+                        color="success"
+                        onClick={() => handleSave(field)}
+                        startIcon={<SaveIcon />}
+                        sx={{ borderRadius: 2, px: 3 }}
+                      >
+                        Save
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        onClick={handleCancel}
+                        startIcon={<CloseIcon />}
+                        sx={{
+                          borderRadius: 2,
+                          px: 3,
+                          borderWidth: 2,
+                          '&:hover': {
+                            backgroundColor: '#ffecec',
+                            borderColor: '#f44336',
+                          },
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </Box>
+                  </>
+                ) : (
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography>{field === 'password' ? '********' : user[field]}</Typography>
+                    <Button
+                      variant="contained"
                       color="success"
-                      onClick={() => handleSave('password')}
+                      onClick={() => handleEdit(field)}
+                      startIcon={<EditIcon />}
                     >
-                      Save
-                    </Button>
-                    <Button 
-                      variant="outlined" 
-                      color="secondary"
-                      onClick={() => handleEditToggle('password')}
-                    >
-                      Cancel
+                      Edit
                     </Button>
                   </Box>
-                </Box>
-              ) : (
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
-                  <Typography>********</Typography>
-                  <Button 
-                    variant="contained"
-                    sx={{
-                      backgroundColor: '#4caf50',
-                      '&:hover': { backgroundColor: '#388e3c' }
-                    }}
-                    onClick={() => handleEditToggle('password')}
-                  >
-                    Change Password
-                  </Button>
-                </Box>
-              )}
-            </Paper>
-          </Grid>
+                )}
+              </Paper>
+            </Grid>
+          ))}
         </Grid>
 
-        {/* Logout Button */}
-        <Box sx={{ mt: 3, textAlign: 'center' }}>
-          <Button
-            fullWidth
-            variant="contained"
-            color="error"
-            onClick={handleLogout}
-            sx={{
-              maxWidth: 400,
-              margin: '0 auto',
-              backgroundColor: '#f44336',
-              '&:hover': { backgroundColor: '#d32f2f' }
-            }}
-          >
-            Logout
-          </Button>
-        </Box>
+        <Button
+          fullWidth
+          variant="contained"
+          color="error"
+          sx={{ mt: 4, padding: 1.5 }}
+          onClick={handleLogout}
+          startIcon={<ExitToAppIcon />}
+        >
+          Logout
+        </Button>
       </Box>
-    </Container>
+    </Box>
   );
 };
 

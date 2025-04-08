@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { Box, Typography, Button, Alert } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../context/UserContext";
+import DeleteIcon from '@mui/icons-material/Delete';
+import ShoppingCartCheckoutIcon from '@mui/icons-material/ShoppingCartCheckout';
+import RemoveShoppingCartIcon from '@mui/icons-material/RemoveShoppingCart';  // Ikon a törléshez
 import {
   getCartItems,
   removeFromCart,
@@ -21,7 +24,6 @@ const Cart = () => {
   // Watch for user change, which includes login and logout events
   useEffect(() => {
     if (!user) {
-      // If user is logged out, reset cart and total price
       setCartItems([]);
       setTotalPrice(0);
       setLoading(false);
@@ -55,19 +57,14 @@ const Cart = () => {
     fetchCartData();
   }, [user]);
 
-  // Remove an item from the cart
+  // Remove a single item from the cart
   const handleRemoveItem = async (itemId) => {
     try {
       await removeFromCart(itemId);
 
-      // Find the item to subtract its price before removing
-      const removedItem = cartItems.find(item => item.id === itemId);
-
-      // Remove the item from cart
       const updatedCartItems = cartItems.filter((item) => item.id !== itemId);
       setCartItems(updatedCartItems);
 
-      // Recalculate total price immediately
       const newTotalPrice = updatedCartItems.length > 0
         ? await getTotalPrice(user.id)
         : 0;
@@ -75,6 +72,19 @@ const Cart = () => {
       setTotalPrice(newTotalPrice);
     } catch (err) {
       setError("An error occurred while removing the item.");
+    }
+  };
+
+  // Remove all items from the cart
+  const handleRemoveAllItems = async () => {
+    try {
+      for (const item of cartItems) {
+        await removeFromCart(item.id);
+      }
+      setCartItems([]);
+      setTotalPrice(0);
+    } catch (err) {
+      setError("An error occurred while removing all items.");
     }
   };
 
@@ -119,7 +129,7 @@ const Cart = () => {
           borderRadius: 3,
           padding: 4,
           width: "100%",
-          maxWidth: "600px",  // Set a max-width to ensure it looks good on larger screens
+          maxWidth: "600px",
         }}
       >
         <Typography variant="h4" align="center" mb={4}>
@@ -137,6 +147,10 @@ const Cart = () => {
             ) : (
               cartItems.map((item) => (
                 <Box key={item.id} sx={{ borderBottom: "1px solid #ddd", paddingBottom: 2, marginBottom: 2 }}>
+                  <Box sx={{ display: "flex", alignItems: "center" }}>
+                   
+                    <img src={JSON.parse(item.plant.images)} alt={item.plant.name} style={{ width: 80, height: 80, objectFit: 'cover', marginRight: 16 }} />
+                    </Box>
                   <Typography variant="h6">{item.plant.name}</Typography>
                   <Typography variant="body2">Price: $ {item.price} </Typography>
                   <div style={{ display: "flex", alignItems: "center", marginTop: 8 }}>
@@ -144,7 +158,13 @@ const Cart = () => {
                       variant="outlined"
                       color="error"
                       onClick={() => handleRemoveItem(item.id)}
-                      sx={{ marginRight: 2 }}
+                      sx={{ 
+                        marginRight: 2, 
+                        '&:hover': {
+                            backgroundColor: '#ffecec',
+                            borderColor: '#f44336',
+                          }, }}
+                      startIcon={<DeleteIcon />}
                     >
                       Remove
                     </Button>
@@ -184,8 +204,27 @@ const Cart = () => {
                   color="success"
                   onClick={handleCheckout}
                   sx={{ padding: "12px", fontSize: "16px" }}
+                  startIcon={<ShoppingCartCheckoutIcon />}
                 >
                   Payment
+                </Button>
+
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  color="error"
+                  onClick={handleRemoveAllItems}
+                  sx={{ 
+                    padding: "12px", 
+                    fontSize: "16px", 
+                    mt: 2, '&:hover': {
+                            backgroundColor: '#ffecec',
+                            borderColor: '#f44336',
+                          }, 
+                        }}
+                  startIcon={<RemoveShoppingCartIcon />}
+                >
+                  Remove All Items
                 </Button>
               </Box>
             )}

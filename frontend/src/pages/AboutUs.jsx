@@ -1,6 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Container, Typography, Box, Grid, Card, CardContent, CardMedia, Button } from "@mui/material";
+import ExploreIcon from '@mui/icons-material/Explore';
+import TD from "../assets/TD.jpg";
 
 const AboutUs = () => {
   const navigate = useNavigate(); 
@@ -26,7 +28,7 @@ const AboutUs = () => {
       </Box>
 
       <Box my={4}>
-        <Typography variant="h4" sx={{ fontWeight: "bold", color: "#2e7d32", textAlign: "center", mb: 2 }}>
+        <Typography variant="h4" sx={{ fontWeight: "bold", textAlign: "center", mb: 2 }}>
           Our Mission
         </Typography>
         <Typography variant="body1" align="center">
@@ -58,13 +60,13 @@ const AboutUs = () => {
       </Grid>
 
       <Box my={4}>
-        <Typography variant="h4" sx={{ fontWeight: "bold", textAlign: "center", color: "#2e7d32" }}>
+        <Typography variant="h4" sx={{ fontWeight: "bold", textAlign: "center" }}>
           Meet the Team 👨‍🌾👩‍🌾
         </Typography>
         <Grid container spacing={4} justifyContent="center" sx={{ mt: 2 }}>
           {[
             { name: "Dávid Dobrai", role: "Founder & Plant Expert", img: "https://via.placeholder.com/150" },
-            { name: "Dominik Tóth", role: "Horticulturist", img: "https://via.placeholder.com/150" },
+            { name: "Dominik Tóth", role: "Horticulturist", img: TD },
             { name: "Károly Türk", role: "Customer Support", img: "https://via.placeholder.com/150" }
           ].map((member, index) => (
             <Grid item xs={12} sm={4} key={index}>
@@ -85,13 +87,14 @@ const AboutUs = () => {
       </Box>
 
       <Box textAlign="center" my={4}>
-        <Typography variant="h5" sx={{ fontWeight: "bold", color: "#388e3c", mb: 2 }}>
+        <Typography variant="h5" sx={{ fontWeight: "bold", mb: 2 }}>
           Join Our Green Community!
         </Typography>
         <Button 
           variant="contained" 
           sx={{ backgroundColor: "#4caf50", "&:hover": { backgroundColor: "#388e3c" } }}
           onClick={() => navigate("/")} 
+          startIcon={<ExploreIcon />}
         >
           Explore Our Plants
         </Button>

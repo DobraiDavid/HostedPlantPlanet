@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { Box, Typography, TextField, Button, Select, MenuItem, InputLabel, FormControl, CircularProgress, Alert } from "@mui/material";
+import { Box, Typography, TextField, Button, Select, MenuItem, InputLabel, FormControl, CircularProgress, Alert, InputAdornment } from "@mui/material";
 import { useCart } from "../context/CartContext";
 import { placeOrder } from "../api/api.js"; // Adjust the import path as needed
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import HomeIcon from "@mui/icons-material/Home";
+import LocationCityIcon from "@mui/icons-material/LocationCity";
+import PinIcon from "@mui/icons-material/Pin";
+import PhoneIcon from "@mui/icons-material/Phone";
+import PaymentIcon from "@mui/icons-material/Payment";
+import ShoppingCartCheckoutIcon from "@mui/icons-material/ShoppingCartCheckout";
+
 
 const Checkout = () => {
   const { cart, totalPrice, clearCart } = useCart(); // Added clearCart
@@ -151,7 +159,8 @@ const Checkout = () => {
                 {cart.map((item) => (
                   <Box key={item.id} className="checkout-order-item" py={2} borderBottom="1px solid">
                     <Typography variant="body1" className="checkout-order-item-name">
-                      {item.plant.name} (x{item.amount})
+                    <img src={JSON.parse(item.plant.images)} alt={item.plant.name} style={{ width: 80, height: 80, objectFit: 'cover', marginRight: 16 }} /> 
+                    {item.plant.name} (x{item.amount})
                     </Typography>
                     <Typography variant="body1" className="checkout-order-item-price">
                       ${(item.plant.price * item.amount).toFixed(2)}
@@ -171,6 +180,7 @@ const Checkout = () => {
               <Typography variant="h6" color="textPrimary" mb={2}>Shipping Information</Typography>
 
               <TextField
+                AccountCircleIcon
                 label="Full Name"
                 value={name}
                 onChange={handleInputChange(setName)}
@@ -178,6 +188,13 @@ const Checkout = () => {
                 variant="outlined"
                 sx={{ mb: 2 }}
                 required
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <AccountCircleIcon />
+                    </InputAdornment>
+                  ),
+                }}
               />
 
               <TextField
@@ -188,6 +205,13 @@ const Checkout = () => {
                 variant="outlined"
                 sx={{ mb: 2 }}
                 required
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <HomeIcon />
+                    </InputAdornment>
+                  ),
+                }}
               />
 
               <TextField
@@ -198,6 +222,13 @@ const Checkout = () => {
                 variant="outlined"
                 sx={{ mb: 2 }}
                 required
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LocationCityIcon />
+                    </InputAdornment>
+                  ),
+                }}
               />
 
               <TextField
@@ -208,6 +239,13 @@ const Checkout = () => {
                 variant="outlined"
                 sx={{ mb: 2 }}
                 required
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PinIcon />
+                    </InputAdornment>
+                  ),
+                }}
               />
 
               <TextField
@@ -218,21 +256,35 @@ const Checkout = () => {
                 variant="outlined"
                 sx={{ mb: 2 }}
                 required
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PhoneIcon />
+                    </InputAdornment>
+                  ),
+                }}
               />
 
-              <FormControl fullWidth className="checkout-input mb-4">
-                <InputLabel>Payment Method</InputLabel>
-                <Select
-                  value={paymentMethod}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                  label="Payment Method"
-                  sx={{ mb: 2 }}
-                >
-                  <MenuItem value="credit-card">Credit Card</MenuItem>
-                  <MenuItem value="paypal">PayPal</MenuItem>
-                  <MenuItem value="bank-transfer">Bank Transfer</MenuItem>
-                </Select>
-              </FormControl>
+<FormControl fullWidth className="checkout-input mb-4">
+  <InputLabel id="payment-method-label">Payment Method</InputLabel>
+  <Select
+    value={paymentMethod}
+    onChange={(e) => setPaymentMethod(e.target.value)}
+    labelId="payment-method-label"
+    label="Payment Method"
+    sx={{ mb: 2 }}
+    startAdornment={
+      <InputAdornment position="start">
+        <PaymentIcon sx={{ marginRight: 1 }} />
+      </InputAdornment>
+    }
+  >
+    <MenuItem value="credit-card">Credit Card</MenuItem>
+    <MenuItem value="paypal">PayPal</MenuItem>
+    <MenuItem value="bank-transfer">Bank Transfer</MenuItem>
+  </Select>
+</FormControl>
+
 
               <Button
                 onClick={handleCheckout}
@@ -240,6 +292,7 @@ const Checkout = () => {
                 color="success"
                 fullWidth
                 className="checkout-button"
+                startIcon={<ShoppingCartCheckoutIcon />}
                 disabled={isSubmitting}
               >
                 {isSubmitting ? <CircularProgress size={24} /> : "Place Order"}
