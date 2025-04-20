@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { getPlants } from '../api/api.js';
+import { getPlants, addToCart} from '../api/api.js';
 import { useToast } from '../context/ToastContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
@@ -29,6 +29,10 @@ import {
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import SearchIcon from '@mui/icons-material/Search';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import { useUser } from "../context/UserContext";  
+import InputAdornment from '@mui/material/InputAdornment';
+
 
 
 const Home = () => {
@@ -43,6 +47,7 @@ const Home = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [filtersVisible, setFiltersVisible] = useState(!isMobile);
+  const { user } = useUser(); 
 
   // Filter states
   const [lightLevels, setLightLevels] = useState({
@@ -97,6 +102,29 @@ const Home = () => {
       return () => clearTimeout(timeoutId);
     }
   }, [location, showToast, navigate]);
+
+  const handleAddToCart = async (plant) => {
+    if (!user) {
+      navigate('/login', {
+        state: {
+          toast: {
+            message: 'You need to log in first!',
+            type: 'error',
+          },
+        },
+      });
+      return;
+    }
+  
+    try {
+      await addToCart(user.id, plant.id, 1); 
+      toast.success("Item added to cart!");
+    } catch (error) {
+      console.log(error)
+      toast.error("Failed to add item to cart");
+    }
+  };
+  
 
   const handleSortChange = (event) => 
     setSortBy(event.target.value);
@@ -217,10 +245,9 @@ const Home = () => {
     return filtered;
   }, [plants, searchQuery, sortBy, lightLevels, waterNeeds, temperatureRange]);
 
-  // Rest of the component remains the same as previous version
   return (
     <Container maxWidth="lg" sx={{ py: 4, backgroundColor: '#f5f5f5', borderRadius: 3, boxShadow: 4 }}>
-      <ToastContainer />
+      <ToastContainer autoClose={1000}/>
       <Typography variant="h3" gutterBottom align="center" sx={{ fontWeight: 'bold', color: 'green', textShadow: '2px 2px 4px rgba(0,0,0,0.2)' }}>
         🌿 Plants 🌿
       </Typography>
@@ -234,8 +261,16 @@ const Home = () => {
             variant="outlined"
             value={searchQuery}
             onChange={handleSearchChange}
-            sx={{ mb: 2 }}
+            sx={{ mb: 2 }} 
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <SearchIcon />
+                </InputAdornment>
+              )
+            }}        
           />
+          
 
           {/* Mobile filter toggle button */}
           {isMobile && (
@@ -511,7 +546,7 @@ const Home = () => {
 
                 return (
                   <Grid item xs={12} sm={6} md={4} key={plant.id}>
-                    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', borderRadius: 3, boxShadow: 5, transition: '0.3s', '&:hover': { boxShadow: 8, transform: 'scale(1.02)' }, backgroundColor: '#ffffff' }}>
+                    <Card onClick={() => navigate(`/plant/${plant.id}`)} sx={{ height: '100%', display: 'flex', flexDirection: 'column', borderRadius: 3, boxShadow: 5, transition: '0.3s', '&:hover': { boxShadow: 8, transform: 'scale(1.02)', cursor: 'pointer'}, backgroundColor: '#ffffff' }}>
                       <CardMedia
                         component="img"
                         height="200"
@@ -548,13 +583,19 @@ const Home = () => {
                             ${plant.price.toFixed(2)}
                           </Typography>
                           <Button
-                            component={Link}
-                            to={`/plant/${plant.id}`}
                             variant="contained"
-                            sx={{ borderRadius: 2, backgroundColor: '#4caf50', '&:hover': { backgroundColor: '#388e3c' } }}
-                            startIcon={<SearchIcon />}
+                            startIcon={<ShoppingCartIcon />}
+                            sx={{
+                              borderRadius: 2,
+                              backgroundColor: '#388e3c',
+                              '&:hover': { backgroundColor: '#2e7d32' },
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation(); 
+                              handleAddToCart(plant); 
+                            }}
                           >
-                            Details
+                            Add to Cart
                           </Button>
                         </Box>
                       </CardContent>

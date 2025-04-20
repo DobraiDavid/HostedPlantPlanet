@@ -23,6 +23,7 @@ import {
   Paper,
   Avatar
 } from '@mui/material'; 
+import { ToastContainer, toast } from 'react-toastify';
 import WaterDropOutlinedIcon from '@mui/icons-material/WaterDropOutlined';
 import WbSunnyOutlinedIcon from '@mui/icons-material/WbSunnyOutlined';
 import DeviceThermostatOutlinedIcon from '@mui/icons-material/DeviceThermostatOutlined';
@@ -56,7 +57,6 @@ const PlantDetail = () => {
   const navigate = useNavigate();
   const { user } = useUser(); 
   
-  const [cart, setCart] = useState([]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -111,29 +111,47 @@ const PlantDetail = () => {
 
   const handleAddToCart = async () => {
     if (!user) {
-      navigate('/login');
-      setError("You need to be logged in to add to cart");
+      navigate('/login', {
+        state: {
+          toast: {
+            message: 'You need to log in first!',
+            type: 'error',
+          },
+        },
+      });
       return;
     }
 
     try {
       await addToCart(user.id, plant.id, amount);
-      setSnackbarMessage("Item added to cart!");
-      setOpenSnackbar(true); 
+      toast.success("Item added to cart!");
     } catch (error) {
-      setError('Failed to add item to cart');
-    }
-
-    const productInCart = cart.some(item => item.id === plant.id);
-  
-    if (!productInCart) {
-      setCart([...cart, { id: plant.id, name: plant.name, price: plant.price, quantity: amount }]);
-    } else {
-      alert('This product is already in your cart!');
+      console.log(error)
+      toast.error("Failed to add item to cart");
     }
   };
+  const handleAddRelatedToCart = async (plant) => {
+      if (!user) {
+        navigate('/login', {
+          state: {
+            toast: {
+              message: 'You need to log in first!',
+              type: 'error',
+            },
+          },
+        });
+        return;
+      }
+    
+      try {
+        await addToCart(user.id, plant.id, 1); 
+        toast.success("Item added to cart!");
+      } catch (error) {
+        console.log(error)
+        toast.error("Failed to add item to cart");
+      }
+    };
 
-  const isProductInCart = cart.some(item => item.id === plant.id);
 
   // Add a utility function to format relative time
   const formatRelativeTime = (createdAt) => {
@@ -241,6 +259,7 @@ const PlantDetail = () => {
 
   return (
       <div className="container">
+       <ToastContainer autoClose={1000}/>
         {isMobile ? (
         // MOBILE VIEW (Stacked layout)
         <>
@@ -282,8 +301,8 @@ const PlantDetail = () => {
               inputProps={{ min: 1, max: 20 }}
             />
 
-            <Button variant="contained" color={isProductInCart ? "success" : "success"} size="large" sx={{ mt: 2 }} onClick={handleAddToCart} startIcon={<ShoppingCartIcon />}>
-            {isProductInCart ? 'Already in Cart' : 'Add to Cart'}
+            <Button variant="contained" color="success" size="large" sx={{ mt: 2 }} onClick={handleAddToCart} startIcon={<ShoppingCartIcon />}>
+            {'Add to Cart'}
             </Button>
           </div>
         </>
@@ -328,8 +347,8 @@ const PlantDetail = () => {
               inputProps={{ min: 1, max: 20 }}
             />
 
-            <Button variant="contained" color={isProductInCart ? "success" : "success"}  size="large" sx={{ mt: 2 }} onClick={handleAddToCart} startIcon={<ShoppingCartIcon />}>
-            {isProductInCart ? 'Already in Cart' : 'Add to Cart'}
+            <Button variant="contained" color="success"  size="large" sx={{ mt: 2 }} onClick={handleAddToCart} startIcon={<ShoppingCartIcon />}>
+              Add to Cart
             </Button>
           </div>
         </div>
@@ -450,15 +469,16 @@ const PlantDetail = () => {
             return (
               <Grid item xs={12} sm={6} md={4} key={relatedPlant.id}>
                 <Card
+                  onClick={() => navigate(`/plant/${relatedPlant.id}`)}
                   sx={{
+                    height: '100%',
                     display: 'flex',
                     flexDirection: 'column',
                     borderRadius: 3,
                     boxShadow: 5,
                     transition: '0.3s',
-                    '&:hover': { boxShadow: 8, transform: 'scale(1.02)' },
+                    '&:hover': { boxShadow: 8, transform: 'scale(1.02)', cursor: 'pointer' },
                     backgroundColor: '#ffffff',
-                    height: '100%'
                   }}
                 >
                   <CardMedia
@@ -468,17 +488,11 @@ const PlantDetail = () => {
                     alt={relatedPlant.name}
                     sx={{ objectFit: 'cover' }}
                   />
-                  <CardContent
-                    sx={{
-                      flexGrow: 1,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                    }}
-                  >
+                  <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
                     <Typography variant="h5" fontWeight="bold" sx={{ color: '#2e7d32' }}>
                       {relatedPlant.name}
                     </Typography>
+
                     <Typography
                       variant="body2"
                       color="textSecondary"
@@ -496,23 +510,27 @@ const PlantDetail = () => {
                     >
                       {relatedPlant.description}
                     </Typography>
-                    <Typography variant="h6" color="green" sx={{ mt: 2, fontWeight: 'bold' }}>
-                      ${relatedPlant.price.toFixed(2)}
-                    </Typography>
-                    <Button
-                      component={Link}
-                      to={`/plant/${relatedPlant.id}`}
-                      variant="contained"
-                      sx={{
-                        mt: 2,
-                        borderRadius: 2,
-                        backgroundColor: '#4caf50',
-                        '&:hover': { backgroundColor: '#388e3c' },
-                      }}
-                      startIcon={<SearchIcon />}
-                    >
-                      Details
-                    </Button>
+
+                    <Box sx={{ mt: 'auto', pt: 2, textAlign: 'center' }}>
+                      <Typography variant="h6" color="green" sx={{ fontWeight: 'bold', mb: 1 }}>
+                        ${relatedPlant.price.toFixed(2)}
+                      </Typography>
+                      <Button
+                        variant="contained"
+                        startIcon={<ShoppingCartIcon />}
+                        sx={{
+                          borderRadius: 2,
+                          backgroundColor: '#388e3c',
+                          '&:hover': { backgroundColor: '#2e7d32' },
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAddRelatedToCart(relatedPlant);
+                        }}
+                      >
+                        Add to Cart
+                      </Button>
+                    </Box>
                   </CardContent>
                 </Card>
               </Grid>

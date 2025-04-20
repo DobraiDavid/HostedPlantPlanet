@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { useUser } from "../context/UserContext";
 import DeleteIcon from '@mui/icons-material/Delete';
 import ShoppingCartCheckoutIcon from '@mui/icons-material/ShoppingCartCheckout';
-import RemoveShoppingCartIcon from '@mui/icons-material/RemoveShoppingCart';  // Ikon a törléshez
+import RemoveShoppingCartIcon from '@mui/icons-material/RemoveShoppingCart';  
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import {
   getCartItems,
   removeFromCart,
@@ -148,27 +149,24 @@ const Cart = () => {
               cartItems.map((item) => (
                 <Box key={item.id} sx={{ borderBottom: "1px solid #ddd", paddingBottom: 2, marginBottom: 2 }}>
                   <Box sx={{ display: "flex", alignItems: "center" }}>
-                   
-                    <img src={JSON.parse(item.plant.images)} alt={item.plant.name} style={{ width: 80, height: 80, objectFit: 'cover', marginRight: 16 }} />
+                    <Box sx={{ display: "flex", alignItems: "center", width: "100%"  }}>
+                      <img
+                        src={JSON.parse(item.plant.images)}
+                        alt={item.plant.name}
+                        style={{ width: 80, height: 80, objectFit: "cover", marginRight: 16 }}
+                      />
+                      <Box sx={{ flexGrow: 1 }}>
+                        <Typography variant="h6">{item.plant.name}</Typography>
+                      </Box>
+                      <Typography variant="h6" sx={{ fontWeight: "bold", textAlign: "right" }}>
+                        ${item.price}
+                      </Typography>
                     </Box>
-                  <Typography variant="h6">{item.plant.name}</Typography>
-                  <Typography variant="body2">Price: $ {item.price} </Typography>
-                  <div style={{ display: "flex", alignItems: "center", marginTop: 8 }}>
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      onClick={() => handleRemoveItem(item.id)}
-                      sx={{ 
-                        marginRight: 2, 
-                        '&:hover': {
-                            backgroundColor: '#ffecec',
-                            borderColor: '#f44336',
-                          }, }}
-                      startIcon={<DeleteIcon />}
-                    >
-                      Remove
-                    </Button>
-                    <div style={{ display: "flex", alignItems: "center" }}>
+                  </Box>
+
+                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 2 }}>
+                    {/* Quantity */}
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
                       <Button
                         variant="outlined"
                         color="success"
@@ -183,20 +181,39 @@ const Cart = () => {
                       <Button
                         variant="outlined"
                         color="success"
-                        onClick={() => handleUpdateQuantity(item.id, item.amount + 1)}
+                        onClick={() => {
+                          if (item.amount < 20) handleUpdateQuantity(item.id, item.amount + 1);
+                        }}
+                        disabled={item.amount >= 20}
                       >
                         +
                       </Button>
-                    </div>
-                  </div>
+                    </Box>
+
+                    {/* Remove Button */}
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      onClick={() => handleRemoveItem(item.id)}
+                      sx={{
+                        '&:hover': {
+                          backgroundColor: '#ffecec',
+                          borderColor: '#f44336',
+                        },
+                      }}
+                      startIcon={<DeleteIcon />}
+                    >
+                      Remove
+                    </Button>
+                  </Box>
                 </Box>
               ))
             )}
 
             {cartItems.length > 0 && (
               <Box sx={{ marginTop: 4 }}>
-                <Typography variant="h6" align="right" sx={{ marginBottom: 2 }}>
-                  Total: $ {totalPrice}
+                <Typography variant="h6" align="right" sx={{ marginBottom: 2, fontWeight: "bold"}}>
+                  Total: ${totalPrice}
                 </Typography>
                 <Button
                   fullWidth
@@ -206,7 +223,7 @@ const Cart = () => {
                   sx={{ padding: "12px", fontSize: "16px" }}
                   startIcon={<ShoppingCartCheckoutIcon />}
                 >
-                  Payment
+                  Checkout
                 </Button>
 
                 <Button
@@ -226,6 +243,25 @@ const Cart = () => {
                 >
                   Remove All Items
                 </Button>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  color="primary"
+                  onClick={() => navigate("/")}
+                  sx={{ 
+                    padding: "12px", 
+                    fontSize: "16px", 
+                    mt: 2,
+                    '&:hover': {
+                      backgroundColor: '#e3f2fd',
+                      borderColor: '#2196f3',
+                    }
+                  }}
+                  startIcon={<ArrowBackIcon />} 
+                >
+                  Continue shopping
+                </Button>
+
               </Box>
             )}
           </div>

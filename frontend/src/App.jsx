@@ -45,7 +45,7 @@ function App() {
         </main>
         <Footer />
         </div>
-        <ToastContainer />
+        <ToastContainer autoClose={1000}/>
       </Router>
     </ToastProvider>
     </CartProvider>

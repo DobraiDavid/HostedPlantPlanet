@@ -63,21 +63,46 @@ const ProfilePage = () => {
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
+  
     const reader = new FileReader();
+  
     reader.onloadend = async () => {
-      console.log(reader.result);
-      try {
-        const updatedUser = await changeUserDetails({ profileImage: reader.result });
-        login(updatedUser);
-        toast.success('Profile image updated');
-      } catch (err) {
-        toast.error('Failed to update image');
-        console.error("Error during profile image update:", err);
-      }
+      const img = new Image();
+      img.onload = async () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const size = 128;
+  
+        canvas.width = size;
+        canvas.height = size;
+  
+        // Clear canvas (important for PNG transparency)
+        ctx.clearRect(0, 0, size, size);
+  
+        // Draw image scaled to 128x128
+        ctx.drawImage(img, 0, 0, size, size);
+  
+        // Detect original file type (JPEG or PNG)
+        const mimeType = file.type === 'image/jpeg' ? 'image/jpeg' : 'image/png';
+  
+        const resizedBase = canvas.toDataURL(mimeType, 0.8); 
+  
+        try {
+          const updatedUser = await changeUserDetails({ profileImage: resizedBase });
+          login(updatedUser);
+          toast.success('Profile image updated');
+        } catch (err) {
+          toast.error('Failed to update image');
+          console.error("Error during profile image update:", err);
+        }
+      };
+  
+      img.onerror = () => toast.error("Invalid image");
+      img.src = reader.result;
     };
+  
     reader.readAsDataURL(file);
-  };
+  };  
 
   const handleLogout = async () => {
     try {

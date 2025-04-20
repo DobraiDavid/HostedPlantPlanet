@@ -107,9 +107,35 @@ const Checkout = () => {
           <Typography variant="h4" align="center" color="green" mb={4}>
             Order Placed Successfully!
           </Typography>
-          <Typography variant="body1" align="center">
+          <Typography variant="body1" align="center" mb={3}>
             Thank you for your order. We'll process it shortly.
           </Typography>
+          <Box display="flex" justifyContent="center">
+            <Button
+              variant="contained"
+              color="success"
+              href="/"
+              sx={{
+                textTransform: "none",
+                px: 4,
+                py: 1.5,
+                borderRadius: "12px",
+                fontWeight: "bold",
+                fontSize: "1rem",
+                boxShadow: 2,
+                transition: "all 0.3s ease",
+                '&:hover': {
+                  backgroundColor: "#43a047", // Slightly darker green
+                  boxShadow: 4,
+                },
+              }}
+              startIcon={<HomeIcon />}
+            >
+              Return to Homepage
+            </Button>
+          </Box>
+
+
         </Box>
       </Box>
     );
@@ -157,19 +183,28 @@ const Checkout = () => {
               <Typography variant="h6" color="textPrimary" mb={2}>Your Order</Typography>
               <Box className="border-t pt-2">
                 {cart.map((item) => (
-                  <Box key={item.id} className="checkout-order-item" py={2} borderBottom="1px solid">
-                    <Typography variant="body1" className="checkout-order-item-name">
-                    <img src={JSON.parse(item.plant.images)} alt={item.plant.name} style={{ width: 80, height: 80, objectFit: 'cover', marginRight: 16 }} /> 
-                    {item.plant.name} (x{item.amount})
-                    </Typography>
-                    <Typography variant="body1" className="checkout-order-item-price">
+                  <Box key={item.id} display="flex" alignItems="flex-start" gap={2} py={2} borderBottom="1px solid #ccc">
+                    <img
+                      src={JSON.parse(item.plant.images)}
+                      alt={item.plant.name}
+                      style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8 }}
+                    />
+                    <Box flex={1}>
+                      <Typography variant="h6" fontWeight="bold">
+                        {item.plant.name}
+                      </Typography>
+                      <Typography variant="body2" color="textSecondary">
+                        Quantity: {item.amount}
+                      </Typography>
+                    </Box>
+                    <Typography fontWeight="bold" color="textPrimary">
                       ${(item.plant.price * item.amount).toFixed(2)}
                     </Typography>
                   </Box>
                 ))}
               </Box>
               <Box className="border-t pt-2 text-right">
-                <Typography variant="h6" color="textPrimary" className="checkout-total">
+                <Typography variant="h6" color="textPrimary" className="checkout-total" fontWeight="bold">
                   Total: ${totalPrice.toFixed(2)}
                 </Typography>
               </Box>
@@ -180,7 +215,6 @@ const Checkout = () => {
               <Typography variant="h6" color="textPrimary" mb={2}>Shipping Information</Typography>
 
               <TextField
-                AccountCircleIcon
                 label="Full Name"
                 value={name}
                 onChange={handleInputChange(setName)}
@@ -265,38 +299,40 @@ const Checkout = () => {
                 }}
               />
 
-<FormControl fullWidth className="checkout-input mb-4">
-  <InputLabel id="payment-method-label">Payment Method</InputLabel>
-  <Select
-    value={paymentMethod}
-    onChange={(e) => setPaymentMethod(e.target.value)}
-    labelId="payment-method-label"
-    label="Payment Method"
-    sx={{ mb: 2 }}
-    startAdornment={
-      <InputAdornment position="start">
-        <PaymentIcon sx={{ marginRight: 1 }} />
-      </InputAdornment>
-    }
-  >
-    <MenuItem value="credit-card">Credit Card</MenuItem>
-    <MenuItem value="paypal">PayPal</MenuItem>
-    <MenuItem value="bank-transfer">Bank Transfer</MenuItem>
-  </Select>
-</FormControl>
-
-
-              <Button
-                onClick={handleCheckout}
-                variant="contained"
-                color="success"
-                fullWidth
-                className="checkout-button"
-                startIcon={<ShoppingCartCheckoutIcon />}
-                disabled={isSubmitting}
+            <FormControl fullWidth className="checkout-input mb-4">
+              <InputLabel id="payment-method-label">Payment Method</InputLabel>
+              <Select
+                value={paymentMethod}
+                onChange={(e) => setPaymentMethod(e.target.value)}
+                labelId="payment-method-label"
+                label="Payment Method"
+                sx={{ mb: 2 }}
+                startAdornment={
+                  <InputAdornment position="start">
+                    <PaymentIcon sx={{ marginRight: 1 }} />
+                  </InputAdornment>
+                }
               >
-                {isSubmitting ? <CircularProgress size={24} /> : "Place Order"}
-              </Button>
+                <MenuItem value="credit-card">Credit Card</MenuItem>
+                <MenuItem value="paypal">PayPal</MenuItem>
+                <MenuItem value="bank-transfer">Bank Transfer</MenuItem>
+              </Select>
+            </FormControl>
+
+
+            <Button
+              onClick={handleCheckout}
+              variant="contained"
+              color="success"
+              fullWidth
+              className="checkout-button"
+              startIcon={<ShoppingCartCheckoutIcon />}
+              disabled={isSubmitting}
+              sx={{ py: 2, fontSize: "1rem", mt: 2 }}
+            >
+              {isSubmitting ? <CircularProgress size={24} /> : "Place Order"}
+            </Button>
+
             </Box>
           </>
         )}
