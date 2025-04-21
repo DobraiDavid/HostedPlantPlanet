@@ -20,6 +20,7 @@ public class Order {
     private Long orderId;
 
     private String name;
+    private String email;
     private String address;
     private String city;
     private String zipcode;
@@ -35,7 +36,7 @@ public class Order {
     private List<OrderItem> orderItems;
 
 
-    public Order(String name, String address, String city, String zipcode, String phoneNumber, String paymentMethod, BigDecimal totalPrice, LocalDateTime orderDate, List<OrderItem> orderItems) {
+    public Order(String name, String email, String address, String city, String zipcode, String phoneNumber, String paymentMethod, BigDecimal totalPrice, LocalDateTime orderDate, List<OrderItem> orderItems) {
         this.name = name;
         this.address = address;
         this.city = city;

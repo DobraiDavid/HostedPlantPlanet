@@ -18,6 +18,9 @@ public class OrderDTO {
     @NotEmpty(message = "Name is required")
     private String name;
 
+    @NotEmpty(message = "Email is required")
+    private String email;
+
     @NotEmpty(message = "Address is required")
     private String address;
 

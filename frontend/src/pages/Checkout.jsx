@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Box, Typography, TextField, Button, Select, MenuItem, InputLabel, FormControl, CircularProgress, Alert, InputAdornment } from "@mui/material";
 import { useCart } from "../context/CartContext";
-import { placeOrder } from "../api/api.js"; // Adjust the import path as needed
+import { placeOrder } from "../api/api.js"; 
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import HomeIcon from "@mui/icons-material/Home";
 import LocationCityIcon from "@mui/icons-material/LocationCity";
@@ -9,12 +9,14 @@ import PinIcon from "@mui/icons-material/Pin";
 import PhoneIcon from "@mui/icons-material/Phone";
 import PaymentIcon from "@mui/icons-material/Payment";
 import ShoppingCartCheckoutIcon from "@mui/icons-material/ShoppingCartCheckout";
+import EmailIcon from "@mui/icons-material/Email";
 
 
 const Checkout = () => {
   const { cart, totalPrice, clearCart } = useCart(); // Added clearCart
 
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
   const [zipcode, setZipcode] = useState("");
@@ -34,7 +36,7 @@ const Checkout = () => {
 
   const handleCheckout = async () => {
     // Validation
-    if (!name || !address || !city || !zipcode || !phoneNumber) {
+    if (!name || !email || !address || !city || !zipcode || !phoneNumber) {
       setError("Please fill in all the required fields.");
       return;
     }
@@ -42,6 +44,7 @@ const Checkout = () => {
     // Prepare order data
     const orderData = {
       name,
+      email,
       address,
       city,
       zipcode,
@@ -67,8 +70,6 @@ const Checkout = () => {
       await clearCart();
       setSuccess(true);
       
-      // Optional: Redirect or show order confirmation
-      // history.push('/order-confirmation');
     } catch (error) {
       console.error("Error placing order", error);
       setError(error.response?.data?.message || "An error occurred while placing your order.");
@@ -125,7 +126,7 @@ const Checkout = () => {
                 boxShadow: 2,
                 transition: "all 0.3s ease",
                 '&:hover': {
-                  backgroundColor: "#43a047", // Slightly darker green
+                  backgroundColor: "#43a047", 
                   boxShadow: 4,
                 },
               }}
@@ -226,6 +227,24 @@ const Checkout = () => {
                   startAdornment: (
                     <InputAdornment position="start">
                       <AccountCircleIcon />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+
+              <TextField
+                label="Email Address"
+                type="email"
+                value={email}
+                onChange={handleInputChange(setEmail)}
+                fullWidth
+                variant="outlined"
+                sx={{ mb: 2 }}
+                required
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <EmailIcon /> 
                     </InputAdornment>
                   ),
                 }}

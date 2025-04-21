@@ -1,6 +1,7 @@
 CREATE TABLE orders (
     order_id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
     address VARCHAR(255) NOT NULL,
     city VARCHAR(100) NOT NULL,
     zipcode VARCHAR(20) NOT NULL,
