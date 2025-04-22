@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
-import { getSubscriptions, addToCart } from "../api/api.js";
+import { getSubscriptions, addToCart, getCartItems, getUserSubscriptions } from "../api/api.js";
 import {
   Card,
   CardMedia,
@@ -18,6 +18,8 @@ import {
 } from "@mui/material";
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
+import ShoppingCartCheckoutIcon from '@mui/icons-material/ShoppingCartCheckout';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { useUser } from "../context/UserContext";
 import { ToastContainer, toast } from 'react-toastify';
 
@@ -26,6 +28,8 @@ const Subscriptions = () => {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [cartItems, setCartItems] = useState([]);
+  const [userSubscriptions, setUserSubscriptions] = useState([]);
   const navigate = useNavigate();
   const { user } = useUser();
   
@@ -35,6 +39,24 @@ const Subscriptions = () => {
       try {
         const data = await getSubscriptions();
         setPlans(data);
+        
+        if (user) {
+          // Fetch cart items
+          try {
+            const cartData = await getCartItems(user.id);
+            setCartItems(cartData);
+          } catch (err) {
+            console.error("Error loading cart items:", err);
+          }
+          
+          // Fetch user subscriptions
+          try {
+            const subscriptionsData = await getUserSubscriptions();
+            setUserSubscriptions(subscriptionsData);
+          } catch (err) {
+            console.error("Error loading user subscriptions:", err);
+          }
+        }
       } catch (err) {
         console.error("Error loading subscriptions:", err);
         setError(true);
@@ -43,9 +65,24 @@ const Subscriptions = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [user]);
 
-  const handleAddToCart = async (plan) => {
+  const isPlanInCart = (planId) => {
+    return cartItems.some(item => 
+      item.subscription && 
+      item.subscriptionPlan?.id === planId
+    );
+  };
+
+  const isUserSubscribed = (planId) => {
+    return userSubscriptions.some(sub => 
+      sub.plan.id === planId
+    );
+  };
+
+  const handleAddToCart = async (plan, e) => {
+    e.stopPropagation(); // Prevent card click from navigating
+    
     if (!user) {
       navigate('/login', {
         state: {
@@ -57,14 +94,55 @@ const Subscriptions = () => {
       });
       return;
     }
+    
+    if (isUserSubscribed(plan.id)) {
+      // User is already subscribed, redirect to profile
+      navigate('/profile');
+      return;
+    }
+    
+    if (isPlanInCart(plan.id)) {
+      // Plan is already in cart, redirect to cart view
+      navigate('/cart/view');
+      return;
+    }
   
     try {
       // Pass isSubscription=true to indicate this is a subscription, not a plant
       await addToCart(user.id, plan.id, 1, null, true); 
       toast.success("Subscription added to cart!");
+      
+      // Update cart items after adding
+      const updatedCart = await getCartItems(user.id);
+      setCartItems(updatedCart);
     } catch (error) {
       console.log(error);
       toast.error("Failed to add subscription to cart");
+    }
+  };
+
+  const getButtonProps = (plan) => {
+    if (isUserSubscribed(plan.id)) {
+      return {
+        text: "Already Subscribed",
+        icon: <CheckCircleOutlineIcon />,
+        color: "#388e3c",
+        hoverColor: "#2e7d32",
+      };
+    } else if (isPlanInCart(plan.id)) {
+      return {
+        text: "Already in Cart",
+        icon: <ShoppingCartCheckoutIcon />,
+        color: "#1976d2",
+        hoverColor: "#1565c0",
+      };
+    } else {
+      return {
+        text: "Add to Cart",
+        icon: <ShoppingCartOutlinedIcon />,
+        color: "#2e7d32",
+        hoverColor: "#1b5e20",
+      };
     }
   };
 
@@ -141,6 +219,7 @@ const Subscriptions = () => {
         {plans.map((plan, index) => {
           const imageArray = JSON.parse(plan.images);
           const isFirstPlan = index === 0;
+          const buttonProps = getButtonProps(plan);
           
           return (
             <Grid item xs={12} sm={6} md={5} key={plan.id}>
@@ -249,22 +328,19 @@ const Subscriptions = () => {
                       <Button
                         variant="contained"
                         fullWidth
-                        startIcon={<ShoppingCartOutlinedIcon />}
+                        startIcon={buttonProps.icon}
                         sx={{
                           py: 1.2,
                           borderRadius: 2,
-                          backgroundColor: "#2e7d32",
+                          backgroundColor: buttonProps.color,
                           "&:hover": {
-                            backgroundColor: "#1b5e20",
+                            backgroundColor: buttonProps.hoverColor,
                           },
                           boxShadow: 1,
                         }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleAddToCart(plan); 
-                        }}
+                        onClick={(e) => handleAddToCart(plan, e)}
                       >
-                        Subscribe Now
+                        {buttonProps.text}
                       </Button>
                       <Button
                         variant="outlined"

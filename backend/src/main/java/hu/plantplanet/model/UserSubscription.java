@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
+@Table(name = "user_subscriptions")
 public class UserSubscription {
     public enum SubscriptionStatus { ACTIVE, PAUSED, CANCELLED }
 

@@ -21,6 +21,8 @@ import {
   Avatar
 } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import SubscriptionsIcon from '@mui/icons-material/Subscriptions';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import { ToastContainer, toast } from 'react-toastify';
@@ -30,7 +32,9 @@ import {
   getRandomPlants, 
   addToCart, 
   getComments, 
-  postComment 
+  postComment,
+  getCartItems,
+  getUserSubscriptions
 } from '../api/api';
 import { useUser } from "../context/UserContext";
 
@@ -44,6 +48,10 @@ const SubscriptionDetails = () => {
   const [amount, setAmount] = useState(1);
   const isMobile = useMediaQuery('(max-width:600px)');
   const { user } = useUser();
+  
+  // New state variables for cart and subscription status
+  const [inCart, setInCart] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
   
   // Comment section states
   const [comments, setComments] = useState([]);
@@ -83,6 +91,34 @@ const SubscriptionDetails = () => {
         );
         
         setComments(sortedComments);
+        
+        // Check if user is logged in
+        if (user) {
+          // Check if subscription is in cart
+          try {
+            const cartItems = await getCartItems(user.id);
+            
+            const planInCart = cartItems.some(item => 
+              item.subscription && 
+              item.subscriptionPlan?.id === parseInt(id)
+            );
+            
+            setInCart(planInCart);
+          } catch (err) {
+            console.error("Error checking cart status:", err);
+          }
+          
+          // Check if user is already subscribed
+          try {
+            const subscriptions = await getUserSubscriptions();
+            const alreadySubscribed = subscriptions.some(sub => 
+              sub.plan.id === parseInt(id)
+            );
+            setIsSubscribed(alreadySubscribed);
+          } catch (err) {
+            console.error("Error checking subscription status:", err);
+          }
+        }
       } catch (err) {
         console.error('Failed to load data:', err);
         setError(err.message || 'Failed to load subscription details');
@@ -92,7 +128,7 @@ const SubscriptionDetails = () => {
     };
 
     fetchData();
-  }, [id]);
+  }, [id, user]);
 
   const handleAddToCart = async () => {
     if (!user) {
@@ -106,9 +142,21 @@ const SubscriptionDetails = () => {
       });
       return;
     }
+    
+    // Check if already in cart or subscribed
+    if (inCart) {
+      navigate('/cart/view');
+      return;
+    }
+    
+    if (isSubscribed) {
+      navigate('/profile');
+      return;
+    }
 
     try {
       await addToCart(user.id, plan.id, amount, null, true);
+      setInCart(true); // Update button state immediately after successful addition
       toast.success("Subscription added to cart!");
     } catch (error) {
       console.log(error);
@@ -136,6 +184,25 @@ const SubscriptionDetails = () => {
       console.log(error);
       toast.error("Failed to add item to cart");
     }
+  };
+
+  // Generate button props based on current state
+  const getButtonProps = () => {
+    let buttonText = "Add to Cart";
+    let buttonIcon = <ShoppingCartIcon />;
+    let buttonColor = "success";
+    
+    if (isSubscribed) {
+      buttonText = "Already Subscribed";
+      buttonIcon = <SubscriptionsIcon />;
+      buttonColor = "primary";
+    } else if (inCart) {
+      buttonText = "Already in Cart";
+      buttonIcon = <CheckCircleIcon />;
+      buttonColor = "info";
+    }
+    
+    return { buttonText, buttonIcon, buttonColor };
   };
 
   const formatRelativeTime = (createdAt) => {
@@ -237,6 +304,9 @@ const SubscriptionDetails = () => {
       );
     }
   };
+
+  // Get button properties based on state
+  const { buttonText, buttonIcon, buttonColor } = getButtonProps();
   
   if (loading) {
     return (
@@ -361,14 +431,14 @@ const SubscriptionDetails = () => {
             
             <Button
               variant="contained"
-              color="success"
+              color={buttonColor}
               size="large"
               fullWidth
               onClick={handleAddToCart}
-              startIcon={<ShoppingCartIcon />}
+              startIcon={buttonIcon}
               sx={{ borderRadius: 2, py: 1.5, mt:2}}
             >
-              Add to Cart
+              {buttonText}
             </Button>
           </Box>
         </>
@@ -463,13 +533,13 @@ const SubscriptionDetails = () => {
               <Box sx={{ display: 'flex', mt: 8, alignItems: 'center' }}>
                 <Button
                   variant="contained"
-                  color="success"
+                  color={buttonColor}
                   size="large"
                   onClick={handleAddToCart}
-                  startIcon={<ShoppingCartIcon />}
+                  startIcon={buttonIcon}
                   sx={{ borderRadius: 2, py: 1.5, px: 4, ml: 2, width: '90%' }}
                 >
-                  Add to Cart
+                  {buttonText}
                 </Button>
               </Box>
             </Box>

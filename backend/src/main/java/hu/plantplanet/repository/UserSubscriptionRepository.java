@@ -16,6 +16,6 @@ public interface UserSubscriptionRepository extends JpaRepository<UserSubscripti
             LocalDateTime date,
             UserSubscription.SubscriptionStatus status
     );
-    Optional<UserSubscription> findByIdAndUser(Long id, Users user);
+    Optional<UserSubscription> findByPlanIdAndUser(Long planId, Users user);
     List<UserSubscription> findByUser(Users user);
 }

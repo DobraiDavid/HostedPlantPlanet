@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Box, Typography, TextField, Button, Select, MenuItem, InputLabel, FormControl, CircularProgress, Alert, InputAdornment } from "@mui/material";
 import { useCart } from "../context/CartContext";
-import { placeOrder } from "../api/api.js"; 
+import { placeOrder, subscribeUser } from "../api/api.js"; 
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import HomeIcon from "@mui/icons-material/Home";
 import LocationCityIcon from "@mui/icons-material/LocationCity";
@@ -10,7 +10,6 @@ import PhoneIcon from "@mui/icons-material/Phone";
 import PaymentIcon from "@mui/icons-material/Payment";
 import ShoppingCartCheckoutIcon from "@mui/icons-material/ShoppingCartCheckout";
 import EmailIcon from "@mui/icons-material/Email";
-
 
 const Checkout = () => {
   const { cart, totalPrice, clearCart } = useCart(); // Added clearCart
@@ -28,6 +27,11 @@ const Checkout = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
+  // Validation functions
+  const isTextOnly = (value) => /^[a-zA-Z\s]*$/.test(value);
+  const isNumberOnly = (value) => /^[0-9]*$/.test(value);
+  const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
   useEffect(() => {
     if (cart.length > 0) {
       setLoading(false);
@@ -41,7 +45,8 @@ const Checkout = () => {
         name: item.subscriptionPlan.name,
         images: JSON.parse(item.subscriptionPlan.images),
         price: item.price,
-        isSubscription: true
+        isSubscription: true,
+        subscriptionPlanId: item.subscriptionPlan.id // Added to track the plan ID
       };
     } else {
       return {
@@ -53,10 +58,53 @@ const Checkout = () => {
     }
   };
 
+  // Function to handle subscription process
+  const handleSubscriptions = async (cartItems) => {
+    const subscriptionPromises = cartItems
+      .filter(item => item.subscription)
+      .map(item => {
+        const details = getItemDetails(item);
+        const planId = details.subscriptionPlanId;
+        // Set interval to 90 days for subscription plan with ID 1, otherwise 30 days
+        const intervalDays = planId === 1 ? 90 : 30;
+        
+        return subscribeUser(planId, intervalDays);
+      });
+
+    if (subscriptionPromises.length > 0) {
+      await Promise.all(subscriptionPromises);
+    }
+  };
+
   const handleCheckout = async () => {
-    // Validation
+    // Enhanced validation
     if (!name || !email || !address || !city || !zipcode || !phoneNumber) {
       setError("Please fill in all the required fields.");
+      return;
+    }
+
+    if (!isTextOnly(name)) {
+      setError("Name can only contain letters and spaces.");
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    if (!isTextOnly(city)) {
+      setError("City can only contain letters and spaces.");
+      return;
+    }
+
+    if (!isNumberOnly(zipcode)) {
+      setError("Zip code can only contain numbers.");
+      return;
+    }
+
+    if (!isNumberOnly(phoneNumber)) {
+      setError("Phone number can only contain numbers.");
       return;
     }
 
@@ -92,6 +140,9 @@ const Checkout = () => {
       // Place the order
       const response = await placeOrder(orderData);
       
+      // Handle subscriptions for subscription items in the cart
+      await handleSubscriptions(cart);
+      
       // Clear cart and show success message
       await clearCart();
       setSuccess(true);
@@ -104,10 +155,43 @@ const Checkout = () => {
     }
   };
 
-  // Reset error message when user starts typing
-  const handleInputChange = (setter) => (e) => {
-    setter(e.target.value);
+  // Enhanced input change handlers with validation
+  const handleNameChange = (e) => {
+    const value = e.target.value;
+    if (isTextOnly(value) || value === "") {
+      setName(value);
+      if (error) setError(null);
+    }
+  };
+
+  const handleEmailChange = (e) => {
+    const value = e.target.value;
+    setEmail(value);
     if (error) setError(null);
+  };
+
+  const handleCityChange = (e) => {
+    const value = e.target.value;
+    if (isTextOnly(value) || value === "") {
+      setCity(value);
+      if (error) setError(null);
+    }
+  };
+
+  const handleZipcodeChange = (e) => {
+    const value = e.target.value;
+    if (isNumberOnly(value) || value === "") {
+      setZipcode(value);
+      if (error) setError(null);
+    }
+  };
+
+  const handlePhoneNumberChange = (e) => {
+    const value = e.target.value;
+    if (isNumberOnly(value) || value === "") {
+      setPhoneNumber(value);
+      if (error) setError(null);
+    }
   };
 
   if (success) {
@@ -249,7 +333,7 @@ const Checkout = () => {
               <TextField
                 label="Full Name"
                 value={name}
-                onChange={handleInputChange(setName)}
+                onChange={handleNameChange}
                 fullWidth
                 variant="outlined"
                 sx={{ mb: 2 }}
@@ -261,13 +345,15 @@ const Checkout = () => {
                     </InputAdornment>
                   ),
                 }}
+                error={name && !isTextOnly(name)}
+                helperText={name && !isTextOnly(name) ? "Name can only contain letters" : ""}
               />
 
               <TextField
                 label="Email Address"
                 type="email"
                 value={email}
-                onChange={handleInputChange(setEmail)}
+                onChange={handleEmailChange}
                 fullWidth
                 variant="outlined"
                 sx={{ mb: 2 }}
@@ -275,16 +361,18 @@ const Checkout = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <EmailIcon /> 
+                      <EmailIcon />
                     </InputAdornment>
                   ),
                 }}
+                error={email && !isValidEmail(email)}
+                helperText={email && !isValidEmail(email) ? "Please enter a valid email address" : ""}
               />
 
               <TextField
                 label="Address"
                 value={address}
-                onChange={handleInputChange(setAddress)}
+                onChange={(e) => setAddress(e.target.value)}
                 fullWidth
                 variant="outlined"
                 sx={{ mb: 2 }}
@@ -301,7 +389,7 @@ const Checkout = () => {
               <TextField
                 label="City"
                 value={city}
-                onChange={handleInputChange(setCity)}
+                onChange={handleCityChange}
                 fullWidth
                 variant="outlined"
                 sx={{ mb: 2 }}
@@ -313,12 +401,14 @@ const Checkout = () => {
                     </InputAdornment>
                   ),
                 }}
+                error={city && !isTextOnly(city)}
+                helperText={city && !isTextOnly(city) ? "City can only contain letters" : ""}
               />
 
               <TextField
                 label="Zip Code"
                 value={zipcode}
-                onChange={handleInputChange(setZipcode)}
+                onChange={handleZipcodeChange}
                 fullWidth
                 variant="outlined"
                 sx={{ mb: 2 }}
@@ -330,12 +420,14 @@ const Checkout = () => {
                     </InputAdornment>
                   ),
                 }}
+                error={zipcode && !isNumberOnly(zipcode)}
+                helperText={zipcode && !isNumberOnly(zipcode) ? "Zip code can only contain numbers" : ""}
               />
 
               <TextField
                 label="Phone Number"
                 value={phoneNumber}
-                onChange={handleInputChange(setPhoneNumber)}
+                onChange={handlePhoneNumberChange}
                 fullWidth
                 variant="outlined"
                 sx={{ mb: 2 }}
@@ -347,6 +439,8 @@ const Checkout = () => {
                     </InputAdornment>
                   ),
                 }}
+                error={phoneNumber && !isNumberOnly(phoneNumber)}
+                helperText={phoneNumber && !isNumberOnly(phoneNumber) ? "Phone number can only contain numbers" : ""}
               />
 
             <FormControl fullWidth className="checkout-input mb-4">

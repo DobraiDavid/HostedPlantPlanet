@@ -221,14 +221,10 @@ export const changeUserDetails = async (userDetails) => {
     console.error("Change user details error:", error);
     
     if (error.response) {
-      // The request was made and the server responded with a status code
-      // that falls out of the range of 2xx
       throw error.response.data;
     } else if (error.request) {
-      // The request was made but no response was received
       throw new Error("No response received from server");
     } else {
-      // Something happened in setting up the request that triggered an Error
       throw new Error("Error setting up the request");
     }
   }
@@ -310,5 +306,92 @@ export const getSubscriptionById = async (id) => {
   } catch (error) {
     console.error(`Error fetching subscription plan with ID ${id}:`, error);
     throw error;
+  }
+};
+
+
+// Subscribe a user to a plan
+export const subscribeUser = async (planId, intervalDays) => {
+  try {
+    const token = localStorage.getItem('authToken');
+    
+    if (!token) {
+      throw new Error("No authentication token found");
+    }
+
+    const subscribeRequest = {
+      planId: planId,
+      intervalDays: intervalDays
+    };
+
+    const response = await axios.post(
+      `${API_BASE_URL}/subscriptions/subscribe`, 
+      subscribeRequest,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      }
+    );
+    
+    return response.data;
+  } catch (error) {
+    console.error("Subscription error:", error);
+    
+    if (error.response) {
+      throw error.response.data;
+    } else if (error.request) {
+      throw new Error("No response received from server");
+    } else {
+      throw new Error("Error setting up the request");
+    }
+  }
+};
+
+// Get user's subscriptions
+export const getUserSubscriptions = async () => {
+  try {
+    const token = localStorage.getItem('authToken');
+    
+    if (!token) {
+      throw new Error("No authentication token found");
+    }
+
+    const response = await axios.get(`${API_BASE_URL}/subscriptions/my-subscriptions`);
+    return response.data;
+  } catch (error) {
+    console.error("Get subscriptions error:", error);
+    
+    if (error.response) {
+      throw error.response.data;
+    } else if (error.request) {
+      throw new Error("No response received from server");
+    } else {
+      throw new Error("Error setting up the request");
+    }
+  }
+};
+
+// Cancel a subscription
+export const cancelSubscription = async (subscriptionId) => {
+  try {
+    const token = localStorage.getItem('authToken');
+    
+    if (!token) {
+      throw new Error("No authentication token found");
+    }
+
+    const response = await axios.delete(`${API_BASE_URL}/subscriptions/cancel/${subscriptionId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Cancel subscription error:", error);
+    
+    if (error.response) {
+      throw error.response.data;
+    } else if (error.request) {
+      throw new Error("No response received from server");
+    } else {
+      throw new Error("Error setting up the request");
+    }
   }
 };

@@ -9,9 +9,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -27,11 +31,14 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthorizationFilter.class);
 
     private final JWTTokenProvider jwtTokenProvider;
+    private final UserDetailsService userDetailsService;
+
     public static final String OPTIONS_HTTP_METHOD = "OPTIONS";
     public static final String TOKEN_PREFIX = "Bearer ";
 
-    public JwtAuthorizationFilter(JWTTokenProvider jwtTokenProvider) {
+    public JwtAuthorizationFilter(JWTTokenProvider jwtTokenProvider, UserDetailsService userDetailsService) {
         this.jwtTokenProvider = jwtTokenProvider;
+        this.userDetailsService = userDetailsService;
     }
 
     @Override
@@ -62,8 +69,21 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                 String username = jwtTokenProvider.getSubject(token);
 
                 if (jwtTokenProvider.isTokenValid(username, token)) {
+                    // Load the full UserDetails (which contains your Users entity)
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+                    // Get authorities from token
                     List<GrantedAuthority> authorities = jwtTokenProvider.getAuthorities(token);
-                    Authentication authentication = jwtTokenProvider.getAuthentication(username, authorities, request);
+
+                    // Create authentication with UserDetails as principal
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                            userDetails,  // This will be your PermissionCollector containing Users
+                            null,
+                            authorities
+                    );
+
+                    // Set the request details
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                     // Set the authentication in the context
                     SecurityContextHolder.getContext().setAuthentication(authentication);

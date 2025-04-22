@@ -85,22 +85,19 @@ public class SubscriptionService {
         subscription.setStartDate(LocalDateTime.now());
         subscription.setStatus(UserSubscription.SubscriptionStatus.ACTIVE);
 
-        if (plan.getType() == SubscriptionPlan.SubscriptionType.RANDOM_PLANT) {
-            subscription.setIntervalDays(request.getIntervalDays());
-            subscription.setNextTriggerDate(
-                    LocalDateTime.now().plusDays(request.getIntervalDays())
-            );
-        }
+        subscription.setIntervalDays(request.getIntervalDays());
+        subscription.setNextTriggerDate(
+                LocalDateTime.now().plusDays(request.getIntervalDays())
+        );
 
         userSubRepo.save(subscription);
     }
 
-    public void cancelSubscription(Users user, Long subscriptionId) {
-        UserSubscription subscription = userSubRepo.findByIdAndUser(subscriptionId, user)
+    public void cancelSubscription(Users user, Long planId) {
+        UserSubscription subscription = userSubRepo.findByPlanIdAndUser(planId, user)
                 .orElseThrow(() -> new RuntimeException("Subscription not found"));
 
-        subscription.setStatus(UserSubscription.SubscriptionStatus.CANCELLED);
-        userSubRepo.save(subscription);
+        userSubRepo.delete(subscription);
     }
 
     public SubscriptionPlan getPlanById(Long id) {
