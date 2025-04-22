@@ -2,9 +2,11 @@ package hu.plantplanet.service;
 
 import hu.plantplanet.model.Cart;
 import hu.plantplanet.model.Plants;
+import hu.plantplanet.model.SubscriptionPlan;
 import hu.plantplanet.model.Users;
 import hu.plantplanet.repository.CartRepository;
 import hu.plantplanet.repository.PlantsRepository;
+import hu.plantplanet.repository.SubscriptionPlanRepository;
 import hu.plantplanet.repository.UsersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,35 +27,77 @@ public class CartService {
     @Autowired
     private UsersRepository userRepository;
 
+    @Autowired
+    private SubscriptionPlanRepository subscriptionPlanRepository;
+
     // Add or update cart item
-    public Cart addOrUpdateCartItem(Integer userId, Integer plantId, int amount, Integer cartItemId) {
+    public Cart addOrUpdateCartItem(Integer userId, Integer itemId, int amount, Integer cartItemId, boolean isSubscription) {
         Users user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        Plants plant = plantRepository.findById(plantId).orElseThrow(() -> new RuntimeException("Plant not found"));
 
         Cart cartItem;
 
-        if (cartItemId != null) {
-            // If cartItemId is provided, update the existing item
-            cartItem = cartRepository.findById(Long.valueOf(cartItemId)).orElseThrow(() -> new RuntimeException("Cart item not found"));
-            // Check if the user and plant match the existing cart item
-            if (!cartItem.getUser().getId().equals(userId) || !cartItem.getPlant().getId().equals(plantId)) {
-                throw new RuntimeException("Cart item does not belong to the specified user and plant");
-            }
-            cartItem.setAmount(amount);
-        } else {
-            // If no cartItemId is provided, create a new cart item
-            Optional<Cart> existingCartItem = cartRepository.findByUserIdAndPlantId(userId, plantId);
-            if (existingCartItem.isPresent()) {
-                // Update existing cart item if found
-                cartItem = existingCartItem.get();
-                cartItem.setAmount(cartItem.getAmount() + amount);
-            } else {
-                // Create a new cart item if it doesn't exist
-                cartItem = new Cart();
-                cartItem.setUser(user);
-                cartItem.setPlant(plant);
-                cartItem.setPrice(plant.getPrice());
+        // Handle based on item type (plant or subscription)
+        if (isSubscription) {
+            // Get subscription plan instead of plant
+            SubscriptionPlan plan = subscriptionPlanRepository.findById(Long.valueOf(itemId))
+                    .orElseThrow(() -> new RuntimeException("Subscription plan not found"));
+
+            if (cartItemId != null) {
+                // Update existing cart item
+                cartItem = cartRepository.findById(Long.valueOf(cartItemId))
+                        .orElseThrow(() -> new RuntimeException("Cart item not found"));
+
+                // Verify ownership
+                if (!cartItem.getUser().getId().equals(userId)) {
+                    throw new RuntimeException("Cart item does not belong to the specified user");
+                }
                 cartItem.setAmount(amount);
+            } else {
+                // Check for existing subscription in cart
+                Optional<Cart> existingCartItem = cartRepository.findByUserIdAndSubscriptionPlanId(userId, itemId);
+
+                if (existingCartItem.isPresent()) {
+                    cartItem = existingCartItem.get();
+                    cartItem.setAmount(cartItem.getAmount() + amount);
+                } else {
+                    // Create new subscription item in cart
+                    cartItem = new Cart();
+                    cartItem.setUser(user);
+                    cartItem.setSubscriptionPlan(plan);
+                    cartItem.setPlant(null); // No plant associated
+                    cartItem.setPrice(plan.getPrice());
+                    cartItem.setAmount(amount);
+                    cartItem.setSubscription(true);
+                }
+            }
+        } else {
+            // Original plant-handling logic
+            Plants plant = plantRepository.findById(itemId)
+                    .orElseThrow(() -> new RuntimeException("Plant not found"));
+
+            if (cartItemId != null) {
+                cartItem = cartRepository.findById(Long.valueOf(cartItemId))
+                        .orElseThrow(() -> new RuntimeException("Cart item not found"));
+
+                if (!cartItem.getUser().getId().equals(userId) || !cartItem.getPlant().getId().equals(itemId)) {
+                    throw new RuntimeException("Cart item does not belong to the specified user and plant");
+                }
+                cartItem.setAmount(amount);
+            } else {
+                Optional<Cart> existingCartItem = cartRepository.findByUserIdAndPlantId(userId, itemId);
+
+                if (existingCartItem.isPresent()) {
+                    cartItem = existingCartItem.get();
+                    cartItem.setAmount(cartItem.getAmount() + amount);
+                } else {
+                    cartItem = new Cart();
+                    cartItem.setUser(user);
+                    cartItem.setPlant(plant);
+                    cartItem.setSubscriptionPlan(null); // No subscription associated
+                    cartItem.setPrice(plant.getPrice());
+                    cartItem.setAmount(amount);
+                    cartItem.setSubscription(false);
+                }
             }
         }
 

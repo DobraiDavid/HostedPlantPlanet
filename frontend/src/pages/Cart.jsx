@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Box, Typography, Button, Alert } from "@mui/material";
+import { Box, Typography, Button, Alert, Chip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../context/UserContext";
 import DeleteIcon from '@mui/icons-material/Delete';
 import ShoppingCartCheckoutIcon from '@mui/icons-material/ShoppingCartCheckout';
 import RemoveShoppingCartIcon from '@mui/icons-material/RemoveShoppingCart';  
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
 import {
   getCartItems,
   removeFromCart,
@@ -49,6 +51,7 @@ const Cart = () => {
           setTotalPrice(0);
         }
       } catch (err) {
+        console.error("Cart fetch error:", err);
         setError("An error occurred while loading the cart.");
       } finally {
         setLoading(false);
@@ -113,6 +116,25 @@ const Cart = () => {
     navigate("/checkout");
   };
 
+  // Function to get item name and images based on whether it's a plant or subscription
+  const getItemDetails = (item) => {
+    if (item.subscription) {
+      return {
+        name: item.subscriptionPlan.name,
+        images: JSON.parse(item.subscriptionPlan.images),
+        description: item.subscriptionPlan.description,
+        isSubscription: true
+      };
+    } else {
+      return {
+        name: item.plant.name,
+        images: JSON.parse(item.plant.images),
+        description: item.plant.description,
+        isSubscription: false
+      };
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -146,68 +168,96 @@ const Cart = () => {
             {cartItems.length === 0 ? (
               <Typography variant="h6" align="center">Cart is empty.</Typography>
             ) : (
-              cartItems.map((item) => (
-                <Box key={item.id} sx={{ borderBottom: "1px solid #ddd", paddingBottom: 2, marginBottom: 2 }}>
-                  <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <Box sx={{ display: "flex", alignItems: "center", width: "100%"  }}>
-                      <img
-                        src={JSON.parse(item.plant.images)}
-                        alt={item.plant.name}
-                        style={{ width: 80, height: 80, objectFit: "cover", marginRight: 16 }}
-                      />
-                      <Box sx={{ flexGrow: 1 }}>
-                        <Typography variant="h6">{item.plant.name}</Typography>
-                      </Box>
-                      <Typography variant="h6" sx={{ fontWeight: "bold", textAlign: "right" }}>
-                        ${item.price}
-                      </Typography>
-                    </Box>
-                  </Box>
-
-                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 2 }}>
-                    {/* Quantity */}
+              cartItems.map((item) => {
+                const itemDetails = getItemDetails(item);
+                
+                return (
+                  <Box key={item.id} sx={{ borderBottom: "1px solid #ddd", paddingBottom: 2, marginBottom: 2 }}>
                     <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <Button
-                        variant="outlined"
-                        color="success"
-                        onClick={() => handleUpdateQuantity(item.id, item.amount - 1)}
-                        disabled={item.amount <= 1}
-                      >
-                        -
-                      </Button>
-                      <Typography variant="body1" sx={{ margin: "0 8px" }}>
-                        Quantity: {item.amount}
-                      </Typography>
-                      <Button
-                        variant="outlined"
-                        color="success"
-                        onClick={() => {
-                          if (item.amount < 20) handleUpdateQuantity(item.id, item.amount + 1);
-                        }}
-                        disabled={item.amount >= 20}
-                      >
-                        +
-                      </Button>
+                      <Box sx={{ display: "flex", alignItems: "center", width: "100%" }}>
+                        <img
+                          src={Array.isArray(itemDetails.images) ? itemDetails.images[0] : itemDetails.images}
+                          alt={itemDetails.name}
+                          style={{ width: 80, height: 80, objectFit: "cover", marginRight: 16 }}
+                        />
+                        <Box sx={{ flexGrow: 1 }}>
+                          <Typography variant="h6">{itemDetails.name}</Typography>
+                          {itemDetails.isSubscription && (
+                            <Chip 
+                              icon={<CalendarMonthIcon />} 
+                              label="Subscription" 
+                              color="primary" 
+                              size="small" 
+                              sx={{ mb: 1 }}
+                            />
+                          )}
+                          {!itemDetails.isSubscription && (
+                            <Chip 
+                              icon={<LocalFloristIcon />} 
+                              label="Plant" 
+                              color="success" 
+                              size="small" 
+                              sx={{ mb: 1 }}
+                            />
+                          )}
+                        </Box>
+                        <Typography variant="h6" sx={{ fontWeight: "bold", textAlign: "right" }}>
+                          ${item.price}
+                        </Typography>
+                      </Box>
                     </Box>
 
-                    {/* Remove Button */}
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      onClick={() => handleRemoveItem(item.id)}
-                      sx={{
-                        '&:hover': {
-                          backgroundColor: '#ffecec',
-                          borderColor: '#f44336',
-                        },
-                      }}
-                      startIcon={<DeleteIcon />}
-                    >
-                      Remove
-                    </Button>
+                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 2 }}>
+                      {/* Quantity - Only show for plants, not for subscriptions */}
+                      {!itemDetails.isSubscription ? (
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                          <Button
+                            variant="outlined"
+                            color="success"
+                            onClick={() => handleUpdateQuantity(item.id, item.amount - 1)}
+                            disabled={item.amount <= 1}
+                          >
+                            -
+                          </Button>
+                          <Typography variant="body1" sx={{ margin: "0 8px" }}>
+                            Quantity: {item.amount}
+                          </Typography>
+                          <Button
+                            variant="outlined"
+                            color="success"
+                            onClick={() => {
+                              if (item.amount < 20) handleUpdateQuantity(item.id, item.amount + 1);
+                            }}
+                            disabled={item.amount >= 20}
+                          >
+                            +
+                          </Button>
+                        </Box>
+                      ) : (
+                        <Typography variant="body2" color="textSecondary">
+                          Recurring subscription
+                        </Typography>
+                      )}
+
+                      {/* Remove Button */}
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        onClick={() => handleRemoveItem(item.id)}
+                        sx={{
+                          '&:hover': {
+                            backgroundColor: '#ffecec',
+                            borderColor: '#f44336',
+                          },
+                        }}
+                        startIcon={<DeleteIcon />}
+                      >
+                        Remove
+                      </Button>
+                    </Box>
                   </Box>
-                </Box>
-              ))
+                );
+              })
             )}
 
             {cartItems.length > 0 && (
@@ -234,11 +284,12 @@ const Cart = () => {
                   sx={{ 
                     padding: "12px", 
                     fontSize: "16px", 
-                    mt: 2, '&:hover': {
-                            backgroundColor: '#ffecec',
-                            borderColor: '#f44336',
-                          }, 
-                        }}
+                    mt: 2,
+                    '&:hover': {
+                      backgroundColor: '#ffecec',
+                      borderColor: '#f44336',
+                    }, 
+                  }}
                   startIcon={<RemoveShoppingCartIcon />}
                 >
                   Remove All Items
@@ -261,7 +312,6 @@ const Cart = () => {
                 >
                   Continue shopping
                 </Button>
-
               </Box>
             )}
           </div>

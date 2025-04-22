@@ -25,6 +25,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import InfoIcon from "@mui/icons-material/Info";
 import EmailIcon from "@mui/icons-material/Email";
+import StarsIcon from "@mui/icons-material/Stars";
 import logo from "../assets/logo.jpg";
 
 const Navbar = () => {
@@ -102,7 +103,7 @@ const Navbar = () => {
             Plant Planet
           </Typography>
         </Box>
-        <Box sx={{ display: { xs: "none", sm: "block" }, ml: 2 }}>
+        <Box sx={{ display: { xs: "none", sm: "flex" }, alignItems: "center" }}>
           {user ? (
             <Typography variant="h6" sx={{ color: "white", mx: 1 }}>
               Hello, {user.name}
@@ -124,10 +125,29 @@ const Navbar = () => {
               </Button>
             ))
           )}
-        </Box>
 
-        {/* About & Contact as direct buttons instead of dropdown */}
-        <Box sx={{ display: { xs: "none", sm: "flex" }, alignItems: "center" }}>
+          <Button
+            component={NavLink}
+            to="/subscriptions"
+            variant="contained"
+            color="secondary"
+            startIcon={<StarsIcon />}
+            sx={{
+              mx: 1,
+              fontWeight: "bold",
+              textTransform: "none",
+              boxShadow: "0 2px 10px rgba(255, 215, 0, 0.5)",
+              "&:hover": {
+                transform: "scale(1.05)",
+                boxShadow: "0 4px 15px rgba(255, 215, 0, 0.7)",
+                transition: "all 0.3s ease-in-out",
+              },
+            }}
+          >
+            Subscriptions
+          </Button>
+
+          {/* About & Contact icons */}
           <Tooltip title="About Us">
             <IconButton 
               component={Link} 
@@ -220,6 +240,24 @@ const Navbar = () => {
           )}
           <Divider />
           <List>
+            <ListItem 
+              component={Link} 
+              to="/subscriptions" 
+              sx={{ 
+                "&:hover": { backgroundColor: "#81c784" }, backgroundColor:"purple"
+              }}
+            >
+              <ListItemIcon sx={{ color: "white" }}>
+                <StarsIcon />
+              </ListItemIcon>
+              <ListItemText 
+                primary="Subscriptions" 
+                sx={{ 
+                  color: "white",
+                  fontWeight: "bold",
+                }}
+              />
+            </ListItem>
             <ListItem component={Link} to="/about" sx={{ "&:hover": { backgroundColor: "#81c784" } }}>
               <ListItemIcon sx={{ color: "white" }}>
                 <InfoIcon />
@@ -232,12 +270,14 @@ const Navbar = () => {
               </ListItemIcon>
               <ListItemText primary="Contact" sx={{ color: "white" }}/>
             </ListItem>
-            <ListItem component={Link} to="/profile" sx={{ "&:hover": { backgroundColor: "#81c784" } }}>
-              <ListItemIcon sx={{ color: "white" }}>
-                <AccountCircleIcon />
-              </ListItemIcon>
-              <ListItemText primary="Profile" sx={{ color: "white" }}/>
-            </ListItem>
+            {user && (
+              <ListItem component={Link} to="/profile" sx={{ "&:hover": { backgroundColor: "#81c784" } }}>
+                <ListItemIcon sx={{ color: "white" }}>
+                  <AccountCircleIcon />
+                </ListItemIcon>
+                <ListItemText primary="Profile" sx={{ color: "white" }}/>
+              </ListItem>
+            )}
           </List>
         </Box>
       </Drawer>

@@ -1,5 +1,6 @@
 package hu.plantplanet.service;
 
+import hu.plantplanet.model.Plants;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +46,60 @@ public class EmailService {
         } catch (MessagingException e) {
             // Handle exception or log it
             throw new RuntimeException("Failed to send email", e);
+        }
+    }
+
+    public void sendPlantDeliveryEmail(String to, String username, Plants plant) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+            helper.setTo(to);
+            helper.setSubject("Your Mystery Plant Delivery!");
+
+            String htmlContent = "<html><body>" +
+                    "<h2>Hello " + username + ",</h2>" +
+                    "<p>Your mystery plant has been selected!</p>" +
+                    "<div style='border: 1px solid #ddd; padding: 15px; margin: 10px 0;'>" +
+                    "<h3>" + plant.getName() + "</h3>" +
+                    "<p><strong>Care Instructions are included in your package</strong> " + "</p>" +
+                    "</div>" +
+                    "<p>We hope you enjoy your new green friend!</p>" +
+                    "<p>Best regards,<br/>The PlantPlanet Team</p>" +
+                    "</body></html>";
+
+            helper.setText(htmlContent, true);
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Failed to send plant delivery email", e);
+        }
+    }
+
+    public void sendCareTipsEmail(String to, String username) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+            helper.setTo(to);
+            helper.setSubject("Your Monthly Plant Care Tips");
+
+            String htmlContent = "<html><body>" +
+                    "<h2>Hello " + username + ",</h2>" +
+                    "<p>Here are your monthly plant care tips:</p>" +
+                    "<ul>" +
+                    "<li>Check soil moisture regularly</li>" +
+                    "<li>Rotate plants for even growth</li>" +
+                    "<li>Wipe leaves to remove dust</li>" +
+                    "<li>Check for pests</li>" +
+                    "</ul>" +
+                    "<p>Happy planting!</p>" +
+                    "<p>Best regards,<br/>The PlantPlanet Team</p>" +
+                    "</body></html>";
+
+            helper.setText(htmlContent, true);
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Failed to send care tips email", e);
         }
     }
 }

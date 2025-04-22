@@ -34,6 +34,25 @@ const Checkout = () => {
     }
   }, [cart]);
 
+  // Function to get item details based on whether it's a plant or subscription
+  const getItemDetails = (item) => {
+    if (item.subscription) {
+      return {
+        name: item.subscriptionPlan.name,
+        images: JSON.parse(item.subscriptionPlan.images),
+        price: item.price,
+        isSubscription: true
+      };
+    } else {
+      return {
+        name: item.plant.name,
+        images: JSON.parse(item.plant.images),
+        price: item.plant.price,
+        isSubscription: false
+      };
+    }
+  };
+
   const handleCheckout = async () => {
     // Validation
     if (!name || !email || !address || !city || !zipcode || !phoneNumber) {
@@ -52,11 +71,18 @@ const Checkout = () => {
       paymentMethod,
       totalPrice,
       orderDate: new Date().toISOString(),
-      orderItems: cart.map(item => ({
-        plantName: item.plant.name,
-        amount: item.amount,
-        price: item.plant.price
-      }))
+      orderItems: cart.map(item => {
+        const details = getItemDetails(item);
+        
+        // Adjust the structure for both plant and subscription items
+        return {
+          itemName: details.name,
+          amount: item.amount,
+          price: details.isSubscription ? item.price : details.price,
+          isSubscription: details.isSubscription,
+          plantName: details.name
+        };
+      })
     };
 
     try {
@@ -135,8 +161,6 @@ const Checkout = () => {
               Return to Homepage
             </Button>
           </Box>
-
-
         </Box>
       </Box>
     );
@@ -183,26 +207,33 @@ const Checkout = () => {
             <Box className="checkout-order-summary mb-6">
               <Typography variant="h6" color="textPrimary" mb={2}>Your Order</Typography>
               <Box className="border-t pt-2">
-                {cart.map((item) => (
-                  <Box key={item.id} display="flex" alignItems="flex-start" gap={2} py={2} borderBottom="1px solid #ccc">
-                    <img
-                      src={JSON.parse(item.plant.images)}
-                      alt={item.plant.name}
-                      style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8 }}
-                    />
-                    <Box flex={1}>
-                      <Typography variant="h6" fontWeight="bold">
-                        {item.plant.name}
-                      </Typography>
-                      <Typography variant="body2" color="textSecondary">
-                        Quantity: {item.amount}
+                {cart.map((item) => {
+                  const itemDetails = getItemDetails(item);
+                  
+                  return (
+                    <Box key={item.id} display="flex" alignItems="flex-start" gap={2} py={2} borderBottom="1px solid #ccc">
+                      <img
+                        src={Array.isArray(itemDetails.images) ? itemDetails.images[0] : itemDetails.images}
+                        alt={itemDetails.name}
+                        style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8 }}
+                      />
+                      <Box flex={1}>
+                        <Typography variant="h6" fontWeight="bold">
+                          {itemDetails.name}
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary">
+                          {itemDetails.isSubscription ? "Subscription" : "Plant"}
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary">
+                          Quantity: {item.amount}
+                        </Typography>
+                      </Box>
+                      <Typography fontWeight="bold" color="textPrimary">
+                        ${(itemDetails.isSubscription ? item.price * item.amount : itemDetails.price * item.amount).toFixed(2)}
                       </Typography>
                     </Box>
-                    <Typography fontWeight="bold" color="textPrimary">
-                      ${(item.plant.price * item.amount).toFixed(2)}
-                    </Typography>
-                  </Box>
-                ))}
+                  );
+                })}
               </Box>
               <Box className="border-t pt-2 text-right">
                 <Typography variant="h6" color="textPrimary" className="checkout-total" fontWeight="bold">

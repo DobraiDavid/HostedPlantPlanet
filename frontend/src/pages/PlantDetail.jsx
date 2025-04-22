@@ -21,7 +21,8 @@ import {
   Rating,
   Box,
   Paper,
-  Avatar
+  Avatar,
+  Chip
 } from '@mui/material'; 
 import { ToastContainer, toast } from 'react-toastify';
 import WaterDropOutlinedIcon from '@mui/icons-material/WaterDropOutlined';
@@ -32,6 +33,8 @@ import LocalFloristOutlinedIcon from '@mui/icons-material/LocalFloristOutlined';
 import CleaningServicesOutlinedIcon from '@mui/icons-material/CleaningServicesOutlined';
 import SpaOutlinedIcon from '@mui/icons-material/SpaOutlined';
 import RepeatOutlinedIcon from '@mui/icons-material/RepeatOutlined';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import VerifiedIcon from '@mui/icons-material/Verified';
 import { useUser } from "../context/UserContext";  
 import { Link, useNavigate } from 'react-router-dom';
 import { Carousel } from 'react-responsive-carousel';  
@@ -263,34 +266,60 @@ const PlantDetail = () => {
         {isMobile ? (
         // MOBILE VIEW (Stacked layout)
         <>
-          <div className="product-image">
+          <Box sx={{ mb: 4 }}>
             <Carousel 
-              showThumbs={false}
-              showStatus={false}
-              infiniteLoop
-              autoPlay
+              showThumbs={true} 
+              showStatus={false} 
+              infiniteLoop 
+              autoPlay 
               interval={5000}
+              thumbWidth={60}
             >
               {JSON.parse(plant.images).map((image, index) => (
                 <div key={index}>
-                  <img 
-                    src={image} 
-                    alt={`${plant.name} image ${index + 1}`} 
-                    className="carousel-image"
-                    style={{ width: '100%', height: 'auto' }} 
+                  <img
+                    src={image}
+                    alt={`${plant.name} image ${index + 1}`}
+                    style={{ 
+                      width: '100%', 
+                      height: 'auto', 
+                      borderRadius: '8px',
+                      objectFit: 'cover'
+                    }}
                   />
                 </div>
               ))}
             </Carousel>
-          </div>
+          </Box>
 
           <div className="product-details">
-            <h1 className="product-name">{plant.name}</h1>
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', mb: 1, color: '#2e7d32' }}>
+            {plant.name}
+            </Typography>
+          </Box>
             <p className="product-description">{plant.description}</p>
 
             <div className="price-stock">
-              <p className="price">${plant.price}</p>
-              <p className="stock-status">In stock</p>
+            <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#2e7d32', mb: 1 }}>
+              ${plant.price}
+            </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <Chip 
+                icon={<VerifiedIcon />} 
+                label="In Stock" 
+                color="success" 
+                size="small" 
+                variant="outlined"
+              />
+              <Chip 
+                icon={<LocalShippingIcon />} 
+                label="Free Shipping" 
+                size="small" 
+                variant="outlined" 
+                sx={{ ml: 1 }}
+              />
+            </Box>
             </div>
 
             <TextField
@@ -310,33 +339,60 @@ const PlantDetail = () => {
         // PC VIEW (Side-by-side layout)
         <div className="product-container" style={{ display: "flex", gap: "20px" }}>
           <div className="product-image" style={{ flex: 1 }}>
-            <Carousel 
-              showThumbs={false}
-              showStatus={false}
-              infiniteLoop
-              autoPlay
-              interval={5000}
-            >
-              {JSON.parse(plant.images).map((image, index) => (
-                <div key={index}>
-                  <img 
-                    src={image} 
-                    alt={`${plant.name} image ${index + 1}`} 
-                    className="carousel-image"
-                    style={{ width: '100%', height: 'auto' }} 
-                  />
-                </div>
-              ))}
-            </Carousel>
+          <Carousel 
+            showThumbs={true} 
+            showStatus={false} 
+            infiniteLoop 
+            autoPlay 
+            interval={5000}
+            thumbWidth={80}
+          >
+            {JSON.parse(plant.images).map((image, index) => (
+              <div key={index}>
+                <img
+                  src={image}
+                  alt={`${plant.name} image ${index + 1}`}
+                  style={{ 
+                    width: '100%', 
+                    height: 'auto', 
+                    borderRadius: '12px',
+                    objectFit: 'cover',
+                    maxHeight: '500px'
+                  }}
+                />
+              </div>
+            ))}
+          </Carousel>
           </div>
 
           <div className="product-details" style={{ flex: 1 }}>
-            <h1 className="product-name">{plant.name}</h1>
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', mb: 1, color: '#2e7d32' }}>
+            {plant.name}
+            </Typography>
+          </Box>
             <p className="product-description">{plant.description}</p>
 
             <div className="price-stock">
-              <p className="price">${plant.price}</p>
-              <p className="stock-status">In stock</p>
+            <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#2e7d32', mb: 1 }}>
+              ${plant.price}
+            </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <Chip 
+                icon={<VerifiedIcon />} 
+                label="In Stock" 
+                color="success" 
+                size="small" 
+                variant="outlined"
+              />
+              <Chip 
+                icon={<LocalShippingIcon />} 
+                label="Free Shipping" 
+                size="small" 
+                variant="outlined" 
+                sx={{ ml: 1 }}
+              />
+            </Box>
             </div>
 
             <TextField
@@ -347,8 +403,15 @@ const PlantDetail = () => {
               inputProps={{ min: 1, max: 20 }}
             />
 
-            <Button variant="contained" color="success"  size="large" sx={{ mt: 2 }} onClick={handleAddToCart} startIcon={<ShoppingCartIcon />}>
-              Add to Cart
+            <Button
+                  variant="contained"
+                  color="success"
+                  size="large"
+                  onClick={handleAddToCart}
+                  startIcon={<ShoppingCartIcon />}
+                  sx={{ borderRadius: 2, py: 1.5, px: 4, ml: 2, width: '90%', mt:5 }}
+                >
+                  Add to Cart
             </Button>
           </div>
         </div>

@@ -10,7 +10,6 @@ import java.math.BigDecimal;
 @Getter
 @Entity
 public class Cart {
-    // Getters and Setters
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -19,48 +18,14 @@ public class Cart {
     private Users user; // Reference to the User entity
 
     @ManyToOne
-    private Plants plant; // Reference to the Plant entity
+    @JoinColumn(name = "plant_id", nullable = true) // Nullable since plant_id can be null for subscription
+    private Plants plant; // Reference to the Plant entity (nullable for subscription items)
 
     private BigDecimal price; // Price of the plant
     private int amount; // Quantity of the plant in the cart
+    private boolean isSubscription; // Whether it's a subscription
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public Users getUser() {
-        return user;
-    }
-
-    public void setUser(Users user) {
-        this.user = user;
-    }
-
-    public Plants getPlant() {
-        return plant;
-    }
-
-    public void setPlant(Plants plant) {
-        this.plant = plant;
-    }
-
-    public BigDecimal getPrice() {
-        return price;
-    }
-
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
-
-    public int getAmount() {
-        return amount;
-    }
-
-    public void setAmount(int amount) {
-        this.amount = amount;
-    }
+    @ManyToOne
+    @JoinColumn(name = "subscription_plan_id", nullable = true) // Nullable for regular cart items
+    private SubscriptionPlan subscriptionPlan; // Reference to the SubscriptionPlan entity
 }

@@ -10,8 +10,6 @@
     <include file="create_table_users.sql" relativeToChangelogFile="true"/>
     <!--    <include file="insert_dummy_user.sql" relativeToChangelogFile="true"/>-->
 
-    <include file="create_table_cart.sql" relativeToChangelogFile="true"/>
-
     <include file="create_table_permission.sql" relativeToChangelogFile="true"/>
     <include file="insert_data_permission.sql" relativeToChangelogFile="true"/>
 
@@ -21,6 +19,11 @@
     <include file="create_table_comments.sql" relativeToChangelogFile="true"/>
     <include file="create_table_orders.sql" relativeToChangelogFile="true"/>
     <include file="create_table_order_items.sql" relativeToChangelogFile="true"/>
+    <include file="create_table_repot_reminder.sql" relativeToChangelogFile="true"/>
+    <include file="create_table_subscription_plans.sql" relativeToChangelogFile="true"/>
+    <include file="create_table_user_subscriptions.sql" relativeToChangelogFile="true"/>
+    <include file="insert_data_subscription_plans.sql" relativeToChangelogFile="true"/>
+    <include file="create_table_cart.sql" relativeToChangelogFile="true"/>
 
     <changeSet id="assign-role-user" author="Dobrai David">
         <sql>

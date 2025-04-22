@@ -19,6 +19,9 @@ import Profile from "./pages/Profile";
 import { ToastContainer } from 'react-toastify';
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsAndConditions from "./pages/TermsAndConditions";
+import Subscriptions from "./pages/SubscriptionPage";
+import SubscriptionDetails from "./pages/SubscriptionDetails";
+
 
 function App() {
   return (
@@ -41,6 +44,8 @@ function App() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+            <Route path="/subscriptions" element={<Subscriptions />} />
+            <Route path="/subscriptions/plans/:id" element={<SubscriptionDetails />} />
           </Routes>
         </main>
         <Footer />

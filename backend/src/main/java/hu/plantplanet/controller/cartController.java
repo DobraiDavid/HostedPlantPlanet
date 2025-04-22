@@ -21,8 +21,14 @@ public class cartController {
     // Add or update an item in the cart
     @CrossOrigin(origins = "http://localhost:5173")
     @PostMapping("/add")
-    public ResponseEntity<String> addOrUpdateCartItem(@RequestParam Integer userId, @RequestParam Integer plantId, @RequestParam int amount, @RequestParam(required = false) Integer cartItemId) {
-        cartService.addOrUpdateCartItem(userId, plantId, amount, cartItemId);
+    public ResponseEntity<String> addOrUpdateCartItem(
+            @RequestParam Integer userId,
+            @RequestParam Integer itemId,
+            @RequestParam int amount,
+            @RequestParam(required = false) Integer cartItemId,
+            @RequestParam(required = false, defaultValue = "false") boolean isSubscription) {
+
+        cartService.addOrUpdateCartItem(userId, itemId, amount, cartItemId, isSubscription);
         return ResponseEntity.ok("Item added/updated in the cart");
     }
 

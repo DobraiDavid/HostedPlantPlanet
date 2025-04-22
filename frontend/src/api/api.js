@@ -98,15 +98,16 @@ export const updateCartItem = async (userId, itemId, quantity) => {
   }
 };
 
-// Add or update an item in the cart
-export const addToCart = async (userId, plantId, amount, cartItemId) => {
+// Add or update an item in the cart (plant or subscription)
+export const addToCart = async (userId, itemId, amount, cartItemId, isSubscription = false) => {
   try {
     const response = await axios.post(`${API_BASE_URL}/cart/add`, null, {
       params: {
         userId,
-        plantId,
+        itemId, // renamed from plantId to be more generic
         amount,
         cartItemId,
+        isSubscription, // new flag to differentiate item types
       },
     });
     return response.data;
@@ -286,6 +287,28 @@ export const placeOrder = async (orderData) => {
     return response.data;
   } catch (error) {
     console.error("Error placing order:", error);
+    throw error;
+  }
+};
+
+// Fetch all subscription plans
+export const getSubscriptions = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/subscriptions/plans`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching subscriptions:", error);
+    return [];
+  }
+};
+
+// Fetch a subscription plan by ID
+export const getSubscriptionById = async (id) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/subscriptions/plans/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching subscription plan with ID ${id}:`, error);
     throw error;
   }
 };
