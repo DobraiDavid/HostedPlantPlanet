@@ -405,3 +405,26 @@ export const cancelSubscription = async (subscriptionId) => {
     }
   }
 };
+
+// Send message to support bot:
+export const sendMessageToBot = async (message) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/chat`, message, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Support bot error:", error);
+    
+    if (error.response) {
+      throw error.response.data || "Failed to get response from support bot";
+    } else if (error.request) {
+      throw new Error("No response received from bot service");
+    } else {
+      throw new Error("Error setting up the request to bot");
+    }
+  }
+};

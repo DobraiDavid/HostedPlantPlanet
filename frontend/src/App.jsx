@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import SupportBot from "./components/SupportBot";
 import PlantDetail from './pages/PlantDetail';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
@@ -48,6 +49,7 @@ function App() {
             <Route path="/subscriptions/plans/:id" element={<SubscriptionDetails />} />
           </Routes>
         </main>
+        <SupportBot />
         <Footer />
         </div>
         <ToastContainer autoClose={1000}/>

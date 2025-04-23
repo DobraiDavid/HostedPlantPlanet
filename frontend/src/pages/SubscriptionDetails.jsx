@@ -414,9 +414,9 @@ const SubscriptionDetails = () => {
                 </Typography>
                 {id === '1' ?
                 <ul style={{ paddingLeft: '20px' }}>
-                  <li><Typography variant="body1" sx={{ mb: 1 }}>Curated selection of premium items</Typography></li>
-                  <li><Typography variant="body1" sx={{ mb: 1 }}>Free shipping on all orders</Typography></li>
+                  <li><Typography variant="body1" sx={{ mb: 1 }}>Curated selection of premium plants</Typography></li>
                   <li><Typography variant="body1" sx={{ mb: 1 }}>Exclusive subscriber discounts</Typography></li>
+                  <li><Typography variant="body1" sx={{ mb: 1 }}>Free shipping on all orders</Typography></li>
                   <li><Typography variant="body1" sx={{ mb: 1 }}>Cancel or skip anytime</Typography></li>
                 </ul>
                 :
@@ -515,9 +515,9 @@ const SubscriptionDetails = () => {
                 </Typography>
                 {id === '1' ?
                 <ul style={{ paddingLeft: '20px' }}>
-                  <li><Typography variant="body1" sx={{ mb: 1 }}>Curated selection of premium items</Typography></li>
-                  <li><Typography variant="body1" sx={{ mb: 1 }}>Free shipping on all orders</Typography></li>
+                  <li><Typography variant="body1" sx={{ mb: 1 }}>Curated selection of premium plants</Typography></li>
                   <li><Typography variant="body1" sx={{ mb: 1 }}>Exclusive subscriber discounts</Typography></li>
+                  <li><Typography variant="body1" sx={{ mb: 1 }}>Free shipping on all orders</Typography></li>
                   <li><Typography variant="body1" sx={{ mb: 1 }}>Cancel or skip anytime</Typography></li>
                 </ul>
                 :
@@ -559,7 +559,7 @@ const SubscriptionDetails = () => {
               How does the subscription work?
             </Typography>
             <Typography variant="body1" sx={{ mb: 3, color: '#555' }}>
-              You'll receive a curated box of products delivered to your door based on your selected frequency. You can skip, pause, or cancel anytime from your account.
+              You'll receive a curated box of plants delivered to your door based on your selected frequency. You can skip, pause, or cancel anytime from your account.
             </Typography>
           </Grid>
           

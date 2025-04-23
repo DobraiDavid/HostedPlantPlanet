@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 @Getter
 @ToString(exclude = "userService")
-@EqualsAndHashCode(of = "user.email")
+@EqualsAndHashCode(of = {"user"})
 public class PermissionCollector implements UserDetails {
 
     private final Users user;

@@ -51,3 +51,6 @@ Thumbs.db
 .gitattributes
 
 .env
+
+# Ignore Dialogflow credentials
+src/main/resources/credentials/supportBot.json
