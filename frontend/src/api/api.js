@@ -214,14 +214,24 @@ export const changeUserDetails = async (userDetails) => {
       throw new Error("No authentication token found");
     }
 
-    const response = await axios.put(`${API_BASE_URL}/user/change`, userDetails);
+    const response = await axios.put(`${API_BASE_URL}/user/change`, userDetails, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
 
-    return response.data;
+    return {
+      user: response.data.user,
+      token: response.data.token
+    };
   } catch (error) {
     console.error("Change user details error:", error);
     
     if (error.response) {
-      throw error.response.data;
+      if (error.response.status === 409) {
+        throw new Error("This email is already in use");
+      }
+      throw error.response.data.message || error.response.data || "Update failed";
     } else if (error.request) {
       throw new Error("No response received from server");
     } else {

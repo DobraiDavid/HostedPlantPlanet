@@ -13,6 +13,7 @@ import java.util.Optional;
 public interface UsersRepository extends JpaRepository<Users, Integer> {
 
     Users findByEmail(String email);
+    boolean existsByEmail(String email);
 
     @Query(nativeQuery = true,
             value="SELECT p.id FROM permission p " +

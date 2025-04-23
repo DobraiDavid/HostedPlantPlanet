@@ -31,7 +31,7 @@ const Register = () => {
     canvas.height = 100;
   
     // Random background color
-    const colors = ["#FF5733", "#33FF57", "#3357FF", "#FF33A8", "#F4A261"];
+    const colors = ["#FF5733", "#FFFA66", "#3357FF", "#FF33A8", "#F4A261"];
     const bgColor = colors[Math.floor(Math.random() * colors.length)];
   
     // Draw background

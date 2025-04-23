@@ -135,9 +135,15 @@ const Contact = () => {
           <Typography variant="h6" sx={{ fontWeight: "bold", color: "#2e7d32" }}>
             Get in Touch
           </Typography>
-          <Box display="flex" justifyContent="center" alignItems="center" gap={2} sx={{ mt: 1, color: "gray" }}>
-            <FaPhone /> +36 30 123 4567
-            <FaEnvelope /> plantplanetofficial@gmail.com
+          <Box display="flex" flexDirection={{ xs: "column", sm: "row" }} justifyContent="center" alignItems="center" gap={2} sx={{ mt: 1, color: "gray" }}>
+          <Box display="flex" alignItems="center" gap={1}>
+            <FaPhone />
+            <span>+36 30 123 4567</span>
+          </Box>
+          <Box display="flex" alignItems="center" gap={1}>
+            <FaEnvelope />
+            <span>plantplanetofficial@gmail.com</span>
+          </Box>
           </Box>
         </Box>
         

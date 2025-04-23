@@ -17,8 +17,8 @@ import static org.springframework.http.HttpStatus.*;
 @RestControllerAdvice
 public class ExceptionHandling implements ErrorController {
     private static final String INCORRECT_CREDENTIALS = "Username / password incorrect. Please try again";
-
     private static final String NOT_ENOUGH_PERMISSION = "You do not have enough permission";
+    private static final String EMAIL_ALREADY_EXISTS = "Email is already in use. Please try another one.";
 
     private ResponseEntity<ExceptionResponse> createHttpResponse(HttpStatus httpStatus, String message) {
         return new ResponseEntity<>(new ExceptionResponse(httpStatus.value(), httpStatus,
@@ -34,9 +34,10 @@ public class ExceptionHandling implements ErrorController {
     public ResponseEntity<ExceptionResponse> accessDeniedException() {
         return createHttpResponse(FORBIDDEN, NOT_ENOUGH_PERMISSION);
     }
+
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ExceptionResponse> userNotFoundException(UserNotFoundException exception) {
-        return createHttpResponse(BAD_REQUEST, exception.getMessage());
+        return createHttpResponse(NOT_FOUND, exception.getMessage());
     }
 
     @ExceptionHandler(TokenExpiredException.class)
@@ -45,7 +46,12 @@ public class ExceptionHandling implements ErrorController {
     }
 
     @ExceptionHandler(UserAlreadyExistsException.class)
-    public ResponseEntity<String> handleUserAlreadyExists(UserAlreadyExistsException ex) {
-        return new ResponseEntity<>("Email is already registered. Please try another one.", HttpStatus.BAD_REQUEST);
+    public ResponseEntity<ExceptionResponse> handleUserAlreadyExists(UserAlreadyExistsException ex) {
+        return createHttpResponse(BAD_REQUEST, ex.getMessage());
+    }
+
+    @ExceptionHandler(EmailAlreadyExistsException.class)
+    public ResponseEntity<ExceptionResponse> handleEmailAlreadyExists(EmailAlreadyExistsException ex) {
+        return createHttpResponse(CONFLICT, EMAIL_ALREADY_EXISTS);
     }
 }

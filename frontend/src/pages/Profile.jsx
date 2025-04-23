@@ -81,18 +81,47 @@ const ProfilePage = () => {
   const handleSave = async (field) => {
     try {
       const updateData = { [field]: formData[field] };
-
-      if (field === 'password') {
-        const confirm = prompt('Please confirm your new password');
-        if (confirm !== formData.password) return toast.error('Passwords do not match');
-      }
-
-      const updatedUser = await changeUserDetails(updateData);
-      login(updatedUser);
-      toast.success(`${field} updated`);
+  
+      const { user: updatedUser, token: newToken } = await changeUserDetails(updateData);
+      
+      // Update user context with new data and token
+      login(updatedUser, newToken);
+      
+      // Update form state
+      setFormData({
+        name: updatedUser.name,
+        email: updatedUser.email,
+        password: '', // Clear password field
+        profileImage: updatedUser.profileImage
+      });
+      
+      const fieldDisplayName = field.charAt(0).toUpperCase() + field.slice(1);
+      toast.success(`${fieldDisplayName} updated successfully`);
       setEditingField(null);
-    } catch (err) {
-      toast.error(`Failed to update ${field}`);
+  
+      // Special handling for email changes
+      if (field === 'email') {
+        try {
+          setLoadingSubscriptions(true);
+          const data = await getUserSubscriptions();
+          setSubscriptions(data.filter(sub => sub.status !== 'CANCELLED'));
+        } catch (error) {
+          setSubscriptionError("Failed to refresh subscriptions");
+          console.error("Subscription refresh error:", error);
+        } finally {
+          setLoadingSubscriptions(false);
+        }
+      }
+    } catch (error) {
+      if (error.message === "This email is already in use") {
+        toast.error(error.message);
+        // Keep the email field in edit mode so user can try again
+        if (editingField === 'email') {
+          setEditingField('email');
+        }
+      } else {
+        toast.error(error.message || `Failed to update ${field}`);
+      }
     }
   };
 

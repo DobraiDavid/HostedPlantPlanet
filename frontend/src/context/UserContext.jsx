@@ -1,56 +1,70 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import axios from "axios";
 
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
-  // Initialize user state from localStorage or null
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem('user');
     return savedUser ? JSON.parse(savedUser) : null;
   });
 
-  // Function to log in the user and set the user object
-  const login = (userData) => {
+  // Initialize axios interceptors and auth token
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    }
+  }, []);
+
+  const login = (userData, token = null) => {
     setUser(userData);
-    // Save user data to localStorage
     localStorage.setItem('user', JSON.stringify(userData));
+    
+    // Store new token if provided
+    if (token) {
+      localStorage.setItem('authToken', token);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    }
   };
 
-  // Function to log out the user
   const logout = () => {
     setUser(null);
-    // Remove user data from localStorage
     localStorage.removeItem('user');
+    localStorage.removeItem('authToken');
+    delete axios.defaults.headers.common['Authorization'];
   };
 
-  // Optional: Sync localStorage with user state
+  // Handle storage changes across tabs
   useEffect(() => {
     const handleStorageChange = (e) => {
       if (e.key === 'user') {
+        setUser(e.newValue ? JSON.parse(e.newValue) : null);
+      }
+      if (e.key === 'authToken') {
         if (e.newValue) {
-          setUser(JSON.parse(e.newValue));
+          axios.defaults.headers.common['Authorization'] = `Bearer ${e.newValue}`;
         } else {
-          setUser(null);
+          delete axios.defaults.headers.common['Authorization'];
         }
       }
     };
 
-    // Listen for storage changes across tabs
     window.addEventListener('storage', handleStorageChange);
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, login, logout, setUser }}>
+    <UserContext.Provider value={{ user, login, logout }}>
       {children}
     </UserContext.Provider>
   );
 };
 
-// Custom hook to access user context
 export const useUser = () => {
-  return useContext(UserContext);
+  const context = useContext(UserContext);
+  if (!context) {
+    throw new Error('useUser must be used within a UserProvider');
+  }
+  return context;
 };
