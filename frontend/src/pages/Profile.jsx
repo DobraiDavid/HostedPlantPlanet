@@ -129,45 +129,59 @@ const ProfilePage = () => {
     const file = e.target.files[0];
     if (!file) return;
   
-    const reader = new FileReader();
+    try {
+      const reader = new FileReader();
+      
+      reader.onload = async (event) => {
+        const img = new Image();
+        img.src = event.target.result;
   
-    reader.onloadend = async () => {
-      const img = new Image();
-      img.onload = async () => {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        const size = 128;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          const size = 128;
   
-        canvas.width = size;
-        canvas.height = size;
+          canvas.width = size;
+          canvas.height = size;
   
-        // Clear canvas (important for PNG transparency)
-        ctx.clearRect(0, 0, size, size);
+          ctx.clearRect(0, 0, size, size);
+          ctx.drawImage(img, 0, 0, size, size);
   
-        // Draw image scaled to 128x128
-        ctx.drawImage(img, 0, 0, size, size);
+          const mimeType = file.type === 'image/jpeg' ? 'image/jpeg' : 'image/png';
+          const resizedBase = canvas.toDataURL(mimeType, 0.8);
   
-        // Detect original file type (JPEG or PNG)
-        const mimeType = file.type === 'image/jpeg' ? 'image/jpeg' : 'image/png';
+          // Wrap the async operation in a separate function to avoid nesting issues
+          const updateProfile = async () => {
+            try {
+              const { user: updatedUser, token: newToken } = await changeUserDetails({ 
+                profileImage: resizedBase 
+              });
+              login(updatedUser, newToken);
+              toast.success('Profile image updated');
+            } catch (err) {
+              toast.error('Failed to update image');
+              console.error("Error during profile image update:", err);
+            }
+          };
   
-        const resizedBase = canvas.toDataURL(mimeType, 0.8); 
+          updateProfile();
+        };
   
-        try {
-          const updatedUser = await changeUserDetails({ profileImage: resizedBase });
-          login(updatedUser);
-          toast.success('Profile image updated');
-        } catch (err) {
-          toast.error('Failed to update image');
-          console.error("Error during profile image update:", err);
-        }
+        img.onerror = () => {
+          toast.error("Invalid image");
+        };
       };
   
-      img.onerror = () => toast.error("Invalid image");
-      img.src = reader.result;
-    };
+      reader.onerror = () => {
+        toast.error("Error reading file");
+      };
   
-    reader.readAsDataURL(file);
-  };  
+      reader.readAsDataURL(file);
+    } catch (err) {
+      toast.error("Error processing image");
+      console.error(err);
+    }
+  };
 
   const handleLogout = async () => {
     try {

@@ -34,10 +34,10 @@ const Checkout = () => {
   const userId = user.id;
 
   // Validation functions
-  const isTextOnly = (value) => /^[a-zA-Z\s]*$/.test(value);
+  const isTextOnly = (value) => /^[a-zA-ZáéíóöőúüűÁÉÍÓÖŐÚÜŰ\s]*$/.test(value);
   const isNumberOnly = (value) => /^[0-9]*$/.test(value);
-  const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-
+  const isValidEmail = (value) => /^[a-zA-ZáéíóöőúüűÁÉÍÓÖŐÚÜŰ0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(value);
+  
   useEffect(() => {
     if (cart.length > 0) {
       setLoading(false);
