@@ -5,5 +5,5 @@ CREATE TABLE repot_reminders (
     plant_name VARCHAR(255) NOT NULL,
     remind_at TIMESTAMP NOT NULL,
     sent BOOLEAN DEFAULT FALSE,
-    FOREIGN KEY (order_item_id) REFERENCES order_items(order_item_id)
+    FOREIGN KEY (order_item_id) REFERENCES order_item(id)
 );

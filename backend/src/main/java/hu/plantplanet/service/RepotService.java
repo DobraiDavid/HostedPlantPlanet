@@ -28,9 +28,6 @@ public class RepotService {
     @Autowired
     private JavaMailSender mailSender;
 
-    @Autowired
-    private PlantsRepository plantsRepository;
-
     // Run every hour to check for reminders
     @Scheduled(cron = "0 0 * * * ?")
     public void checkAndSendRepots() {
@@ -48,7 +45,7 @@ public class RepotService {
         List<OrderItem> items = orderItemsRepository.findByOrder_OrderId(order.getOrderId());
 
         for (OrderItem item : items) {
-            Plants plant = plantsRepository.findByName(item.getPlantName());
+            Plants plant = item.getPlant(); // Use the Plant object from OrderItem
             if (plant != null && plant.getRePotting() != null) {
                 LocalDateTime remindAt = calculateRemindDate(
                         order.getOrderDate(),
@@ -56,9 +53,9 @@ public class RepotService {
                 );
 
                 Repot reminder = new Repot();
-                reminder.setOrderItemId(item.getOrderItemId());
+                reminder.setOrderItemId(item.getId()); // Updated field name
                 reminder.setEmail(order.getEmail());
-                reminder.setPlantName(item.getPlantName());
+                reminder.setPlantName(plant.getName()); // Get name from Plant object
                 reminder.setRemindAt(remindAt);
                 reminder.setSent(false);
 
@@ -66,6 +63,7 @@ public class RepotService {
             }
         }
     }
+
 
     private LocalDateTime calculateRemindDate(LocalDateTime orderDate, String repotPeriod) {
         if (repotPeriod.contains("Year")) {

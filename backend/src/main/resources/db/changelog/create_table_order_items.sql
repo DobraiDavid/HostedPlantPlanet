@@ -1,8 +1,17 @@
-CREATE TABLE order_items (
-    order_item_id INT AUTO_INCREMENT PRIMARY KEY,
-    order_id INT NOT NULL,
-    plant_name VARCHAR(255) NOT NULL,
+CREATE TABLE order_item (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT,
+    user_id INT,
+    plant_id INT,
+    pot_id INT,
+    subscription_plan_id INT,
+    subscription BOOLEAN NOT NULL,
     amount INT NOT NULL,
-    price DECIMAL(10, 2) NOT NULL,
-    FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE
+    price DOUBLE PRECISION NOT NULL,
+
+    CONSTRAINT fk_order FOREIGN KEY (order_id) REFERENCES orders(order_id),
+    CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(id),
+    CONSTRAINT fk_plant FOREIGN KEY (plant_id) REFERENCES plants(id),
+    CONSTRAINT fk_pot FOREIGN KEY (pot_id) REFERENCES pots(id),
+    CONSTRAINT fk_subscription_plan FOREIGN KEY (subscription_plan_id) REFERENCES subscription_plans(id)
 );

@@ -5,7 +5,7 @@ CREATE TABLE cart (
     pot_id                 INT NULL,
     price                  DECIMAL(10,2) NOT NULL,
     amount                 INT NOT NULL CHECK (amount > 0),
-    subscription_plan_id   BIGINT NULL,
+    subscription_plan_id   INT NULL,
     is_subscription        BOOLEAN NOT NULL DEFAULT FALSE,
 
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,

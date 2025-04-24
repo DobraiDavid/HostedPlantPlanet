@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Box, Typography, TextField, Button, Select, MenuItem, InputLabel, FormControl, CircularProgress, Alert, InputAdornment } from "@mui/material";
+import { Box, Typography, TextField, Button, Select, MenuItem, InputLabel, FormControl, CircularProgress, Alert, InputAdornment, Stack, Chip } from "@mui/material";
 import { useCart } from "../context/CartContext";
 import { placeOrder, subscribeUser } from "../api/api.js"; 
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
@@ -10,9 +10,13 @@ import PhoneIcon from "@mui/icons-material/Phone";
 import PaymentIcon from "@mui/icons-material/Payment";
 import ShoppingCartCheckoutIcon from "@mui/icons-material/ShoppingCartCheckout";
 import EmailIcon from "@mui/icons-material/Email";
+import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
+import YardIcon from '@mui/icons-material/Yard';
+import { useUser } from "../context/UserContext";  
+import AutorenewIcon from '@mui/icons-material/Autorenew';
 
 const Checkout = () => {
-  const { cart, totalPrice, clearCart } = useCart(); // Added clearCart
+  const { cart, totalPrice, clearCart } = useCart(); 
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -26,6 +30,8 @@ const Checkout = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const { user } = useUser(); 
+  const userId = user.id;
 
   // Validation functions
   const isTextOnly = (value) => /^[a-zA-Z\s]*$/.test(value);
@@ -53,7 +59,11 @@ const Checkout = () => {
         name: item.plant.name,
         images: JSON.parse(item.plant.images),
         price: item.plant.price,
-        isSubscription: false
+        isSubscription: false,
+        pot:item.pot,
+        potName:item.pot.name,
+        potPrice:item.pot.price,
+        potImage:item.pot.image
       };
     }
   };
@@ -120,18 +130,36 @@ const Checkout = () => {
       totalPrice,
       orderDate: new Date().toISOString(),
       orderItems: cart.map(item => {
-        const details = getItemDetails(item);
-        
-        // Adjust the structure for both plant and subscription items
-        return {
-          itemName: details.name,
-          amount: item.amount,
-          price: details.isSubscription ? item.price : details.price,
-          isSubscription: details.isSubscription,
-          plantName: details.name
-        };
+          const baseItem = {
+              amount: item.amount,
+              price: item.price,
+              subscription: item.subscription,
+              userId
+          };
+
+          if (item.subscription) {
+              return {
+                  ...baseItem,
+                  subscriptionPlanId: item.subscriptionPlan.id,
+                  subscriptionPlanName: item.subscriptionPlan.name,
+                  plantId: null,
+                  plantName: null,
+                  potId: null,
+                  potName: null
+              };
+          } else {
+              return {
+                  ...baseItem,
+                  subscriptionPlanId: null,
+                  subscriptionPlanName: null,
+                  plantId: item.plant.id,
+                  plantName: item.plant.name,
+                  potId: item.pot?.id || null,
+                  potName: item.pot?.name || null
+              };
+          }
       })
-    };
+  };
 
     try {
       setIsSubmitting(true);
@@ -287,44 +315,88 @@ const Checkout = () => {
           </Box>
         ) : (
           <>
-            {/* Order Summary */}
-            <Box className="checkout-order-summary mb-6">
-              <Typography variant="h6" color="textPrimary" mb={2}>Your Order</Typography>
-              <Box className="border-t pt-2">
-                {cart.map((item) => {
-                  const itemDetails = getItemDetails(item);
-                  
-                  return (
-                    <Box key={item.id} display="flex" alignItems="flex-start" gap={2} py={2} borderBottom="1px solid #ccc">
+        {/* Order Summary */}
+        <Box className="checkout-order-summary mb-6">
+          <Typography variant="h6" color="textPrimary" mb={2}>Your Order</Typography>
+          <Box className="border-t pt-2">
+            {cart.map((item) => {
+              const itemDetails = getItemDetails(item);
+              
+              return (
+                <Box key={item.id} py={2} borderBottom="1px solid #ccc">
+                  <Stack spacing={2}>
+                    {/* Plant Item - Always shown */}
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
                       <img
                         src={Array.isArray(itemDetails.images) ? itemDetails.images[0] : itemDetails.images}
                         alt={itemDetails.name}
-                        style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8 }}
+                        style={{ width: 80, height: 80, objectFit: "cover", marginRight: 16 }}
                       />
-                      <Box flex={1}>
-                        <Typography variant="h6" fontWeight="bold">
-                          {itemDetails.name}
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary">
-                          {itemDetails.isSubscription ? "Subscription" : "Plant"}
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary">
-                          Quantity: {item.amount}
+                      <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Box>
+                          <Typography variant="h6">{itemDetails.name}</Typography>
+                          <Chip 
+                            icon={itemDetails.isSubscription ? <AutorenewIcon /> : <LocalFloristIcon />} 
+                            label={itemDetails.isSubscription ? "Subscription" : "Plant"} 
+                            color={itemDetails.isSubscription ? "primary" : "success"} 
+                            size="small" 
+                            sx={{ mb: 1 }}
+                          />
+                          <Typography variant="body2">
+                            Quantity: {item.amount}
+                          </Typography>
+                        </Box>
+                        <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                          ${(itemDetails.isSubscription ? item.price : itemDetails.price ).toFixed(2)}
                         </Typography>
                       </Box>
-                      <Typography fontWeight="bold" color="textPrimary">
-                        ${(itemDetails.isSubscription ? item.price * item.amount : itemDetails.price * item.amount).toFixed(2)}
-                      </Typography>
                     </Box>
-                  );
-                })}
-              </Box>
-              <Box className="border-t pt-2 text-right">
-                <Typography variant="h6" color="textPrimary" className="checkout-total" fontWeight="bold">
-                  Total: ${totalPrice.toFixed(2)}
-                </Typography>
-              </Box>
-            </Box>
+                    
+                    {/* Pot Item - Only show if not a subscription or if pot exists */}
+                    {(!itemDetails.isSubscription || itemDetails.pot) && (
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <img
+                          src={itemDetails.potImage || "https://via.placeholder.com/80?text=No+Pot"}
+                          alt={itemDetails.pot?.name || "No pot selected"}
+                          style={{ width: 80, height: 80, objectFit: "cover", marginRight: 16 }}
+                        />
+                        <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Box>
+                            <Typography variant="h6">
+                              {itemDetails.pot ? `${itemDetails.pot.name} Pot` : "No Pot Selected"}
+                            </Typography>
+                            <Chip 
+                              icon={<YardIcon />} 
+                              label={itemDetails.pot ? "Pot" : "None"} 
+                              color={itemDetails.pot ? "secondary" : "default"} 
+                              size="small" 
+                              sx={{ mb: 1 }}
+                            />
+                          </Box>
+                          <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                            {itemDetails.pot ? 
+                              (itemDetails.pot.price === 0 ? 'Free' : `$${itemDetails.pot.price}`) : 
+                              '—'}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    )}
+                        <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+                          <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                            ${item.price}
+                          </Typography>
+                        </Box>
+                  </Stack>
+                </Box>
+              );
+            })}
+          </Box>
+          <Box className="border-t pt-2 text-right">
+            <Typography variant="h6" color="textPrimary" className="checkout-total" fontWeight="bold">
+              Total: ${totalPrice.toFixed(2)}
+            </Typography>
+          </Box>
+        </Box>
 
             {/* Shipping Information Form */}
             <Box className="checkout-section mb-6">

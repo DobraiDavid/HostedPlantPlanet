@@ -244,18 +244,6 @@ const PlantDetail = () => {
     }
 
     try {
-      await addToCart(user.id, plant.id, amount, selectedPot?.id || null);
-      setInCart(true); // Update button state immediately
-      setSnackbarMessage("Item added to cart!");
-      setOpenSnackbar(true);
-    } catch (error) {
-      console.error("Error adding to cart:", error);
-      setSnackbarMessage("Failed to add to cart");
-      setOpenSnackbar(true);
-    }
-
-
-    try {
       await addToCart(
         user.id,       
         plant.id,      
@@ -264,6 +252,7 @@ const PlantDetail = () => {
         false,         
         selectedPot    
       );
+      setInCart(true);
       toast.success("Item added to cart!");
     } catch (error) {
       console.log(error);

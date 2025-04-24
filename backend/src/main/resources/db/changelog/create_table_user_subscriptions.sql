@@ -1,7 +1,7 @@
 CREATE TABLE user_subscriptions (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
-    plan_id BIGINT NOT NULL,
+    plan_id INT NOT NULL,
     interval_days INT,
     start_date DATETIME NOT NULL,
     next_trigger_date DATETIME,

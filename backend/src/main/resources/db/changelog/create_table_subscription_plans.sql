@@ -1,5 +1,5 @@
 CREATE TABLE subscription_plans (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id Int PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(100) NOT NULL,
     images JSON,
     description TEXT,

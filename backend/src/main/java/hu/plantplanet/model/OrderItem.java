@@ -2,28 +2,45 @@ package hu.plantplanet.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import java.math.BigDecimal;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Entity
+@Table(name = "order_item")
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
-@Entity
-@Table(name = "order_items")
 public class OrderItem {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long orderItemId;
+    private Long id;
 
-    @JsonBackReference
     @ManyToOne
-    @JoinColumn(name = "order_id", nullable = false)
+    @JoinColumn(name = "order_id")
+    @JsonBackReference
     private Order order;
 
-    private String plantName;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private Users user;
+
+    @ManyToOne
+    @JoinColumn(name = "plant_id")
+    private Plants plant;
+
+    @ManyToOne
+    @JoinColumn(name = "pot_id")
+    private Pots pot;
+
+    @ManyToOne
+    @JoinColumn(name = "subscription_plan_id")
+    private SubscriptionPlan subscriptionPlan;
+
+    private boolean subscription;
+
     private int amount;
-    private BigDecimal price;
 
+    private double price;
 }
-
