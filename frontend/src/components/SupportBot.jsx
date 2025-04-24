@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { sendMessageToBot } from '../api/api';
-import { useUser } from '../context/UserContext'; // Import the UserContext
-
-// Material-UI imports
+import { useUser } from '../context/UserContext'; 
 import { styled } from '@mui/material/styles';
 import {
   Box,
@@ -13,13 +11,9 @@ import {
   IconButton,
   Avatar,
   Zoom,
-  Fade,
-  CircularProgress,
   useMediaQuery,
   useTheme
 } from '@mui/material';
-
-// MUI Icons
 import ChatIcon from '@mui/icons-material/Chat';
 import CloseIcon from '@mui/icons-material/Close';
 import SendIcon from '@mui/icons-material/Send';
@@ -110,6 +104,26 @@ const TypingIndicator = styled(Box)(({ theme }) => ({
   borderRadius: 16,
   backgroundColor: theme.palette.grey[200],
   alignSelf: 'flex-start'
+}));
+
+// Styled component for the typing animation
+const TypingDots = styled('span')(({ theme }) => ({
+  display: 'inline-block',
+  width: '24px',
+  '&::after': {
+    content: '"..."',
+    animation: 'typingDots 1.5s infinite',
+    display: 'inline-block',
+    overflow: 'hidden',
+    verticalAlign: 'bottom',
+    whiteSpace: 'nowrap',
+  },
+  '@keyframes typingDots': {
+    '0%': { width: '0px' },
+    '33%': { width: '6px' },
+    '66%': { width: '12px' },
+    '100%': { width: '18px' }
+  }
 }));
 
 const SupportBot = () => {
@@ -256,10 +270,10 @@ const SupportBot = () => {
                 
                 {isLoading && (
                   <TypingIndicator>
-                    <Box sx={{ display: 'flex', gap: 0.7 }}>
-                      <CircularProgress size={12} color="inherit" />
-                      <CircularProgress size={12} color="inherit" sx={{ animationDelay: '0.2s' }} />
-                      <CircularProgress size={12} color="inherit" sx={{ animationDelay: '0.4s' }} />
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Typography variant="body1">
+                        Typing<TypingDots />
+                      </Typography>
                     </Box>
                   </TypingIndicator>
                 )}
@@ -268,7 +282,7 @@ const SupportBot = () => {
             <div ref={messagesEndRef} />
           </ChatBody>
           
-          <ChatFooter component="form" onSubmit={handleSendMessage}>
+          <ChatFooter component="form" onSubmit={handleSendMessage} autoComplete="off">
             <TextField
               inputRef={inputRef}
               fullWidth
@@ -277,6 +291,7 @@ const SupportBot = () => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               variant="outlined"
+              autoComplete="off"
               InputProps={{
                 sx: { borderRadius: 5 }
               }}
@@ -299,7 +314,7 @@ const SupportBot = () => {
       {!isOpen && (
         <Fab
           color="success"
-          size="large" // Increased size
+          size="large" 
           aria-label="Open support chat"
           onClick={() => setIsOpen(true)}
           sx={{

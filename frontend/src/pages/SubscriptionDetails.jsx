@@ -25,6 +25,8 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import SubscriptionsIcon from '@mui/icons-material/Subscriptions';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import VerifiedIcon from '@mui/icons-material/Verified';
+import WbSunnyIcon from '@mui/icons-material/WbSunny';
+import OpacityIcon from '@mui/icons-material/Opacity';
 import { ToastContainer, toast } from 'react-toastify';
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import { 
@@ -343,6 +345,26 @@ const SubscriptionDetails = () => {
   // Determine pricing display based on the plan ID
   const pricingDisplay = id === '1' ? `$${plan.price} per Quarter` : `$${plan.price} per Month`;
 
+  // Function to get light level icon color
+  const getLightLevelColor = (level) => {
+    switch(level) {
+      case 'Low': return '#8BC34A';
+      case 'Medium': return '#FFC107';
+      case 'High': return '#FF9800';
+      default: return '#757575';
+    }
+  };
+  
+  // Function to get water needs icon color
+  const getWaterNeedsColor = (need) => {
+    switch(need) {
+      case 'Low': return '#90CAF9';
+      case 'Medium': return '#2196F3';
+      case 'High': return '#1565C0';
+      default: return '#757575';
+    }
+  };
+
   return (
     <div className="container" style={{ padding: isMobile ? '16px' : '32px', maxWidth: 1200, margin: '0 auto' }}>
       <ToastContainer autoClose={1000}/>
@@ -617,21 +639,91 @@ const SubscriptionDetails = () => {
                     display: 'flex',
                     flexDirection: 'column',
                     borderRadius: 3,
-                    boxShadow: 5,
-                    transition: '0.3s',
-                    '&:hover': { boxShadow: 8, transform: 'scale(1.02)', cursor: 'pointer' },
+                    boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
+                    transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
+                    overflow: 'hidden',
+                    '&:hover': {
+                      boxShadow: '0 12px 28px rgba(76,175,80,0.25)',
+                      transform: 'translateY(-8px)',
+                      '& .MuiCardMedia-root': {
+                        transform: 'scale(1.05)',
+                      }
+                    },
                     backgroundColor: '#ffffff',
+                    position: 'relative',
+                    '&::after': {
+                      content: '""',
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '4px',
+                      background: 'linear-gradient(90deg, #4CAF50 0%, #8BC34A 100%)',
+                      opacity: 0,
+                      transition: 'opacity 0.3s ease',
+                    },
+                    '&:hover::after': {
+                      opacity: 1,
+                    }
                   }}
                 >
                   <CardMedia
                     component="img"
-                    height="200"
+                    height="220"
                     image={firstImage}
                     alt={relatedPlant.name}
-                    sx={{ objectFit: 'cover' }}
+                    sx={{
+                      objectFit: 'cover',
+                      transition: 'transform 0.5s ease'
+                    }}
                   />
-                  <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-                    <Typography variant="h5" fontWeight="bold" sx={{ color: '#2e7d32' }}>
+                  
+                  <Box sx={{
+                    position: 'absolute',
+                    top: 10,
+                    right: 10,
+                    display: 'flex',
+                    gap: 0.5
+                  }}>
+                    <Chip
+                      icon={<WbSunnyIcon sx={{ fontSize: '0.85rem !important', color: '#fff' }} />}
+                      label={relatedPlant.light}
+                      size="small"
+                      sx={{
+                        backgroundColor: getLightLevelColor(relatedPlant.light),
+                        color: '#fff',
+                        fontWeight: 'bold',
+                        fontSize: '0.7rem'
+                      }}
+                    />
+                    <Chip
+                      icon={<OpacityIcon sx={{ fontSize: '0.85rem !important', color: '#fff' }} />}
+                      label={relatedPlant.water}
+                      size="small"
+                      sx={{
+                        backgroundColor: getWaterNeedsColor(relatedPlant.water),
+                        color: '#fff',
+                        fontWeight: 'bold',
+                        fontSize: '0.7rem'
+                      }}
+                    />
+                  </Box>
+                  
+                  <CardContent sx={{
+                    flexGrow: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    p: 3
+                  }}>
+                    <Typography
+                      variant="h5"
+                      fontWeight="bold"
+                      sx={{
+                        color: '#2e7d32',
+                        mb: 1,
+                        fontFamily: "'Montserrat', sans-serif",
+                      }}
+                    >
                       {relatedPlant.name}
                     </Typography>
 
@@ -639,31 +731,54 @@ const SubscriptionDetails = () => {
                       variant="body2"
                       color="textSecondary"
                       sx={{
-                        mt: 1,
                         flexGrow: 1,
                         display: '-webkit-box',
                         WebkitBoxOrient: 'vertical',
                         overflow: 'hidden',
-                        WebkitLineClamp: 5,
+                        WebkitLineClamp: 4,
                         textOverflow: 'ellipsis',
                         lineHeight: '1.5',
-                        maxHeight: '7.5em',
+                        maxHeight: '6em',
+                        mb: 2
                       }}
                     >
                       {relatedPlant.description}
                     </Typography>
 
-                    <Box sx={{ mt: 'auto', pt: 2, textAlign: 'center' }}>
-                      <Typography variant="h6" color="green" sx={{ fontWeight: 'bold', mb: 1 }}>
-                        {relatedPlant.price.toFixed(2)}
+                    <Box sx={{
+                      mt: 'auto',
+                      pt: 2,
+                      borderTop: '1px solid rgba(0,0,0,0.05)',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          fontWeight: 'bold',
+                          color: '#388e3c',
+                          fontFamily: "'Montserrat', sans-serif",
+                        }}
+                      >
+                        ${relatedPlant.price.toFixed(2)}
                       </Typography>
                       <Button
                         variant="contained"
+                        size="small"
                         startIcon={<ShoppingCartIcon />}
                         sx={{
                           borderRadius: 2,
                           backgroundColor: '#388e3c',
-                          '&:hover': { backgroundColor: '#2e7d32' },
+                          '&:hover': {
+                            backgroundColor: '#2e7d32',
+                            transform: 'scale(1.05)'
+                          },
+                          transition: 'all 0.2s ease',
+                          boxShadow: '0 4px 10px rgba(46, 125, 50, 0.2)',
+                          '&:active': {
+                            transform: 'scale(0.98)',
+                          }
                         }}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -692,7 +807,7 @@ const SubscriptionDetails = () => {
             marginTop: '30px'  
           }}
         >
-          <Typography variant="h5" fontWeight="bold">
+          <Typography variant="h4" fontWeight="bold">
             Comments
           </Typography>
           <Button 
