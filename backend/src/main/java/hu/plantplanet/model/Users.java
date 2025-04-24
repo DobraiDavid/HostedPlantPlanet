@@ -23,10 +23,8 @@ public class Users {
     @Column(nullable = false, length = 255)
     private String password;
 
-    @Column(length = 255)
     private String profileImage;
 
-    // Add a constructor that accepts name, email, password, and profileImage
     public Users(String name, String email, String password, String profileImage) {
         this.name = name;
         this.email = email;

@@ -1,0 +1,6 @@
+CREATE TABLE pots (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    image TEXT NOT NULL,
+    price DECIMAL(10, 2) NOT NULL
+);

@@ -18,7 +18,6 @@ public class cartController {
     @Autowired
     private CartService cartService;
 
-    // Add or update an item in the cart
     @CrossOrigin(origins = "http://localhost:5173")
     @PostMapping("/add")
     public ResponseEntity<String> addOrUpdateCartItem(
@@ -26,13 +25,13 @@ public class cartController {
             @RequestParam Integer itemId,
             @RequestParam int amount,
             @RequestParam(required = false) Integer cartItemId,
-            @RequestParam(required = false, defaultValue = "false") boolean isSubscription) {
+            @RequestParam(required = false, defaultValue = "false") boolean isSubscription,
+            @RequestParam(required = false) Integer potId) {
 
-        cartService.addOrUpdateCartItem(userId, itemId, amount, cartItemId, isSubscription);
+        cartService.addOrUpdateCartItem(userId, itemId, amount, cartItemId, isSubscription, potId);
         return ResponseEntity.ok("Item added/updated in the cart");
     }
 
-    // Remove an item from the cart by cart item ID
     @CrossOrigin(origins = "http://localhost:5173")
     @DeleteMapping("/remove/{cartItemId}")
     public ResponseEntity<String> removeCartItem(@PathVariable Integer cartItemId) {
@@ -40,7 +39,6 @@ public class cartController {
         return ResponseEntity.ok("Item removed from the cart");
     }
 
-    // Get all cart items for a user
     @CrossOrigin(origins = "http://localhost:5173")
     @GetMapping("/view")
     public ResponseEntity<List<Cart>> getCartItems(@RequestParam Integer userId) {
@@ -48,7 +46,6 @@ public class cartController {
         return ResponseEntity.ok(cartItems);
     }
 
-    // Get the total price of the user's cart
     @CrossOrigin(origins = "http://localhost:5173")
     @GetMapping("/total")
     public ResponseEntity<BigDecimal> getTotalPrice(@RequestParam Integer userId) {
@@ -56,10 +53,12 @@ public class cartController {
         return ResponseEntity.ok(totalPrice);
     }
 
-    // Update an item in the cart (new endpoint using Cart model)
     @CrossOrigin(origins = "http://localhost:5173")
     @PutMapping("/update")
-    public ResponseEntity<String> updateCartItem(@RequestParam Integer userId, @RequestParam Integer plantId, @RequestParam int amount) {
+    public ResponseEntity<String> updateCartItem(
+            @RequestParam Integer userId,
+            @RequestParam Integer plantId,
+            @RequestParam int amount) {
         try {
             cartService.updateCartItem(userId, plantId, amount);
             return ResponseEntity.ok("Cart item updated successfully");
@@ -67,5 +66,4 @@ public class cartController {
             return ResponseEntity.status(404).body("Error updating cart item: " + e.getMessage());
         }
     }
-
 }

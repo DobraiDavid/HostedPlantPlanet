@@ -27,6 +27,8 @@ import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import WbSunnyIcon from '@mui/icons-material/WbSunny';
 import OpacityIcon from '@mui/icons-material/Opacity';
+import ShoppingCartCheckoutIcon from '@mui/icons-material/ShoppingCartCheckout';
+import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import { ToastContainer, toast } from 'react-toastify';
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import { 
@@ -50,8 +52,7 @@ const SubscriptionDetails = () => {
   const [amount, setAmount] = useState(1);
   const isMobile = useMediaQuery('(max-width:600px)');
   const { user } = useUser();
-  
-  // New state variables for cart and subscription status
+  const [relatedPlantsInCart, setRelatedPlantsInCart] = useState({});
   const [inCart, setInCart] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
   
@@ -132,6 +133,49 @@ const SubscriptionDetails = () => {
     fetchData();
   }, [id, user]);
 
+    const getRelatedButtonProps = (plantId) => {
+      const isInCart = relatedPlantsInCart[plantId];
+      
+      if (isInCart) {
+        return {
+          text: "View in Cart",
+          icon: <ShoppingCartCheckoutIcon />,
+          color: "#1976d2",
+          hoverColor: "#1565c0"
+        };
+      } else {
+        return {
+          text: "Add to Cart",
+          icon: <ShoppingCartOutlinedIcon />,
+          color: "#388e3c",
+          hoverColor: "#2e7d32"
+        };
+      }
+    };
+
+      useEffect(() => {
+        if (user && relatedPlants.length > 0) {
+          const checkRelatedPlantsCartStatus = async () => {
+            try {
+              const cartItems = await getCartItems(user.id);
+              const inCartStatus = {};
+              
+              relatedPlants.forEach(relatedPlant => {
+                // For each related plant, check if it's in the cart
+                const isInCart = cartItems.some(item => item.plant.id === relatedPlant.id);
+                inCartStatus[relatedPlant.id] = isInCart;
+              });
+              
+              setRelatedPlantsInCart(inCartStatus);
+            } catch (err) {
+              console.error("Error checking related plants cart status:", err);
+            }
+          };
+          
+          checkRelatedPlantsCartStatus();
+        }
+      }, [user, relatedPlants]);
+
   const handleAddToCart = async () => {
     if (!user) {
       navigate('/login', {
@@ -178,6 +222,11 @@ const SubscriptionDetails = () => {
       });
       return;
     }
+
+    if (relatedPlantsInCart[relatedPlant.id]) {
+      navigate('/cart/view');
+      return;
+    }
   
     try {
       await addToCart(user.id, relatedPlant.id, 1); 
@@ -186,6 +235,11 @@ const SubscriptionDetails = () => {
       console.log(error);
       toast.error("Failed to add item to cart");
     }
+
+    setRelatedPlantsInCart(prev => ({
+      ...prev,
+      [relatedPlant.id]: true
+    }));
   };
 
   // Generate button props based on current state
@@ -199,7 +253,7 @@ const SubscriptionDetails = () => {
       buttonIcon = <SubscriptionsIcon />;
       buttonColor = "primary";
     } else if (inCart) {
-      buttonText = "Already in Cart";
+      buttonText = "View in Cart";
       buttonIcon = <CheckCircleIcon />;
       buttonColor = "info";
     }
@@ -371,7 +425,20 @@ const SubscriptionDetails = () => {
 
       {isMobile ? (
         <>
-          <Box sx={{ mb: 4 }}>
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', mb: 1, color: '#2e7d32' }}>
+            {plan.name}
+            </Typography>
+          </Box>
+          <Box sx={{ mb: 4,
+          '& .thumb.selected': {
+          border: '2px solid #2e7d32',
+          borderRadius: '5px'
+          },
+          '& .thumb:hover:not(.selected)': {
+            border: '1px solid #2e7d32',
+            opacity: 0.8
+          } }}>
             <Carousel 
               showThumbs={true} 
               showStatus={false} 
@@ -379,6 +446,58 @@ const SubscriptionDetails = () => {
               autoPlay 
               interval={5000}
               thumbWidth={60}
+              renderArrowPrev={(onClickHandler, hasPrev, label) => (
+                <button
+                  onClick={onClickHandler}
+                  title={label}
+                  style={{
+                    position: 'absolute',
+                    left: 15,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    zIndex: 2,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: 40,
+                    height: 40,
+                    fontSize: 24,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  ‹
+                </button>
+              )}
+              renderArrowNext={(onClickHandler, hasNext, label) => (
+                <button
+                  onClick={onClickHandler}
+                  title={label}
+                  style={{
+                    position: 'absolute',
+                    right: 15,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    zIndex: 2,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: 40,
+                    height: 40,
+                    fontSize: 24,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  ›
+                </button>
+              )}
             >
               {images.map((img, i) => (
                 <div key={i}>
@@ -397,11 +516,6 @@ const SubscriptionDetails = () => {
             </Carousel>
           </Box>
         
-          <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', mb: 1, color: '#2e7d32' }}>
-            {plan.name}
-            </Typography>
-          </Box>
           <Box sx={{ mb: 3 }}>
             <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#2e7d32', mb: 1 }}>
               {pricingDisplay}
@@ -466,7 +580,15 @@ const SubscriptionDetails = () => {
         </>
       ) : (
         <Grid container spacing={4}>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={6} sx={{
+          '& .thumb.selected': {
+          border: '2px solid #2e7d32',
+          borderRadius: '5px'
+        },
+        '& .thumb:hover:not(.selected)': {
+          border: '1px solid #2e7d32',
+          opacity: 0.8
+        }}} >
             <Carousel 
               showThumbs={true} 
               showStatus={false} 
@@ -474,6 +596,58 @@ const SubscriptionDetails = () => {
               autoPlay 
               interval={5000}
               thumbWidth={80}
+              renderArrowPrev={(onClickHandler, hasPrev, label) => (
+                <button
+                  onClick={onClickHandler}
+                  title={label}
+                  style={{
+                    position: 'absolute',
+                    left: 15,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    zIndex: 2,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: 40,
+                    height: 40,
+                    fontSize: 24,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  ‹
+                </button>
+              )}
+              renderArrowNext={(onClickHandler, hasNext, label) => (
+                <button
+                  onClick={onClickHandler}
+                  title={label}
+                  style={{
+                    position: 'absolute',
+                    right: 15,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    zIndex: 2,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: 40,
+                    height: 40,
+                    fontSize: 24,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  ›
+                </button>
+              )}
             >
               {images.map((img, i) => (
                 <div key={i}>
@@ -763,30 +937,30 @@ const SubscriptionDetails = () => {
                       >
                         ${relatedPlant.price.toFixed(2)}
                       </Typography>
-                      <Button
-                        variant="contained"
-                        size="small"
-                        startIcon={<ShoppingCartIcon />}
-                        sx={{
-                          borderRadius: 2,
-                          backgroundColor: '#388e3c',
-                          '&:hover': {
-                            backgroundColor: '#2e7d32',
-                            transform: 'scale(1.05)'
-                          },
-                          transition: 'all 0.2s ease',
-                          boxShadow: '0 4px 10px rgba(46, 125, 50, 0.2)',
-                          '&:active': {
-                            transform: 'scale(0.98)',
-                          }
-                        }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleAddRelatedToCart(relatedPlant);
-                        }}
-                      >
-                        Add to Cart
-                      </Button>
+                        <Button
+                          variant="contained"
+                          size="small"
+                          startIcon={getRelatedButtonProps(relatedPlant.id).icon}
+                          sx={{
+                            borderRadius: 2,
+                            backgroundColor: getRelatedButtonProps(relatedPlant.id).color,
+                            '&:hover': {
+                              backgroundColor: getRelatedButtonProps(relatedPlant.id).hoverColor,
+                              transform: 'scale(1.05)'
+                            },
+                            transition: 'all 0.2s ease',
+                            boxShadow: '0 4px 10px rgba(46, 125, 50, 0.2)',
+                            '&:active': {
+                              transform: 'scale(0.98)',
+                            }
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAddRelatedToCart(relatedPlant);
+                          }}
+                        >
+                          {getRelatedButtonProps(relatedPlant.id).text}
+                        </Button>
                     </Box>
                   </CardContent>
                 </Card>

@@ -9,23 +9,29 @@ import java.math.BigDecimal;
 @Setter
 @Getter
 @Entity
+@Table(name = "cart")
 public class Cart {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @ManyToOne
-    private Users user; // Reference to the User entity
+    @JoinColumn(name = "user_id", nullable = false)
+    private Users user;
 
     @ManyToOne
-    @JoinColumn(name = "plant_id", nullable = true) // Nullable since plant_id can be null for subscription
-    private Plants plant; // Reference to the Plant entity (nullable for subscription items)
-
-    private BigDecimal price; // Price of the plant
-    private int amount; // Quantity of the plant in the cart
-    private boolean isSubscription; // Whether it's a subscription
+    @JoinColumn(name = "plant_id", nullable = true)
+    private Plants plant;
 
     @ManyToOne
-    @JoinColumn(name = "subscription_plan_id", nullable = true) // Nullable for regular cart items
-    private SubscriptionPlan subscriptionPlan; // Reference to the SubscriptionPlan entity
+    @JoinColumn(name = "pot_id", nullable = true)
+    private Pots pot;
+
+    private BigDecimal price;
+    private int amount;
+    private boolean isSubscription;
+
+    @ManyToOne
+    @JoinColumn(name = "subscription_plan_id", nullable = true)
+    private SubscriptionPlan subscriptionPlan;
 }

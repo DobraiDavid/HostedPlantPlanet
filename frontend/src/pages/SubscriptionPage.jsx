@@ -131,7 +131,7 @@ const Subscriptions = () => {
       };
     } else if (isPlanInCart(plan.id)) {
       return {
-        text: "Already in Cart",
+        text: "View in Cart",
         icon: <ShoppingCartCheckoutIcon />,
         color: "#1976d2",
         hoverColor: "#1565c0",

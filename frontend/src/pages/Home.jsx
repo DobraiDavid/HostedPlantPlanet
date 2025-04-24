@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { getPlants, addToCart} from '../api/api.js';
+import { getPlants, addToCart, getCartItems } from '../api/api.js';
 import { useToast } from '../context/ToastContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
@@ -33,6 +33,8 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import SearchIcon from '@mui/icons-material/Search';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import ShoppingCartCheckoutIcon from '@mui/icons-material/ShoppingCartCheckout';
+import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import OpacityIcon from '@mui/icons-material/Opacity';
 import WbSunnyIcon from '@mui/icons-material/WbSunny';
 import ThermostatIcon from '@mui/icons-material/Thermostat';
@@ -47,6 +49,7 @@ const Home = () => {
   const [error, setError] = useState(null);
   const [sortBy, setSortBy] = useState('featured');
   const [searchQuery, setSearchQuery] = useState("");
+  const [plantsInCart, setPlantsInCart] = useState({});
   const location = useLocation();
   const navigate = useNavigate();
   const showToast = useToast();
@@ -88,6 +91,30 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
+    // Fetch cart items when user changes or on initial load
+    const fetchCartItems = async () => {
+      if (user) {
+        try {
+          const cartItems = await getCartItems(user.id);
+          // Create a map of plant IDs in cart
+          const cartMap = {};
+          cartItems.forEach(item => {
+            cartMap[item.plantId] = true;
+          });
+          setPlantsInCart(cartMap);
+        } catch (error) {
+          console.error('Error fetching cart items:', error);
+        }
+      } else {
+        // Clear cart map when user logs out
+        setPlantsInCart({});
+      }
+    };
+
+    fetchCartItems();
+  }, [user]);
+
+  useEffect(() => {
     // Set filters visibility based on screen size
     setFiltersVisible(!isMobile);
   }, [isMobile]);
@@ -109,6 +136,28 @@ const Home = () => {
     }
   }, [location, showToast, navigate]);
 
+  const getCartButtonProps = (plantId) => {
+    const isInCart = plantsInCart[plantId];
+    
+    if (isInCart) {
+      return {
+        text: "View in Cart",
+        icon: <ShoppingCartCheckoutIcon />,
+        color: "#1976d2",
+        hoverColor: "#1565c0",
+        action: () => navigate('/cart')
+      };
+    } else {
+      return {
+        text: "Add to Cart",
+        icon: <ShoppingCartOutlinedIcon />,
+        color: "#388e3c",
+        hoverColor: "#2e7d32",
+        action: (plant) => handleAddToCart(plant)
+      };
+    }
+  };
+
   const handleAddToCart = async (plant) => {
     if (!user) {
       navigate('/login', {
@@ -124,6 +173,11 @@ const Home = () => {
   
     try {
       await addToCart(user.id, plant.id, 1); 
+      // Update local state to reflect item is now in cart
+      setPlantsInCart(prev => ({
+        ...prev,
+        [plant.id]: true
+      }));
       toast.success("Item added to cart!");
     } catch (error) {
       console.log(error)
@@ -1316,12 +1370,12 @@ const Home = () => {
                                 <Button
                                   variant="contained"
                                   size="small"
-                                  startIcon={<ShoppingCartIcon />}
+                                  startIcon={getCartButtonProps(plant.id).icon}
                                   sx={{
                                     borderRadius: 2,
-                                    backgroundColor: '#388e3c',
-                                    '&:hover': { 
-                                      backgroundColor: '#2e7d32',
+                                    backgroundColor: getCartButtonProps(plant.id).color,
+                                    '&:hover': {
+                                      backgroundColor: getCartButtonProps(plant.id).hoverColor,
                                       transform: 'scale(1.05)'
                                     },
                                     transition: 'all 0.2s ease',
@@ -1331,11 +1385,11 @@ const Home = () => {
                                     }
                                   }}
                                   onClick={(e) => {
-                                    e.stopPropagation(); 
-                                    handleAddToCart(plant); 
+                                    e.stopPropagation();
+                                    handleAddToCart(plant);
                                   }}
                                 >
-                                  Add to Cart
+                                  {getCartButtonProps(plant.id).text}
                                 </Button>
                               </Box>
                             </CardContent>

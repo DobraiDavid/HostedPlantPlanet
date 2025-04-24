@@ -5,7 +5,10 @@ import {
   getPlantDetails, 
   getRandomPlants, 
   getComments,  
-  postComment 
+  postComment,
+  getPots,
+  getCartItems,
+  getProductById
 } from '../api/api'; 
 import { 
   Button, 
@@ -22,7 +25,9 @@ import {
   Box,
   Paper,
   Avatar,
-  Chip
+  Chip,
+  IconButton,
+  Container
 } from '@mui/material'; 
 import { ToastContainer, toast } from 'react-toastify';
 import WaterDropOutlinedIcon from '@mui/icons-material/WaterDropOutlined';
@@ -35,11 +40,15 @@ import SpaOutlinedIcon from '@mui/icons-material/SpaOutlined';
 import RepeatOutlinedIcon from '@mui/icons-material/RepeatOutlined';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import VerifiedIcon from '@mui/icons-material/Verified';
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
+import ShoppingCartCheckoutIcon from '@mui/icons-material/ShoppingCartCheckout';
 import { useUser } from "../context/UserContext";  
 import { useNavigate } from 'react-router-dom';
 import { Carousel } from 'react-responsive-carousel';  
 import 'react-responsive-carousel/lib/styles/carousel.min.css';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import WbSunnyIcon from '@mui/icons-material/WbSunny';
 import OpacityIcon from '@mui/icons-material/Opacity';
 
@@ -58,9 +67,91 @@ const PlantDetail = () => {
   const [comments, setComments] = useState([]);
   const [rating, setRating] = useState(0);
   const [showCommentForm, setShowCommentForm] = useState(false);
+  const [relatedPlantsInCart, setRelatedPlantsInCart] = useState({});
+  const [inCart, setInCart] = useState(false);
   const navigate = useNavigate();
   const { user } = useUser(); 
-  
+  const [pots, setPots] = useState([]);
+  const [selectedPot, setSelectedPot] = useState(null);
+  const [potsLoading, setPotsLoading] = useState(false);
+
+
+  // Update inCart status when selectedPot changes
+  useEffect(() => {
+    if (user && plant) {
+      const checkCartStatus = async () => {
+        try {
+          const cartItems = await getCartItems(user.id);
+          // Check if this specific plant and pot combination exists in the cart
+          const plantInCart = cartItems.some(item => 
+            item.plant.id === plant.id && 
+            (selectedPot ? item.pot?.id === selectedPot : !item.pot)
+          );
+          setInCart(plantInCart);
+        } catch (err) {
+          console.error("Error checking cart status:", err);
+        }
+      };
+      checkCartStatus();
+    }
+  }, [selectedPot, user, plant]);
+
+  // Generate button props based on current state
+  const getButtonProps = () => {
+    if (!plant || !selectedPot) {
+      return {
+        text: "Select Options",
+        icon: <ShoppingCartOutlinedIcon />,
+        color: "#cccccc",
+        hoverColor: "#cccccc",
+        disabled: true
+      };
+    }
+
+    if (inCart) {
+      return {
+        text: "Already in Cart",
+        icon: <ShoppingCartCheckoutIcon />,
+        color: "#1976d2",
+        hoverColor: "#1565c0",
+        disabled: false
+      };
+    } else {
+      return {
+        text: "Add to Cart",
+        icon: <ShoppingCartOutlinedIcon />,
+        color: "#2e7d32",
+        hoverColor: "#1b5e20",
+        disabled: false
+      };
+    }
+  };
+
+  const buttonProps = getButtonProps();
+
+  useEffect(() => {
+    if (user && relatedPlants.length > 0) {
+      const checkRelatedPlantsCartStatus = async () => {
+        try {
+          const cartItems = await getCartItems(user.id);
+          const inCartStatus = {};
+          
+          relatedPlants.forEach(relatedPlant => {
+            // For each related plant, check if it's in the cart
+            const isInCart = cartItems.some(item => item.plant.id === relatedPlant.id);
+            inCartStatus[relatedPlant.id] = isInCart;
+          });
+          
+          setRelatedPlantsInCart(inCartStatus);
+        } catch (err) {
+          console.error("Error checking related plants cart status:", err);
+        }
+      };
+      
+      checkRelatedPlantsCartStatus();
+    }
+  }, [user, relatedPlants]);
+
 
   useEffect(() => {
     const handleResize = () => {
@@ -113,6 +204,27 @@ const PlantDetail = () => {
     fetchPlantData();
   }, [id]);
 
+  // UseEffect to fetch pots
+  useEffect(() => {
+    const fetchPots = async () => {
+      try {
+        setPotsLoading(true);
+        const potsData = await getPots();
+        setPots(potsData);
+        if (potsData.length > 0) {
+          setSelectedPot(potsData[0].id);
+        }
+      } catch (error) {
+        console.error('Error fetching pots:', error);
+        toast.error("Failed to load pot options");
+      } finally {
+        setPotsLoading(false);
+      }
+    };
+
+    fetchPots();
+  }, []);
+
   const handleAddToCart = async () => {
     if (!user) {
       navigate('/login', {
@@ -126,36 +238,112 @@ const PlantDetail = () => {
       return;
     }
 
+    if (inCart) {
+      navigate('/cart/view');
+      return;
+    }
+
     try {
-      await addToCart(user.id, plant.id, amount);
+      await addToCart(user.id, plant.id, amount, selectedPot?.id || null);
+      setInCart(true); // Update button state immediately
+      setSnackbarMessage("Item added to cart!");
+      setOpenSnackbar(true);
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      setSnackbarMessage("Failed to add to cart");
+      setOpenSnackbar(true);
+    }
+
+
+    try {
+      await addToCart(
+        user.id,       
+        plant.id,      
+        amount,        
+        null,          
+        false,         
+        selectedPot    
+      );
       toast.success("Item added to cart!");
     } catch (error) {
-      console.log(error)
+      console.log(error);
       toast.error("Failed to add item to cart");
     }
   };
+  
   const handleAddRelatedToCart = async (plant) => {
-      if (!user) {
-        navigate('/login', {
-          state: {
-            toast: {
-              message: 'You need to log in first!',
-              type: 'error',
-            },
+    if (!user) {
+      navigate('/login', {
+        state: {
+          toast: {
+            message: 'You need to log in first!',
+            type: 'error',
           },
-        });
-        return;
-      }
-    
-      try {
-        await addToCart(user.id, plant.id, 1); 
-        toast.success("Item added to cart!");
-      } catch (error) {
-        console.log(error)
-        toast.error("Failed to add item to cart");
-      }
-    };
+        },
+      });
+      return;
+    }
 
+    if (relatedPlantsInCart[plant.id]) {
+      navigate('/cart/view');
+      return;
+    }
+  
+    try {
+      await addToCart(
+        user.id,       // userId
+        plant.id,      // itemId
+        1,             // amount (default 1 for related plants)
+        null,          // cartItemId
+        false,         // isSubscription
+        selectedPot    // potId (use the selected pot if any)
+      );
+
+      setRelatedPlantsInCart(prev => ({
+        ...prev,
+        [plant.id]: true
+      }));
+
+      toast.success("Item added to cart!");
+    } catch (error) {
+      console.log(error);
+      toast.error("Failed to add item to cart");
+    }
+  };
+
+  const getRelatedButtonProps = (plantId) => {
+    const isInCart = relatedPlantsInCart[plantId];
+    
+    if (isInCart) {
+      return {
+        text: "View in Cart",
+        icon: <ShoppingCartCheckoutIcon />,
+        color: "#1976d2",
+        hoverColor: "#1565c0"
+      };
+    } else {
+      return {
+        text: "Add to Cart",
+        icon: <ShoppingCartOutlinedIcon />,
+        color: "#388e3c",
+        hoverColor: "#2e7d32"
+      };
+    }
+  };
+
+  // Increment amount
+  const incrementAmount = () => {
+    if (amount < 20) {
+      setAmount(prevAmount => prevAmount + 1);
+    }
+  };
+
+  // Decrement amount
+  const decrementAmount = () => {
+    if (amount > 1) {
+      setAmount(prevAmount => prevAmount - 1);
+    }
+  };
 
   // Add a utility function to format relative time
   const formatRelativeTime = (createdAt) => {
@@ -202,7 +390,7 @@ const PlantDetail = () => {
     }
   
     try {
-      const profilePicture = user.profileImage
+      const profilePicture = user.profileImage;
       // Prepare comment data
       const commentData = {
         userId: user.id,
@@ -258,147 +446,266 @@ const PlantDetail = () => {
     }
   };
 
-    // Function to get light level icon color
-    const getLightLevelColor = (level) => {
-      switch(level) {
-        case 'Low': return '#8BC34A';
-        case 'Medium': return '#FFC107';
-        case 'High': return '#FF9800';
-        default: return '#757575';
-      }
-    };
-  
-    // Function to get water needs icon color
-    const getWaterNeedsColor = (need) => {
-      switch(need) {
-        case 'Low': return '#90CAF9';
-        case 'Medium': return '#2196F3';
-        case 'High': return '#1565C0';
-        default: return '#757575';
-      }
-    };
+  // Function to get light level icon color
+  const getLightLevelColor = (level) => {
+    switch(level) {
+      case 'Low': return '#8BC34A';
+      case 'Medium': return '#FFC107';
+      case 'High': return '#FF9800';
+      default: return '#757575';
+    }
+  };
 
-  if (loading) return <div className="loading"><CircularProgress /></div>;
-  if (error) return <div className="error"><Alert severity="error">{error}</Alert></div>;
+  // Function to get water needs icon color
+  const getWaterNeedsColor = (need) => {
+    switch(need) {
+      case 'Low': return '#90CAF9';
+      case 'Medium': return '#2196F3';
+      case 'High': return '#1565C0';
+      default: return '#757575';
+    }
+  };
+
+  // Render the pot selection component with images
+  const renderPotSelection = () => {
+    if (potsLoading) {
+      return <CircularProgress size={24} />;
+    }
+
+    return (
+      <Box sx={{ mt: 2, mb: 2 }}>
+        <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 'medium' }}>
+          Select a pot (optional):
+        </Typography>
+        
+        <Grid container spacing={2}>
+          {pots.map((pot) => (
+            <Grid item xs={6} sm={3} key={pot.id}>
+              <Paper 
+                elevation={selectedPot === pot.id ? 8 : 1}
+                sx={{
+                  p: 1.5,
+                  borderRadius: 2,
+                  cursor: 'pointer',
+                  border: selectedPot === pot.id ? '2px solid #2e7d32' : '1px solid #e0e0e0',
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    transform: 'translateY(-5px)',
+                    boxShadow: 3
+                  },
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  height: '100%'
+                }}
+                onClick={() => setSelectedPot(pot.id === selectedPot ? null : pot.id)}
+              >
+                <img 
+                  src={pot.image} 
+                  alt={pot.name}
+                  style={{ 
+                    width: '100%', 
+                    height: '80px', 
+                    objectFit: 'contain',
+                    marginBottom: '8px'
+                  }}
+                />
+                <Typography variant="body2" align="center" sx={{ fontWeight: 'medium' }}>
+                  {pot.name}
+                </Typography>
+                <Typography variant="body2" color="primary" align="center" sx={{ fontWeight: 'bold' }}>
+                  ${pot.price.toFixed(2)}
+                </Typography>
+              </Paper>
+            </Grid>
+          ))}
+        </Grid>
+      </Box>
+    );
+  };
+
+  // Improved amount selector
+  const renderAmountSelector = () => {
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center', mt: 2, mb: 2 }}>
+        <Typography variant="subtitle1" sx={{ mr: 2, fontWeight: 'medium' }}>
+          Quantity:
+        </Typography>
+        <Paper 
+          elevation={2} 
+          sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            borderRadius: 2,
+            overflow: 'hidden'
+          }}
+        >
+          <IconButton 
+            onClick={decrementAmount} 
+            disabled={amount <= 1}
+            sx={{ borderRadius: 0 }}
+          >
+            <RemoveIcon />
+          </IconButton>
+          
+          <Box 
+            sx={{ 
+              width: '50px', 
+              textAlign: 'center',
+              fontWeight: 'bold',
+              fontSize: '1.1rem',
+              py: 1
+            }}
+          >
+            {amount}
+          </Box>
+          
+          <IconButton 
+            onClick={incrementAmount} 
+            disabled={amount >= 20}
+            sx={{ borderRadius: 0 }}
+          >
+            <AddIcon />
+          </IconButton>
+        </Paper>
+      </Box>
+    );
+  };
+
+  if (loading) return <Box className="loading" sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress /></Box>;
+  if (error) return <Box className="error" sx={{ p: 2 }}><Alert severity="error">{error}</Alert></Box>;
 
   return (
-      <div className="container">
-       <ToastContainer autoClose={1000}/>
-        {isMobile ? (
-        // MOBILE VIEW (Stacked layout)
-        <>
-          <Box sx={{ mb: 4 }}>
-            <Carousel 
-              showThumbs={true} 
-              showStatus={false} 
-              infiniteLoop 
-              autoPlay 
-              interval={5000}
-              thumbWidth={60}
-            >
-              {JSON.parse(plant.images).map((image, index) => (
-                <div key={index}>
-                  <img
-                    src={image}
-                    alt={`${plant.name} image ${index + 1}`}
-                    style={{ 
-                      width: '100%', 
-                      height: 'auto', 
-                      borderRadius: '8px',
-                      objectFit: 'cover'
-                    }}
-                  />
-                </div>
-              ))}
-            </Carousel>
-          </Box>
-
-          <div className="product-details">
-          <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', mb: 1, color: '#2e7d32' }}>
-            {plant.name}
+    <Container maxWidth="xl">
+      <ToastContainer autoClose={1000}/>
+      {isMobile ? (
+      // MOBILE VIEW (Stacked layout)
+      <>
+        <Box sx={{
+          '& .thumb.selected': {
+            border: '2px solid #2e7d32',
+            borderRadius: '4px'
+          },
+          '& .thumb:hover:not(.selected)': {
+            border: '1px solid #2e7d32',
+            opacity: 0.8
+          }
+        }}>
+        <Box sx={{ mb: 2 }}>
+            <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', mb: 1, color: '#2e7d32', textAlign:'center' }}>
+              {plant.name}
             </Typography>
           </Box>
-            <p className="product-description">{plant.description}</p>
-
-            <div className="price-stock">
-            <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#2e7d32', mb: 1 }}>
-              ${plant.price}
-            </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <Chip 
-                icon={<VerifiedIcon />} 
-                label="In Stock" 
-                color="success" 
-                size="small" 
-                variant="outlined"
-              />
-              <Chip 
-                icon={<LocalShippingIcon />} 
-                label="Free Shipping" 
-                size="small" 
-                variant="outlined" 
-                sx={{ ml: 1 }}
-              />
-            </Box>
-            </div>
-
-            <TextField
-              label="Amount"
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(Math.min(20, Math.max(1, Number(e.target.value))))}
-              inputProps={{ min: 1, max: 20 }}
-            />
-
-            <Button variant="contained" color="success" size="large" sx={{ mt: 2 }} onClick={handleAddToCart} startIcon={<ShoppingCartIcon />}>
-            {'Add to Cart'}
-            </Button>
-          </div>
-        </>
-      ) : (
-        // PC VIEW (Side-by-side layout)
-        <div className="product-container" style={{ display: "flex", gap: "20px" }}>
-          <div className="product-image" style={{ flex: 1 }}>
           <Carousel 
             showThumbs={true} 
             showStatus={false} 
             infiniteLoop 
             autoPlay 
             interval={5000}
-            thumbWidth={80}
+            thumbWidth={60}
+            renderArrowPrev={(onClickHandler, hasPrev, label) => (
+              <button
+                onClick={onClickHandler}
+                title={label}
+                style={{
+                  position: 'absolute',
+                  left: 15,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  zIndex: 2,
+                  backgroundColor: 'rgba(0,0,0,0.5)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: 40,
+                  height: 40,
+                  fontSize: 24,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                ‹
+              </button>
+            )}
+            renderArrowNext={(onClickHandler, hasNext, label) => (
+              <button
+                onClick={onClickHandler}
+                title={label}
+                style={{
+                  position: 'absolute',
+                  right: 15,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  zIndex: 2,
+                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: 40,
+                  height: 40,
+                  fontSize: 24,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                ›
+              </button>
+            )}
+            renderThumbs={(children) => 
+              children.map((item, index) => (
+                <div key={index} style={{
+                  display: 'flex',
+                  height:'60px',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  width: '100%',
+                  padding: 0,
+                  margin: 0,
+                  overflow: 'hidden',
+                  border:0,
+                  borderRadius: '4px'
+                }}>
+                  {item}
+                </div>
+              ))
+            }
           >
             {JSON.parse(plant.images).map((image, index) => (
-              <div key={index}>
+              <Box key={index} sx={{
+                height: '500px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'relative'
+              }}>
                 <img
                   src={image}
                   alt={`${plant.name} image ${index + 1}`}
                   style={{ 
-                    width: '100%', 
-                    height: 'auto', 
-                    borderRadius: '12px',
-                    objectFit: 'cover',
-                    maxHeight: '500px'
+                    maxWidth: '100%',
+                    maxHeight: '100%',
+                    objectFit: 'contain',
+                    borderRadius: '8px'
                   }}
                 />
-              </div>
+              </Box>
             ))}
           </Carousel>
-          </div>
+        </Box>
 
-          <div className="product-details" style={{ flex: 1 }}>
-          <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', mb: 1, color: '#2e7d32' }}>
-            {plant.name}
-            </Typography>
-          </Box>
-            <p className="product-description">{plant.description}</p>
+        <Box className="product-details" sx={{ mb: 4 }}>
 
-            <div className="price-stock">
+          <Typography variant="body1" sx={{ mb: 2 }}>{plant.description}</Typography>
+
+          <Box className="price-stock" sx={{ mb: 2 }}>
             <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#2e7d32', mb: 1 }}>
               ${plant.price}
             </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <Chip 
                 icon={<VerifiedIcon />} 
                 label="In Stock" 
@@ -414,31 +721,211 @@ const PlantDetail = () => {
                 sx={{ ml: 1 }}
               />
             </Box>
+          </Box>
+
+          {renderAmountSelector()}
+          {renderPotSelection()}
+
+          <Button 
+            variant="contained" 
+            size="large" 
+            sx={{ 
+              mt: 2, 
+              width: '100%', 
+              py: 1.5, 
+              borderRadius: 2,
+              backgroundColor: buttonProps.color,
+              "&:hover": {
+                backgroundColor: buttonProps.hoverColor,
+              }
+            }} 
+            onClick={handleAddToCart} 
+            startIcon={buttonProps.icon}
+            disabled={buttonProps.disabled}
+          >
+            {buttonProps.text}
+          </Button>
+        </Box>
+      </>
+    ) : (
+      // PC VIEW (Side-by-side layout)
+      <Box 
+      sx={{ 
+        display: "flex", 
+        gap: "32px", 
+        mb: 6,
+        alignItems: "flex-start"
+      }}
+      >
+      {/* Image section - 45% width */}
+      <Box sx={{ width:'45%',
+          '& .thumb.selected': {
+          border: '2px solid #2e7d32',
+          borderRadius: '5px'
+        },
+        '& .thumb:hover:not(.selected)': {
+          border: '1px solid #2e7d32',
+          opacity: 0.8
+        }}} >
+        <Carousel
+          showThumbs={true}
+          showStatus={false}
+          infiniteLoop
+          autoPlay
+          interval={5000}
+          thumbWidth={80}
+          renderThumbs={(children) => 
+            children.map((item, index) => (
+              <div key={index} style={{
+                display: 'flex',
+                height:'80px',
+                justifyContent: 'center',
+                alignItems: 'center',
+                width: '80px',
+                padding: 0,
+                margin: 0,
+                overflow: 'hidden',
+                border:0,
+                borderRadius: '4px'
+              }}>
+                {item}
+              </div>
+            ))
+          }
+          renderArrowPrev={(onClickHandler, hasPrev, label) => (
+            <button
+              onClick={onClickHandler}
+              title={label}
+              style={{
+                position: 'absolute',
+                left: 15,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                zIndex: 2,
+                backgroundColor: 'rgba(0,0,0,0.5)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '50%',
+                width: 40,
+                height: 40,
+                fontSize: 24,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              ‹
+            </button>
+          )}
+          renderArrowNext={(onClickHandler, hasNext, label) => (
+            <button
+              onClick={onClickHandler}
+              title={label}
+              style={{
+                position: 'absolute',
+                right: 15,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                zIndex: 2,
+                backgroundColor: 'rgba(0,0,0,0.5)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '50%',
+                width: 40,
+                height: 40,
+                fontSize: 24,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              ›
+            </button>
+          )}
+        >
+          {JSON.parse(plant.images).map((img, i) => (
+            <div key={i}>
+              <img
+                src={img}
+                alt={`${plant.name} image ${i + 1}`}
+                style={{ 
+                  width: '100%', 
+                  height: 'auto', 
+                  borderRadius: '12px',
+                  objectFit: 'cover',
+                  maxHeight: '620px'
+                }}
+              />
             </div>
+          ))}
+        </Carousel>
+      </Box>
 
-            <TextField
-              label="Amount"
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(Math.min(20, Math.max(1, Number(e.target.value))))}
-              inputProps={{ min: 1, max: 20 }}
-            />
+      {/* Details section - 55% width */}
+      <Box sx={{ width: '55%', pl: 4 }}>
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', mb: 1, color: '#2e7d32' }}>
+            {plant.name}
+          </Typography>
+        </Box>
+        
+        <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#2e7d32', mb: 2 }}>
+          ${plant.price}
+        </Typography>
+        
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+          <Chip 
+            icon={<VerifiedIcon />} 
+            label="In Stock" 
+            color="success" 
+            size="small" 
+            variant="outlined"
+          />
+          <Chip 
+            icon={<LocalShippingIcon />} 
+            label="Free Shipping" 
+            size="small" 
+            variant="outlined" 
+            sx={{ ml: 2 }}
+          />
+        </Box>
+        
+        <Typography variant="body1" sx={{ mb: 3, lineHeight: 1.7 }}>
+          {plant.description}
+        </Typography>
 
-            <Button
-                  variant="contained"
-                  color="success"
-                  size="large"
-                  onClick={handleAddToCart}
-                  startIcon={<ShoppingCartIcon />}
-                  sx={{ borderRadius: 2, py: 1.5, px: 4, ml: 2, width: '90%', mt:5 }}
-                >
-                  Add to Cart
-            </Button>
-          </div>
-        </div>
+        {renderAmountSelector()}
+        {renderPotSelection()}
+
+        <Button
+          variant="contained"
+          size="large"
+          onClick={handleAddToCart}
+          startIcon={buttonProps.icon}
+          sx={{ 
+            backgroundColor: buttonProps.color,
+            "&:hover": {
+              backgroundColor: buttonProps.hoverColor,
+            },
+            boxShadow: 1,
+            borderRadius: 2, 
+            py: 1.5, 
+            px: 4, 
+            width: '100%', 
+            mt: 3, 
+            mb: 2 
+          }}
+          disabled={buttonProps.disabled}
+        >
+          {buttonProps.text}
+        </Button>
+      </Box>
+      </Box>
       )}
-     
 
+      {/* Care Guide Section */}
       <Box sx={{ 
         backgroundColor: '#f0f4f0', 
         borderRadius: 3, 
@@ -543,7 +1030,7 @@ const PlantDetail = () => {
       </Box>
 
       {/* Related Products Section */}
-      <div className="related-products">
+      <Box sx={{ mt: 8, mb: 8 }}>
         <Typography variant="h4" fontWeight="bold" sx={{ mb: 4, borderBottom: '2px solid #eee', pb: 2, color: '#2e7d32' }}>
           Explore more
         </Typography>
@@ -686,30 +1173,30 @@ const PlantDetail = () => {
                       >
                         ${relatedPlant.price.toFixed(2)}
                       </Typography>
-                      <Button
-                        variant="contained"
-                        size="small"
-                        startIcon={<ShoppingCartIcon />}
-                        sx={{
-                          borderRadius: 2,
-                          backgroundColor: '#388e3c',
-                          '&:hover': {
-                            backgroundColor: '#2e7d32',
-                            transform: 'scale(1.05)'
-                          },
-                          transition: 'all 0.2s ease',
-                          boxShadow: '0 4px 10px rgba(46, 125, 50, 0.2)',
-                          '&:active': {
-                            transform: 'scale(0.98)',
-                          }
-                        }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleAddRelatedToCart(relatedPlant);
-                        }}
-                      >
-                        Add to Cart
-                      </Button>
+                        <Button
+                          variant="contained"
+                          size="small"
+                          startIcon={getRelatedButtonProps(relatedPlant.id).icon}
+                          sx={{
+                            borderRadius: 2,
+                            backgroundColor: getRelatedButtonProps(relatedPlant.id).color,
+                            '&:hover': {
+                              backgroundColor: getRelatedButtonProps(relatedPlant.id).hoverColor,
+                              transform: 'scale(1.05)'
+                            },
+                            transition: 'all 0.2s ease',
+                            boxShadow: '0 4px 10px rgba(46, 125, 50, 0.2)',
+                            '&:active': {
+                              transform: 'scale(0.98)',
+                            }
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAddRelatedToCart(relatedPlant);
+                          }}
+                        >
+                          {getRelatedButtonProps(relatedPlant.id).text}
+                        </Button>
                     </Box>
                   </CardContent>
                 </Card>
@@ -717,20 +1204,20 @@ const PlantDetail = () => {
             );
           })}
         </Grid>
-      </div>
+      </Box>
 
       {/* Comment Section */}
-      <div className="comment-section">
-        <div 
-          style={{ 
+      <Box sx={{ mt: 6, mb: 8 }}>
+        <Box 
+          sx={{ 
             display: 'flex', 
             justifyContent: 'space-between', 
             alignItems: 'center', 
-            marginBottom: '15px',
-            marginTop: '15px'  
+            mb: 3,
+            mt: 3  
           }}
         >
-          <h2 className="section-title">Comments</h2>
+          <Typography variant="h4" fontWeight="bold">Comments</Typography>
           <Button 
             variant="contained" 
             size="large"
@@ -758,18 +1245,18 @@ const PlantDetail = () => {
           >
             + Add a Comment
           </Button>
-        </div>
+        </Box>
   
       {/* Comment Form first if showCommentForm is true */}
       {showCommentForm && (
-        <div className="add-comment">
+        <Box sx={{ mb: 4, p: 3, backgroundColor: '#f9f9f9', borderRadius: 2 }}>
           <TextField
             label="Comment Title"
             variant="outlined"
             fullWidth
             value={commentTitle}
             onChange={(e) => setCommentTitle(e.target.value)}
-            sx={{ marginBottom: '10px' }}
+            sx={{ mb: 2 }}
             placeholder="Summarize your comment in a few words"
           />
           
@@ -781,29 +1268,28 @@ const PlantDetail = () => {
             fullWidth
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
-            sx={{ marginTop: '10px' }}
+            sx={{ mb: 2 }}
             placeholder="Share your thoughts about this plant..."
           />
           
-          <div style={{ 
+          <Box sx={{ 
             display: 'flex', 
             alignItems: 'center', 
-            marginTop: '10px' 
+            mb: 3 
           }}>
-            <Typography variant="body1" sx={{ marginRight: '10px' }}>
+            <Typography variant="body1" sx={{ mr: 2 }}>
               Rate this plant:
             </Typography>
             <Rating
               value={rating}
               onChange={(event, newValue) => {
-                // Round down to nearest whole number
                 setRating(Math.floor(newValue));
               }}
-              precision={1}  // Whole stars only
+              precision={1} 
             />
-          </div>
+          </Box>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px', marginBottom: '20px' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
             <Button
               variant="contained"
               sx={{
@@ -832,87 +1318,88 @@ const PlantDetail = () => {
             >
               Cancel
             </Button>
-          </div>
-        </div>
+          </Box>
+        </Box>
       )}
 
       {/* Comments display */}
       {comments.length > 0 ? (
-    comments.map((comment, index) => (
-      <Paper 
-        key={index} 
-        elevation={2} 
-        sx={{ 
-          padding: '15px', 
-          marginBottom: '15px', 
-          display: 'flex', 
-          alignItems: 'flex-start',
-          backgroundColor: '#f5f5f5'
-        }}
-      >
-        {/* Profile Picture */}
-        <Avatar 
-          src={comment.profilePicture} 
-          alt={`${comment.username}'s profile`}
-          sx={{ 
-            width: 56, 
-            height: 56, 
-            marginRight: '15px',
-            border: '2px solid #2e7d32'
-          }}
-        />
-        
-        <Box sx={{ flexGrow: 1 }}>
-          <Box sx={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            marginBottom: '10px'
-          }}>
-            <Box>
-              <Typography variant="subtitle1" fontWeight="bold">
-                {comment.username}
+        comments.map((comment, index) => (
+          <Paper 
+            key={index} 
+            elevation={2} 
+            sx={{ 
+              p: 3, 
+              mb: 2, 
+              display: 'flex', 
+              alignItems: 'flex-start',
+              backgroundColor: '#f5f5f5',
+              borderRadius: 2
+            }}
+          >
+            {/* Profile Picture */}
+            <Avatar 
+              src={comment.profilePicture} 
+              alt={`${comment.username}'s profile`}
+              sx={{ 
+                width: 56, 
+                height: 56, 
+                mr: 2,
+                border: '2px solid #2e7d32'
+              }}
+            />
+            
+            <Box sx={{ flexGrow: 1 }}>
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                mb: 1
+              }}>
+                <Box>
+                  <Typography variant="subtitle1" fontWeight="bold">
+                    {comment.username}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {formatRelativeTime(comment.createdAt)}
+                  </Typography>
+                </Box>
+                
+                <Rating 
+                  value={comment.rating} 
+                  readOnly 
+                  precision={1}
+                  size="small"
+                />
+              </Box>
+              
+              <Typography variant="h6" fontWeight="bold" sx={{ mb: 1 }}>
+                {comment.title}
               </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {formatRelativeTime(comment.createdAt)}
+              
+              <Typography variant="body1" color="text.primary">
+                {comment.commentText}
               </Typography>
             </Box>
-            
-            <Rating 
-              value={comment.rating} 
-              readOnly 
-              precision={1}
-              size="small"
-            />
+          </Paper>
+        ))
+      ) : (
+        !showCommentForm && (
+          <Box 
+            sx={{ 
+              textAlign: 'center', 
+              p: 4,
+              backgroundColor: '#f5f5f5',
+              borderRadius: 2
+            }}
+          >
+            <Typography variant="body1" color="text.secondary">
+              No comments yet. Be the first to share your thoughts!
+            </Typography>
           </Box>
-          
-          <Typography variant="h6" fontWeight="bold" sx={{ marginBottom: '5px' }}>
-            {comment.title}
-          </Typography>
-          
-          <Typography variant="body1" color="text.primary">
-            {comment.commentText}
-          </Typography>
-        </Box>
-      </Paper>
-    ))
-  ) : (
-    !showCommentForm && (
-      <Typography 
-        variant="body2" 
-        color="text.secondary" 
-        sx={{ 
-          textAlign: 'center', 
-          padding: '20px',
-          backgroundColor: '#f5f5f5',
-          borderRadius: '8px'
-        }}
-      >
-        No comments yet. Be the first to share your thoughts!
-      </Typography>
-    )
-  )}
-    </div>
+        )
+      )}
+      </Box>
 
       <Snackbar
         open={openSnackbar}
@@ -920,7 +1407,7 @@ const PlantDetail = () => {
         onClose={() => setOpenSnackbar(false)}
         message={snackbarMessage}
       />
-    </div>
+    </Container>
   );
 };
 

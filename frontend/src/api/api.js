@@ -98,16 +98,24 @@ export const updateCartItem = async (userId, itemId, quantity) => {
   }
 };
 
-// Add or update an item in the cart (plant or subscription)
-export const addToCart = async (userId, itemId, amount, cartItemId, isSubscription = false) => {
+// Add or update an item in the cart (plant with optional pot, or subscription)
+export const addToCart = async (
+  userId,
+  itemId,
+  amount,
+  cartItemId,
+  isSubscription = false,
+  potId = null
+) => {
   try {
     const response = await axios.post(`${API_BASE_URL}/cart/add`, null, {
       params: {
         userId,
-        itemId, // renamed from plantId to be more generic
+        itemId,
         amount,
         cartItemId,
-        isSubscription, // new flag to differentiate item types
+        isSubscription,
+        potId 
       },
     });
     return response.data;
@@ -425,6 +433,24 @@ export const sendMessageToBot = async (message) => {
       throw new Error("No response received from bot service");
     } else {
       throw new Error("Error setting up the request to bot");
+    }
+  }
+};
+
+// Get all pots:
+export const getPots = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/pots`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching pots:", error);
+    
+    if (error.response) {
+      throw error.response.data || "Failed to fetch pots";
+    } else if (error.request) {
+      throw new Error("No response received from server");
+    } else {
+      throw new Error("Error setting up the request");
     }
   }
 };
