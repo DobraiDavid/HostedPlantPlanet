@@ -26,7 +26,7 @@ public class EmailService {
     public void sendOrderConfirmation(String to, String customerName, String orderDetails) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
             helper.setTo(to);
             helper.setSubject("Thank you for your order!");

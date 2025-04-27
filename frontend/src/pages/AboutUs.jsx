@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Container, Typography, Box, Grid, Card, CardContent, CardMedia, Button } from "@mui/material";
 import ExploreIcon from '@mui/icons-material/Explore';
 import TD from "../assets/TD.jpg";
+import DD from "../assets/DD.jpg";
+import TK from "../assets/TK.jpg";
 
 const AboutUs = () => {
   const navigate = useNavigate(); 
@@ -65,13 +67,22 @@ const AboutUs = () => {
         </Typography>
         <Grid container spacing={4} justifyContent="center" sx={{ mt: 2 }}>
           {[
-            { name: "Dávid Dobrai", role: "Founder & Plant Expert", img: "https://via.placeholder.com/150" },
+            { name: "Dávid Dobrai", role: "Founder & Plant Expert", img: DD },
             { name: "Dominik Tóth", role: "Horticulturist", img: TD },
-            { name: "Károly Türk", role: "Customer Support", img: "https://via.placeholder.com/150" }
+            { name: "Károly Türk", role: "Customer Support", img: TK }
           ].map((member, index) => (
             <Grid item xs={12} sm={4} key={index}>
               <Card sx={{ textAlign: "center", boxShadow: 4, borderRadius: 3 }}>
-                <CardMedia component="img" height="200" image={member.img} alt={member.name} />
+                <CardMedia 
+                  component="img" 
+                  sx={{ 
+                    width: 480, 
+                    height: 853,
+                    objectFit: "cover" 
+                  }} 
+                  image={member.img} 
+                  alt={member.name} 
+                />
                 <CardContent>
                   <Typography variant="h6" sx={{ fontWeight: "bold" }}>
                     {member.name}

@@ -1297,7 +1297,13 @@ const PlantDetail = () => {
             </Button>
             <Button
               variant="outlined"
-              color="secondary"
+              color="error"
+              sx={{
+                '&:hover': {
+                  backgroundColor: '#ffecec',
+                  borderColor: '#f44336',
+                },
+              }}
               onClick={() => {
                 setShowCommentForm(false);
                 setNewComment('');
