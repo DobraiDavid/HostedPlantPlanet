@@ -198,6 +198,7 @@ const Cart = () => {
           padding: 4,
           width: "100%",
           maxWidth: "600px",
+          my:2,
         }}
       >
         <Typography variant="h4" align="center" mb={4}>

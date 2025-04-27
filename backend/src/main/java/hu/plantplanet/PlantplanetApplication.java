@@ -13,7 +13,7 @@ public class PlantplanetApplication {
 	public static void main(String[] args) {
 		// Load .env file
 		Dotenv dotenv = Dotenv.configure()
-				.directory("/home/david/Other/Programming/VizsgaRemek/PlantPlanet/backend")
+				.directory("backend")
 				.load();
 
 		// Set environment variables for Spring
@@ -22,5 +22,4 @@ public class PlantplanetApplication {
 		});
 		SpringApplication.run(PlantplanetApplication.class, args);
 	}
-
 }

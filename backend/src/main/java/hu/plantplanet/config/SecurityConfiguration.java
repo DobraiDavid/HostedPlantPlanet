@@ -47,7 +47,7 @@ public class SecurityConfiguration {
             "/comments", "/comments/**",
             "/email", "/email/**",
             "/subscriptions/plans","/subscriptions/plans/**",
-            "/chat", "/pots"
+            "/chat", "/pots", "/orders"
     };
     @Autowired
     public SecurityConfiguration(JwtAuthorizationFilter jwtAuthorizationFilter,

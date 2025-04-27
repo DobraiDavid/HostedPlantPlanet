@@ -240,7 +240,7 @@ const Checkout = () => {
             borderRadius: 3,
             padding: 4,
             width: "100%",
-            maxWidth: "600px",
+            maxWidth: "600px"
           }}
         >
           <Typography variant="h4" align="center" color="green" mb={4}>
@@ -296,6 +296,7 @@ const Checkout = () => {
           padding: 4,
           width: "100%",
           maxWidth: "600px",
+          my:2
         }}
       >
         <Typography variant="h4" align="center" mb={4}>

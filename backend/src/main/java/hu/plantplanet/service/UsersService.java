@@ -6,7 +6,9 @@ import hu.plantplanet.dto.user.RegisterRequest;
 import hu.plantplanet.exception.EmailAlreadyExistsException;
 import hu.plantplanet.exception.UserAlreadyExistsException;
 import hu.plantplanet.exception.UserNotFoundException;
+import hu.plantplanet.model.Allocation;
 import hu.plantplanet.model.Users;
+import hu.plantplanet.repository.AllocationRepository;
 import hu.plantplanet.repository.UsersRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +32,9 @@ public class UsersService implements UserDetailsService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private AllocationRepository allocationRepository;
+
     public static final String NO_USER_FOUND_BY_EMAIL = "No user found by email: ";
 
     @Override
@@ -50,19 +55,27 @@ public class UsersService implements UserDetailsService {
     }
 
     public Users registerUser(RegisterRequest registerRequest) {
-        // Check if user already exists by email
-        Users existingUser = userRepository.findByEmail(registerRequest.getEmail());
-        if (existingUser != null) {
-            throw new UserAlreadyExistsException("Email is already registered");
+        // Existing validation
+        if (userRepository.existsByEmail(registerRequest.getEmail())) {
+            throw new UserAlreadyExistsException("Email already registered");
         }
-        // Hash password
-        String hashedPassword = passwordEncoder.encode(registerRequest.getPassword());
 
-        // Create new User entity
-        Users newUser = new Users(registerRequest.getName(), registerRequest.getEmail(), hashedPassword, registerRequest.getProfileImage());
+        // Create and save user
+        Users newUser = new Users(
+                registerRequest.getName(),
+                registerRequest.getEmail(),
+                passwordEncoder.encode(registerRequest.getPassword()),
+                registerRequest.getProfileImage()
+        );
+        Users savedUser = userRepository.save(newUser);
 
-        // Save and return the new user
-        return userRepository.save(newUser);
+        // Assign ROLE_USER explicitly
+        Allocation roleAssignment = new Allocation();
+        roleAssignment.setUserId(savedUser.getId());
+        roleAssignment.setPermissionId("ROLE_USER");
+        allocationRepository.save(roleAssignment);
+
+        return savedUser;
     }
 
     @Transactional

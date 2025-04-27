@@ -292,9 +292,15 @@ export const postComment = async (userId, plantId, title, commentText, rating, p
 
 // Place an order
 export const placeOrder = async (orderData) => {
+  const token = localStorage.getItem('authToken');
+    
+  if (!token) {
+    throw new Error("No authentication token found");
+  }
   try {
     const response = await axios.post(`${API_BASE_URL}/orders`, orderData, {
       headers: {
+        'Authorization': `Bearer ${token}`,
         "Content-Type": "application/json",
       },
     });
