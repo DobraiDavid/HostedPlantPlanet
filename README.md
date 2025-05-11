@@ -1,45 +1,51 @@
+# 🌱 Plant Planet (PostgreSQL Edition)
 
+This is a modified version of our school group project, **Plant Planet**, originally built with a MySQL backend. The project is a full-stack web application developed using **Spring Boot** for the backend and **Vite + React** for the frontend.
 
-Plant Planet weboldala
+This version switches the database from **MySQL to PostgreSQL** to allow for easier deployment on **Render.com**.
 
-**Témavezető:** 
+---
 
-Inántsy-Pap Tamás
+## 🛠 Technologies Used
 
-Juhászné Kovács Ildikó
+### Frontend
+- Vite
+- React
+- EmailJS
 
-**Készítette:**
+### Backend
+- Spring Boot
+- PostgreSQL (originally MySQL)
+- JPA/Hibernate
+- Liquibase
+- Docker
 
-Dobrai Dávid
+---
 
-Tóth Dominik Sándor
+## 📁 About This Repository
 
-Türk Károly
+The original project used **MySQL**. Since Render supports **PostgreSQL** more easily, this repository was created by me separately for deployment purposes. The logic and frontend remain unchanged — only the database configuration and a few deployment-related properties were updated.
 
-NYÍREGYHÁZA
+This version includes:
+- PostgreSQL integration instead of MySQL
+- Updated `application.properties` and `api.js` for Render deployment
+- Prepared `Dockerfile` for containerized deployment
 
-2025
+---
 
--   Az elkészült munka megtekintéséhez szükséges a MySQL letöltése.
-    Látogassunk el a következő oldalra:
-    <https://www.mysql.com/downloads/>, és onnan töltsük le az
-    operációs rendszerünknek megfelelő MySQL-verziót.
+## 🚀 Getting Started
 
--   Telepítsük fel. Hozzunk létre egy plantplanetdb nevű adatbázist.
+### Prerequisites
+- Java 21
+- Node.js & npm
+- PostgreSQL (locally or hosted)
+- Docker (optional, for containerized setup)
 
--   Töltse le a Windows telepítőt a Node webhelyről. Miután
-    kiválasztotta az igényeinek megfelelő verziót, futtassa a telepítőt.
+---
 
--   Indítunk el a Visual Studio Code alkalmazást, a Front
-    mappát nyitjuk meg, IntelliJ-ben a backend mappát kell megnyitni az
-    Open Folder menüponttal.
+### 🧪 Development Setup
 
--   Visual Studio Code-ban a Terminal-ban npm –i paranccsal
-    telepítsük az összes modult.
-
--   Visual Studio Code-ban npm run dev paranccsal indítsuk az
-    alkalmazást
-
--   Ezután a http://localhost:5173 -es címen lehet elérni
-    az alkalmazást.
-
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/DobraiDavid/HostedPlantPlanet
+   cd plant-planet-postgresql
