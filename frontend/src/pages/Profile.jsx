@@ -26,8 +26,9 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
+import 'react-toastify/dist/ReactToastify.css';
 import { changeUserDetails, logout, getUserSubscriptions, cancelSubscription } from '../api/api';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 
 const ProfilePage = () => {
   const { user, login, logout: logoutUser } = useUser();
@@ -305,6 +306,7 @@ const ProfilePage = () => {
       }}
     >
       <Container maxWidth="md">
+        <ToastContainer autoClose={1500} position="top-right" />
         <Card 
           elevation={3}
           sx={{ 

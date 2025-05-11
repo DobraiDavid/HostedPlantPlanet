@@ -324,64 +324,149 @@ const Home = () => {
       default: return '#757575';
     }
   };
+  
+  const iconStyle = {
+    width: { xs: 20, sm: 30 },
+    height: { xs: 20, sm: 30 },
+    backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'%234CAF50\'%3E%3Cpath d=\'M17,8C8,10 5.9,16.17 3.82,21.34L5.71,22L6.66,19.7C7.14,19.87 7.64,20 8,20C19,20 22,3 22,3C21,5 14,5.25 9,6.25C4,7.25 2,11.5 2,13.5C2,15.5 3.75,17.25 3.75,17.25C7,8 17,8 17,8Z\'/%3E%3C/svg%3E")',
+    backgroundSize: 'contain',
+    backgroundRepeat: 'no-repeat',
+    transform: 'rotate(45deg)',
+    opacity: 0.8,
+  };
+  
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 0, sm: 2 }, backgroundColor: '#f8f9fa', borderRadius: 4, boxShadow: '0 10px 30px rgba(0,0,0,0.1)', my: 1 }}>
       <ToastContainer autoClose={1500} position="top-right" />
       
-      <Box sx={{ 
-        textAlign: 'center', 
-        mb: 5, 
-        position: 'relative',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          left: '10%',
-          top: 0,
-          width: '80%',
-          height: '100%',
-          backgroundImage: 'radial-gradient(circle, rgba(76,175,80,0.1) 0%, rgba(255,255,255,0) 70%)',
-          zIndex: 0
-        }
-      }}>
-        <Typography 
-          variant="h2" 
-          gutterBottom 
-          sx={{ 
-            fontWeight: 'bold', 
-            color: '#2e7d32', 
-            textShadow: '2px 2px 4px rgba(0,0,0,0.1)',
+      <Box
+        sx={{
+          textAlign: 'center',
+          mb: 5,
+          position: 'relative',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            left: '10%',
+            top: 0,
+            width: '80%',
+            height: '100%',
+            backgroundImage:
+              'radial-gradient(circle, rgba(76,175,80,0.1) 0%, rgba(255,255,255,0) 70%)',
+            zIndex: 0,
+          },
+        }}
+      >
+        {/* Desktop Layout */}
+        <Box
+          sx={{
+            display: { xs: 'none', sm: 'inline-flex' },
+            alignItems: 'center',
+            justifyContent: 'center',
             position: 'relative',
             zIndex: 1,
-            fontFamily: "'Montserrat', sans-serif",
-            '&::before, &::after': {
-              content: '""',
-              display: 'inline-block',
-              width: { xs: '20px', sm: '30px' },
-              height: { xs: '20px', sm: '30px' },
-              backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'%234CAF50\'%3E%3Cpath d=\'M17,8C8,10 5.9,16.17 3.82,21.34L5.71,22L6.66,19.7C7.14,19.87 7.64,20 8,20C19,20 22,3 22,3C21,5 14,5.25 9,6.25C4,7.25 2,11.5 2,13.5C2,15.5 3.75,17.25 3.75,17.25C7,8 17,8 17,8Z\'/%3E%3C/svg%3E")',
-              backgroundSize: 'contain',
-              backgroundRepeat: 'no-repeat',
-              transform: 'rotate(45deg)',
-              margin: { xs: '0 5px', sm: '0 10px' },
-              verticalAlign: 'middle',
-              opacity: 0.8
-            }
           }}
         >
-          Plant Planet
-        </Typography>
-        <Typography 
-          variant="h6" 
-          sx={{ 
-            color: '#555', 
-            maxWidth: '700px', 
+          <Box component="span" sx={iconStyle} />
+          <Typography
+            variant="h2"
+            sx={{
+              fontWeight: 'bold',
+              color: '#2e7d32',
+              textShadow: '2px 2px 4px rgba(0,0,0,0.1)',
+              fontFamily: "'Montserrat', sans-serif",
+              mx: 1,
+            }}
+          >
+            Plant Planet
+          </Typography>
+          <Box component="span" sx={iconStyle} />
+        </Box>
+
+        {/* Mobile Layout */}
+        <Box
+          sx={{
+            display: { xs: 'flex', sm: 'none' },
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            position: 'relative',
+            height: '90px',
+            zIndex: 1,
+          }}
+        >
+          {/* Top text */}
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: 'bold',
+              color: '#2e7d32',
+              fontFamily: "'Montserrat', sans-serif",
+            }}
+          >
+            Plant
+          </Typography>
+
+          {/* Planet line with icons aligned to it */}
+          <Box
+            sx={{
+              position: 'relative',
+              display: 'inline-flex',
+              alignItems: 'center',
+              mt: 1,
+            }}
+          >
+            {/* Left icon */}
+            <Box
+              component="span"
+              sx={{
+                ...iconStyle,
+                position: 'absolute',
+                left: '-28px', // adjust based on icon size
+                top: '-1px',
+                transform: 'translateY(-50%)',
+              }}
+            />
+
+            <Typography
+              variant="h4"
+              sx={{
+                fontWeight: 'bold',
+                color: '#2e7d32',
+                fontFamily: "'Montserrat', sans-serif",
+              }}
+            >
+              Planet
+            </Typography>
+
+            {/* Right icon */}
+            <Box
+              component="span"
+              sx={{
+                ...iconStyle,
+                position: 'absolute',
+                right: '-28px', // adjust based on icon size
+                top: '-1px',
+                transform: 'translateY(-50%)',
+              }}
+            />
+          </Box>
+        </Box>
+
+
+
+        <Typography
+          variant="h6"
+          sx={{
+            color: '#555',
+            maxWidth: '700px',
             mx: 'auto',
             position: 'relative',
             zIndex: 1,
             fontFamily: "'Open Sans', sans-serif",
             fontWeight: 'normal',
-            mb: 3
+            mt: 2,
           }}
         >
           Discover the perfect plants for your space

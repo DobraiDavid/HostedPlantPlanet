@@ -1,16 +1,33 @@
-import axios from "axios";
+import axios from './setupAxios';
 
-const API_BASE_URL = "http://localhost:8080"; // Change if needed
+const API_BASE_URL = "https://plantplanet.onrender.com"; // Change if needed
+
 
 axios.interceptors.request.use(config => {
-  const token = localStorage.getItem('authToken');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  // Explicitly skip auth header for these exact endpoints
+  const publicUrls = [
+    '/user/login',
+    '/user/register',
+    '/plants',
+    /^\/plant\/\d+$/, // Matches /plant/{id}
+    '/subscriptions/plans'
+  ];
+
+  const isPublic = publicUrls.some(url => 
+    typeof url === 'string' 
+      ? config.url === `${API_BASE_URL}${url}` || config.url?.includes(url)
+      : url.test(config.url)
+  );
+
+  if (!isPublic) {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
   }
+  
   return config;
-}, error => {
-  return Promise.reject(error);
-});
+}, error => Promise.reject(error));
 
 // Fetch all products
 export const getPlants = async () => {

@@ -87,8 +87,8 @@
 			<artifactId>spring-boot-starter-mail</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.mysql</groupId>
-			<artifactId>mysql-connector-j</artifactId>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
@@ -155,14 +155,35 @@
 				</configuration>
 			</plugin>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.2.0</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<resources>
+								<resource>
+									<directory>src/main/resources</directory>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+							<outputDirectory>${project.build.directory}/classes</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<groupId>org.liquibase</groupId>
 				<artifactId>liquibase-maven-plugin</artifactId>
 				<version>4.29.2</version>
 				<configuration>
-					<url>jdbc:mysql://localhost:3306/plantplanetdb</url>
-					<driver>com.mysql.cj.jdbc.Driver</driver>
-					<username>root</username>
-					<password>root</password>
+					<url>${SPRING_DATASOURCE_URL}</url>
+					<driver>org.postgresql.Driver</driver>
+					<username>${SPRING_DATASOURCE_USERNAME}</username>
+					<password>${SPRING_DATASOURCE_PASSWORD}</password>
 					<changeLogFile>src/main/resources/db/changelog/master.xml</changeLogFile>
 				</configuration>
 			</plugin>

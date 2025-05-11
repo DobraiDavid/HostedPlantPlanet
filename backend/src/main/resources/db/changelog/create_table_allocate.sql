@@ -1,8 +1,7 @@
 CREATE TABLE allocate (
-    id              int             not null       primary key      auto_increment,
-    user_id         int             not null,
-    permission_id   varchar(30)     not null,
-
-    foreign key (user_id) references users (id),
-    foreign key (permission_id) references permission (id)
+                          id              SERIAL PRIMARY KEY,
+                          user_id         INT NOT NULL,
+                          permission_id   VARCHAR(30) NOT NULL,
+                          FOREIGN KEY (user_id) REFERENCES users (id),
+                          FOREIGN KEY (permission_id) REFERENCES permission (id)
 );

@@ -18,7 +18,6 @@ public class cartController {
     @Autowired
     private CartService cartService;
 
-    @CrossOrigin(origins = "http://localhost:5173")
     @PostMapping("/add")
     public ResponseEntity<String> addOrUpdateCartItem(
             @RequestParam Integer userId,
@@ -32,28 +31,24 @@ public class cartController {
         return ResponseEntity.ok("Item added/updated in the cart");
     }
 
-    @CrossOrigin(origins = "http://localhost:5173")
     @DeleteMapping("/remove/{cartItemId}")
     public ResponseEntity<String> removeCartItem(@PathVariable Integer cartItemId) {
         cartService.removeCartItem(cartItemId);
         return ResponseEntity.ok("Item removed from the cart");
     }
 
-    @CrossOrigin(origins = "http://localhost:5173")
     @GetMapping("/view")
     public ResponseEntity<List<Cart>> getCartItems(@RequestParam Integer userId) {
         List<Cart> cartItems = cartService.getCartItems(userId);
         return ResponseEntity.ok(cartItems);
     }
 
-    @CrossOrigin(origins = "http://localhost:5173")
     @GetMapping("/total")
     public ResponseEntity<BigDecimal> getTotalPrice(@RequestParam Integer userId) {
         BigDecimal totalPrice = cartService.calculateTotalPrice(userId);
         return ResponseEntity.ok(totalPrice);
     }
 
-    @CrossOrigin(origins = "http://localhost:5173")
     @PutMapping("/update")
     public ResponseEntity<String> updateCartItem(
             @RequestParam Integer userId,

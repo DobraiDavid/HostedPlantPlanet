@@ -20,9 +20,10 @@ public class Users {
     @Column(nullable = false, unique = true, length = 50)
     private String email;
 
-    @Column(nullable = false, length = 255)
+    @Column(nullable = false)
     private String password;
 
+    @Column(length = 5000)
     private String profileImage;
 
     public Users(String name, String email, String password, String profileImage) {

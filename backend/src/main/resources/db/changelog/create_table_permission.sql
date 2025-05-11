@@ -1,3 +1,3 @@
-CREATE TABLE permission(
-    id  varchar(30) not null primary key
+CREATE TABLE permission (
+                            id VARCHAR(30) PRIMARY KEY
 );

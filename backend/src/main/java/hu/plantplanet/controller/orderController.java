@@ -18,7 +18,6 @@ public class orderController {
         this.orderService = orderService;
     }
 
-    @CrossOrigin(origins = "http://localhost:5173")
     @PostMapping
     public ResponseEntity<Order> placeOrder(@Valid @RequestBody OrderDTO orderDto) {
         Order savedOrder = orderService.placeOrder(orderDto);
